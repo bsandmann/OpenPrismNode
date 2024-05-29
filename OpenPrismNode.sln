@@ -16,6 +16,12 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OpenPrismNode.Sync.Integrat
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OpenPrismNode.ConsoleRunner", "OpenPrismNode.ConsoleRunner\OpenPrismNode.ConsoleRunner.csproj", "{9E4A4CEC-A265-429D-89F0-26906512450B}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Documents", "Documents", "{AF93072F-B3F2-43DF-ADCC-0CB6DF55F3A7}"
+	ProjectSection(SolutionItems) = preProject
+		Documents\development_m1.md = Documents\development_m1.md
+		Documents\Sync_pattern_OpenPrismNode_May_2024.pdf = Documents\Sync_pattern_OpenPrismNode_May_2024.pdf
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
