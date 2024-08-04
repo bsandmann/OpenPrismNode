@@ -1,4 +1,4 @@
-namespace OpenPrismNode.Core.Models;
+namespace OpenPrismNode.Core.Common;
 
 using System.Text;
 using FluentResults;

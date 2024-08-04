@@ -1,4 +1,6 @@
-﻿namespace OpenPrismNode.Core.Models;
+﻿namespace OpenPrismNode.Core.Commands.ResolveDid;
+
+using Models;
 
 public class ResolveDidResponse
 {

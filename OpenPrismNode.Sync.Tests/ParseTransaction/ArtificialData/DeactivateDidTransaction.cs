@@ -1,5 +1,6 @@
 namespace OpenPrismNode.Sync.Tests.ParseTransaction.ArtificialData;
 
+using Core.Common;
 using FluentResults.Extensions.FluentAssertions;
 using MediatR;
 using Microsoft.Extensions.Logging;
@@ -25,7 +26,7 @@ public class DeactivateDidTransaction
     }
 
     [Fact]
-    public async Task DeactivateDid_TransactionHandler_succeds_for_well_constructed_request()
+    public async Task DeactivateDid_TransactionHandler_succeeds_for_well_constructed_request()
     {
         // Arrange
         var mockedEcService = new Mock<IEcService>();
@@ -45,8 +46,7 @@ public class DeactivateDidTransaction
                 SignedWith = "master0",
                 Signature = PrismEncoding.Utf8StringToByteString("someSignature")
             },
-            0,
-            resolveMode: new ResolveMode(ParserResolveMode.NoResolveNoSignatureVerification)
+            0
         );
 
         // Act
@@ -77,8 +77,7 @@ public class DeactivateDidTransaction
                 SignedWith = "master0",
                 Signature = PrismEncoding.Utf8StringToByteString("someSignature")
             },
-            0,
-            resolveMode: new ResolveMode(ParserResolveMode.NoResolveNoSignatureVerification)
+            0
         );
 
         // Act

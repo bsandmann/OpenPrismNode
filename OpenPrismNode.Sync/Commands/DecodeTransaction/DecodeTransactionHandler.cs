@@ -1,6 +1,7 @@
 ﻿namespace OpenPrismNode.Sync.Commands.DecodeTransaction;
 
 using System.Text.Json;
+using Core.Common;
 using Core.Models;
 using FluentResults;
 using Grpc.Models;

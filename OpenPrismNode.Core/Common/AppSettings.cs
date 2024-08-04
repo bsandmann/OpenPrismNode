@@ -1,4 +1,4 @@
-﻿namespace OpenPrismNode.Core.Models;
+﻿namespace OpenPrismNode.Core.Common;
 
 #pragma warning disable CS8618
 /// <summary>

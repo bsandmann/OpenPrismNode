@@ -73,8 +73,8 @@ public class ProcessTransactionHandler : IRequestHandler<ProcessTransactionReque
                     var operationSequenceIndex = 0;
                     foreach (var operation in decodeResult.Value)
                     {
-                        var resolveMode = new ResolveMode(ParserResolveMode.ResolveAgainstDatabaseAndVerifySignature, request.Block.block_no, request.Transaction.block_index, operationSequenceIndex);
-                        var parsingResult = await _mediator.Send(new ParseTransactionRequest(operation, operationSequenceIndex, resolveMode), cancellationToken);
+                        var resolveMode = new ResolveMode(request.Block.block_no, request.Transaction.block_index, operationSequenceIndex);
+                        var parsingResult = await _mediator.Send(new ParseTransactionRequest(operation, operationSequenceIndex), cancellationToken);
                         if (parsingResult.IsSuccess)
                         {
                             try

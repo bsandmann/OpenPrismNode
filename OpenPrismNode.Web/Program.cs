@@ -1,4 +1,5 @@
 using Npgsql;
+using OpenPrismNode.Core.Common;
 using OpenPrismNode.Core.Models;
 using OpenPrismNode.Sync.Services;
 

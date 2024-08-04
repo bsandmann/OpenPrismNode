@@ -1,6 +1,7 @@
 ﻿namespace OpenPrismNode.Core.Models;
 
 using System.Text.Json.Serialization;
+using Common;
 using FluentResults;
 using Org.BouncyCastle.Asn1.Sec;
 

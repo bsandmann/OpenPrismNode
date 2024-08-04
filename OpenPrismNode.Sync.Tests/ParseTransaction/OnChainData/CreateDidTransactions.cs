@@ -42,8 +42,7 @@ public class CreateDidTransactions
 
         var parseTransactionRequest = new ParseTransactionRequest(
             decodedResult.Value.Single(),
-            0,
-            resolveMode: new ResolveMode(ParserResolveMode.NoResolveNoSignatureVerification)
+            0
         );
 
         // Act
@@ -94,8 +93,7 @@ public class CreateDidTransactions
 
         var parseTransactionRequest = new ParseTransactionRequest(
             decodedResult.Value.Single(),
-            0,
-            resolveMode: new ResolveMode(ParserResolveMode.NoResolveNoSignatureVerification)
+            0
         );
 
         // Act

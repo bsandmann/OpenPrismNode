@@ -42,8 +42,7 @@ public class DeactivateDidTransactions
 
         var parseTransactionRequest = new ParseTransactionRequest(
             decodedResult.Value.Single(),
-            0,
-            resolveMode: new ResolveMode(ParserResolveMode.NoResolveNoSignatureVerification)
+            0
         );
 
         // Act

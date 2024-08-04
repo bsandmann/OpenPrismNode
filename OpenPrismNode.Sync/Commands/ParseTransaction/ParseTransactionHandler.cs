@@ -1,14 +1,14 @@
 ﻿namespace OpenPrismNode.Sync.Commands.ParseTransaction;
 
-using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using Core;
+using Core.Commands.ResolveDid;
+using Core.Common;
 using Core.Crypto;
 using Core.Models;
 using EnsureThat;
 using FluentResults;
 using Google.Protobuf;
-using Google.Protobuf.Collections;
-using Grpc.Models;
 using MediatR;
 using Microsoft.Extensions.Logging;
 using OpenPrismNode.Sync;
@@ -128,17 +128,14 @@ public class ParseTransactionHandler : IRequestHandler<ParseTransactionRequest, 
 
         ResolveDidResponse resolvedDid = null!;
         // OUT OF SCOPE
-        // if (resolveMode.ParserResolveMode == ParserResolveMode.ResolveAgainstDatabaseAndVerifySignature)
-        // {
         //    //TODO see removed Codebase -> Refactor
-        //     var verificationResult = await ResolveAndVerifySignature(signedAtalaOperation, resolveMode, didIdentifier, signedWith, signature);
-        //     if (verificationResult.IsFailed)
-        //     {
-        //         return verificationResult.ToResult();
-        //     }
-        //
-        //     resolvedDid = verificationResult.Value;
-        // }
+        var verificationResult = await ResolveAndVerifySignature(signedAtalaOperation, resolveMode, didIdentifier, signedWith, signature);
+        if (verificationResult.IsFailed)
+        {
+            return verificationResult.ToResult();
+        }
+
+        resolvedDid = verificationResult.Value;
 
         // This sorting causes the addKeys to come first - which is relevant for keyRotations, where the ordering is irrelevant. That means, before removing the last masterKey we must be sure, that a new one was added
         // // TODO Unclear, since the SPEC defines that the actions have to performed in order
@@ -152,19 +149,16 @@ public class ParseTransactionHandler : IRequestHandler<ParseTransactionRequest, 
                 if (parsedPublicKey.IsSuccess)
                 {
                     //Check if the operation already exists
-                    if (resolvedDid is not null)
+                    // case sensitive
+                    var existingKeyWithIdentialId = resolvedDid.DidDocument.PublicKeys.FirstOrDefault(p => p.KeyId.Equals(parsedPublicKey.Value.KeyId));
+                    if (existingKeyWithIdentialId is not null && !UpdateStackEvaluation.UpdateActionStackLastKeyActionWasRemoveKey(updateActionResults, parsedPublicKey.Value.KeyId))
                     {
-                        // case sensitive
-                        var existingKeyWithIdentialId = resolvedDid.DidDocument.PublicKeys.FirstOrDefault(p => p.KeyId.Equals(parsedPublicKey.Value.KeyId));
-                        if (existingKeyWithIdentialId is not null)
-                        {
-                            return Result.Fail(ParserErrors.KeyAlreadyAdded + $": {existingKeyWithIdentialId.KeyId} for DID {resolvedDid.DidDocument.DidIdentifier}");
-                        }
+                        return Result.Fail(ParserErrors.KeyAlreadyAdded + $": {existingKeyWithIdentialId.KeyId} for DID {resolvedDid.DidDocument.DidIdentifier}");
                     }
 
                     // Adding the same key multiple times is not allowed
                     // Key-Fragments can be case-sensitive!
-                    if (updateActionResults.Where(p => p.PrismPublicKey is not null).Any(p => p.PrismPublicKey!.KeyId.Equals(parsedPublicKey.Value.KeyId) && p.UpdateDidActionType == UpdateDidActionType.AddKey))
+                    if (UpdateStackEvaluation.UpdateActionStackLastKeyActionWasAddKey(updateActionResults, parsedPublicKey.Value.KeyId))
                     {
                         return Result.Fail($"{ParserErrors.DuplicateKeyIds}: {parsedPublicKey.Value.KeyId}");
                     }
@@ -181,33 +175,23 @@ public class ParseTransactionHandler : IRequestHandler<ParseTransactionRequest, 
                 var removedKeyId = action.RemoveKey.KeyId;
                 var existingMasterKeys = new List<PrismPublicKey>();
 
-                if (resolvedDid is not null)
+                // case sensitive
+                var keyIsExisting = resolvedDid.DidDocument.PublicKeys.FirstOrDefault(p => p.KeyId.Equals(removedKeyId));
+                if (keyIsExisting is null && !UpdateStackEvaluation.UpdateActionStackLastKeyActionWasAddKey(updateActionResults, removedKeyId))
                 {
-                    // case sensitive
-                    var keyIsExisting = resolvedDid.DidDocument.PublicKeys.FirstOrDefault(p => p.KeyId.Equals(removedKeyId));
-                    if (keyIsExisting is null)
-                    {
-                        return Result.Fail(ParserErrors.KeyToBeRemovedNotFound + $": {removedKeyId} for DID {resolvedDid.DidDocument.DidIdentifier}");
-                    }
+                    return Result.Fail(ParserErrors.KeyToBeRemovedNotFound + $": {removedKeyId} for DID {resolvedDid.DidDocument.DidIdentifier}");
+                }
 
-                    existingMasterKeys = resolvedDid.DidDocument.PublicKeys.Where(p => p.KeyUsage == PrismKeyUsage.MasterKey).ToList();
-                }
-                else // This branch is only for testing purposes 
-                {
-                    existingMasterKeys = new List<PrismPublicKey>()
-                    {
-                        new PrismPublicKey(PrismKeyUsage.MasterKey, "dummyMaster", "secp256k1", new byte[32], new byte[32]),
-                    };
-                }
+                existingMasterKeys = resolvedDid.DidDocument.PublicKeys.Where(p => p.KeyUsage == PrismKeyUsage.MasterKey).ToList();
 
                 // Removing the same key multiple times is not allowed
                 // Key-Fragments can be case-sensitive!
-                if (updateActionResults.Where(p => p.RemovedKeyId is not null).Any(p => p.RemovedKeyId!.Equals(removedKeyId) && p.UpdateDidActionType == UpdateDidActionType.RemoveKey))
+                if (UpdateStackEvaluation.UpdateActionStackLastKeyActionWasRemoveKey(updateActionResults, removedKeyId))
                 {
                     return Result.Fail($"{ParserErrors.KeyAlreadyRemovedInPreviousAction}: {removedKeyId}");
                 }
 
-                // Calculation if a master can be removed
+                // Calculation if a master-key can be removed
                 var keysRemovedInPreviousOperations = updateActionResults.Where(p => p.UpdateDidActionType == UpdateDidActionType.RemoveKey).Select(p => p.RemovedKeyId!).ToList();
                 var keysRemovedInPreviousAndThisOperation = keysRemovedInPreviousOperations.Append(removedKeyId).Distinct().ToList();
                 var masterKeysAddedInPreviousOperations = updateActionResults.Where(p => p.UpdateDidActionType == UpdateDidActionType.AddKey && p.PrismPublicKey!.KeyUsage == PrismKeyUsage.MasterKey).Select(p => p.PrismPublicKey!.KeyId).Distinct().ToList();
@@ -222,22 +206,20 @@ public class ParseTransactionHandler : IRequestHandler<ParseTransactionRequest, 
             }
             else if (action.ActionCase == UpdateDIDAction.ActionOneofCase.AddService)
             {
-                if (resolvedDid is not null)
+                // case sensitive!
+                var existingServiceWithIdenticalId = resolvedDid.DidDocument.PrismServices.FirstOrDefault(p => p.ServiceId.Equals(action.AddService.Service.Id));
+                if (existingServiceWithIdenticalId is not null && (UpdateStackEvaluation.UpdateActionStackLastServiceActionWasAddService(updateActionResults, action.AddService.Service.Id) ||
+                                                                   UpdateStackEvaluation.UpdateActionStackLastServiceActionWasUpdateService(updateActionResults, action.AddService.Service.Id)))
                 {
-                    // case sensitive!
-                    var existingServiceWithIdenticalId = resolvedDid.DidDocument.PrismServices.FirstOrDefault(p => p.ServiceId.Equals(action.AddService.Service.Id));
-                    if (existingServiceWithIdenticalId is not null)
-                    {
-                        return Result.Fail(ParserErrors.ServiceAlreadyAdded + $": {existingServiceWithIdenticalId.ServiceId} for DID {resolvedDid.DidDocument.DidIdentifier}");
-                    }
+                    return Result.Fail(ParserErrors.ServiceAlreadyAdded + $": {existingServiceWithIdenticalId.ServiceId} for DID {resolvedDid.DidDocument.DidIdentifier}");
                 }
 
-                if (updateActionResults.Any(p => p.UpdateDidActionType == UpdateDidActionType.AddService && p.PrismService is not null && p.PrismService.ServiceId == action.AddService.Service.Id))
+                if (UpdateStackEvaluation.UpdateActionStackLastServiceActionWasAddService(updateActionResults, action.AddService.Service.Id) || UpdateStackEvaluation.UpdateActionStackLastServiceActionWasUpdateService(updateActionResults, action.AddService.Service.Id))
                 {
                     return Result.Fail(ParserErrors.ServiceAlreadyAdded + $": {action.AddService.Service.Id}");
                 }
 
-                var parsedService = ParseServiceInternal(action.AddService.Service, _logger);
+                var parsedService = ParseServiceInternal(action.AddService.Service.Type, action.AddService.Service.Id, action.AddService.Service.ServiceEndpoint, _logger);
                 if (parsedService.IsFailed)
                 {
                     return parsedService.ToResult();
@@ -249,17 +231,14 @@ public class ParseTransactionHandler : IRequestHandler<ParseTransactionRequest, 
             {
                 var removedServiceId = action.RemoveService.ServiceId;
 
-                if (resolvedDid is not null)
+                // case sensitive!
+                var serviceIsExisting = resolvedDid.DidDocument.PrismServices.FirstOrDefault(p => p.ServiceId.Equals(removedServiceId));
+                if (serviceIsExisting is null || UpdateStackEvaluation.UpdateActionStackLastServiceActionWasRemoveService(updateActionResults, removedServiceId))
                 {
-                    // case sensitive!
-                    var serviceIsExisting = resolvedDid.DidDocument.PrismServices.FirstOrDefault(p => p.ServiceId.Equals(removedServiceId));
-                    if (serviceIsExisting is null)
-                    {
-                        return Result.Fail(ParserErrors.ServiceToBeRemovedNotFound + $": {removedServiceId} for DID {resolvedDid.DidDocument.DidIdentifier}");
-                    }
+                    return Result.Fail(ParserErrors.ServiceToBeRemovedNotFound + $": {removedServiceId} for DID {resolvedDid.DidDocument.DidIdentifier}");
                 }
 
-                if (updateActionResults.Any(p => p.UpdateDidActionType == UpdateDidActionType.RemoveService && p.RemovedKeyId == action.RemoveService.ServiceId))
+                if (UpdateStackEvaluation.UpdateActionStackLastServiceActionWasRemoveService(updateActionResults, removedServiceId))
                 {
                     return Result.Fail(ParserErrors.ServiceAlreadyRemoved + $": {action.RemoveService.ServiceId}");
                 }
@@ -270,25 +249,25 @@ public class ParseTransactionHandler : IRequestHandler<ParseTransactionRequest, 
             {
                 var updatedServiceId = action.UpdateService.ServiceId;
 
-                if (resolvedDid is not null)
+                // case sensitive!
+                var serviceIsExisting = resolvedDid.DidDocument.PrismServices.FirstOrDefault(p => p.ServiceId.Equals(updatedServiceId));
+                if (serviceIsExisting is null || UpdateStackEvaluation.UpdateActionStackLastServiceActionWasRemoveService(updateActionResults, updatedServiceId))
                 {
-                    // case sensitive!
-                    var serviceIsExisting = resolvedDid.DidDocument.PrismServices.FirstOrDefault(p => p.ServiceId.Equals(updatedServiceId));
-                    if (serviceIsExisting is null)
-                    {
-                        return Result.Fail(ParserErrors.ServiceToBeUpdatedNotFound + $": {updatedServiceId} for DID {resolvedDid.DidDocument.DidIdentifier}");
-                    }
+                    return Result.Fail(ParserErrors.ServiceToBeUpdatedNotFound + $": {updatedServiceId} for DID {resolvedDid.DidDocument.DidIdentifier}");
                 }
 
-                var parsedService = ParseServiceInternal(action.AddService.Service, _logger);
+                if (UpdateStackEvaluation.UpdateActionStackLastServiceActionWasRemoveService(updateActionResults, updatedServiceId))
+                {
+                    return Result.Fail(ParserErrors.ServiceAlreadyRemoved + $": {action.RemoveService.ServiceId}");
+                }
+
+                var parsedService = ParseServiceInternal(action.UpdateService.Type, action.UpdateService.ServiceId, action.UpdateService.ServiceEndpoints, _logger);
                 if (parsedService.IsFailed)
                 {
                     return parsedService.ToResult();
                 }
-                // TODO Verify according to spec
 
-                // TODO Implementa correct UpdateType
-                updateActionResults.Add(new UpdateDidActionResult(action.UpdateService.ServiceId, action.UpdateService.Type, null));
+                updateActionResults.Add(new UpdateDidActionResult(parsedService.Value.ServiceId, parsedService.Value.Type, parsedService.Value.PrismServiceEndpoints));
             }
             else if (action.ActionCase == UpdateDIDAction.ActionOneofCase.PatchContext)
             {
@@ -333,14 +312,10 @@ public class ParseTransactionHandler : IRequestHandler<ParseTransactionRequest, 
 
         var proposerDidIdentifier = update.ProposerDid;
 
-        if (resolveMode.ParserResolveMode == ParserResolveMode.ResolveAgainstDatabaseAndVerifySignature)
+        var verificationResult = await ResolveAndVerifySignature(signedAtalaOperation, resolveMode, proposerDidIdentifier, signedWith, signature);
+        if (verificationResult.IsFailed)
         {
-            // OUT OF SCOPE
-            // var verificationResult = await ResolveAndVerifySignature(signedAtalaOperation, resolveMode, proposerDid, signedWith, signature);
-            // if (verificationResult.IsFailed)
-            // {
-            //     return verificationResult.ToResult();
-            // }
+            return verificationResult.ToResult();
         }
 
         //TODO fetch the current version in the databse
@@ -383,14 +358,12 @@ public class ParseTransactionHandler : IRequestHandler<ParseTransactionRequest, 
 
         var operationBytes = PrismEncoding.ByteStringToByteArray(signedAtalaOperation.Operation.ToByteString());
 
-        if (resolveMode.ParserResolveMode == ParserResolveMode.ResolveAgainstDatabaseAndVerifySignature)
+
+        // OUT OF SCOPE
+        var verificationResult = await ResolveAndVerifySignature(signedAtalaOperation, resolveMode, didIdentifier, signedWith, signature);
+        if (verificationResult.IsFailed)
         {
-            // OUT OF SCOPE
-            // var verificationResult = await ResolveAndVerifySignature(signedAtalaOperation, resolveMode, didIdentifier, signedWith, signature);
-            // if (verificationResult.IsFailed)
-            // {
-            //     return verificationResult.ToResult();
-            // }
+            return verificationResult.ToResult();
         }
 
         var operationResultWrapper = new OperationResultWrapper(OperationResultType.DeactivateDid, index, didIdentifier, Hash.CreateFrom(PrismEncoding.ByteStringToByteArray(previousOperationHash)), operationBytes, signature, signedWith);
@@ -514,7 +487,7 @@ public class ParseTransactionHandler : IRequestHandler<ParseTransactionRequest, 
 
         foreach (var service in didData.Services)
         {
-            var serviceParseResult = ParseServiceInternal(service, _logger);
+            var serviceParseResult = ParseServiceInternal(service.Type, service.Id, service.ServiceEndpoint, _logger);
             if (serviceParseResult.IsFailed)
             {
                 return serviceParseResult.ToResult();
@@ -531,39 +504,126 @@ public class ParseTransactionHandler : IRequestHandler<ParseTransactionRequest, 
         return services;
     }
 
-    private static Result<PrismService> ParseServiceInternal(Service service, ILogger logger)
+    private static Result<PrismService> ParseServiceInternal(string type, string id, string serviceEndpoint, ILogger logger)
     {
-        if (string.IsNullOrWhiteSpace(service.Type) || !service.Type.Trim().Equals(service.Type) || service.Type.Length > PrismParameters.MaxTypeSize)
+        if (string.IsNullOrWhiteSpace(type) || !type.Trim().Equals(type) || type.Length > PrismParameters.MaxTypeSize)
         {
-            return Result.Fail($"{ParserErrors.ServiceTypeInvalid}: {service.Type}");
+            return Result.Fail($"{ParserErrors.ServiceTypeInvalid}: {type}");
             ;
         }
 
-        if (!PrismParameters.ExpectedServiceTypes.Contains(service.Type))
+        if (!PrismParameters.ExpectedServiceTypes.Contains(type))
         {
-            logger.LogWarning($"{ParserErrors.UnexpectedServiceType}: {service.Type}");
+            logger.LogWarning($"{ParserErrors.UnexpectedServiceType}: {type}");
         }
 
-        if (string.IsNullOrWhiteSpace(service.Id) || service.Id.Length > PrismParameters.MaxIdSize)
+        if (string.IsNullOrWhiteSpace(id) || id.Length > PrismParameters.MaxIdSize)
         {
             return Result.Fail(ParserErrors.InvalidServiceId);
         }
 
-        if (service.ServiceEndpoint.Length > PrismParameters.MaxServiceEndpointSize)
+        if (serviceEndpoint.Length > PrismParameters.MaxServiceEndpointSize)
         {
-            return Result.Fail($"{ParserErrors.ServiceEndpointInvalid}: {service.Id}");
+            return Result.Fail($"{ParserErrors.ServiceEndpointInvalid}: {id}");
         }
 
-        var parsedServiceEndpoint = PrismServiceEndpoints.Parse(service.ServiceEndpoint);
+        var parsedServiceEndpoint = PrismServiceEndpoints.Parse(serviceEndpoint);
         if (parsedServiceEndpoint.IsFailed)
         {
             return parsedServiceEndpoint.ToResult();
         }
 
         return Result.Ok(new PrismService(
-            serviceId: service.Id,
-            type: service.Type,
+            serviceId: id,
+            type: type,
             prismPrismServiceEndpoints: parsedServiceEndpoint.Value
         ));
+    }
+
+    private async Task<Result<ResolveDidResponse>> ResolveAndVerifySignature(SignedAtalaOperation signedAtalaOperation, ResolveMode resolveMode, string didIdentifier, string signedWith, byte[] signature)
+    {
+        var resolved = await _mediator.Send(new ResolveDidRequest(didIdentifier, resolveMode.BlockHeight, resolveMode.BlockSequence, resolveMode.OperationSequence));
+
+        if (resolved.IsSuccess)
+        {
+            // if (signedAtalaOperation.Operation.OperationCase == AtalaOperation.OperationOneofCase.UpdateDid || signedAtalaOperation.Operation.OperationCase == AtalaOperation.OperationOneofCase.DeactivateDid)
+            // {
+            //     var previousOperationHashByteArray = signedAtalaOperation.Operation.OperationCase == AtalaOperation.OperationOneofCase.UpdateDid ? signedAtalaOperation.Operation.UpdateDid.PreviousOperationHash : signedAtalaOperation.Operation.DeactivateDid.PreviousOperationHash;
+            //     var previousOperationHash = Hash.CreateFrom(PrismEncoding.ByteStringToByteArray(previousOperationHashByteArray));
+            //     if (!previousOperationHash.Value.SequenceEqual(resolved.Value.LastOperationHash.Value))
+            //     {
+            //         return Result.Fail(ParserErrors.InvalidPreviousOperationHash + $" for {GetOperationResultType.GetFromSignedAtalaOperation(signedAtalaOperation)} operation for DID {did.Identifier}");
+            //     }
+            //     else if (previousOperationHashByteArray.SequenceEqual(PrismEncoding.ByteStringToByteArray(signedAtalaOperation.Operation.ToByteString())))
+            //     {
+            //         return Result.Fail(ParserErrors.OperationAlreadyOnChain + $" for {GetOperationResultType.GetFromSignedAtalaOperation(signedAtalaOperation)} operation for DID {did.Identifier}");
+            //     }
+            // }
+            //
+            // PrismPublicKey? publicKey = null;
+            // if (signedAtalaOperation.Operation.OperationCase == AtalaOperation.OperationOneofCase.CreateDid ||
+            //     signedAtalaOperation.Operation.OperationCase == AtalaOperation.OperationOneofCase.UpdateDid ||
+            //     signedAtalaOperation.Operation.OperationCase == AtalaOperation.OperationOneofCase.DeactivateDid)
+            // {
+            //     publicKey = resolved.Value.DidDocument.PublicKeys.FirstOrDefault(p => p.KeyId.Equals(signedWith, StringComparison.InvariantCultureIgnoreCase) && p.KeyUsage == PrismKeyUsage.MasterKey);
+            // }
+            // else if (signedAtalaOperation.Operation.OperationCase == AtalaOperation.OperationOneofCase.IssueCredentialBatch)
+            // {
+            //     publicKey = resolved.Value.DidDocument.PublicKeys.FirstOrDefault(p => p.KeyId.Equals(signedWith, StringComparison.InvariantCultureIgnoreCase) && p.KeyUsage == PrismKeyUsage.IssuingKey);
+            // }
+            // else if (signedAtalaOperation.Operation.OperationCase == AtalaOperation.OperationOneofCase.RevokeCredentials)
+            // {
+            //     publicKey = resolved.Value.DidDocument.PublicKeys.FirstOrDefault(p => p.KeyId.Equals(signedWith, StringComparison.InvariantCultureIgnoreCase) && p.KeyUsage == PrismKeyUsage.RevocationKey);
+            // }
+            // else if (signedAtalaOperation.Operation.OperationCase == AtalaOperation.OperationOneofCase.ProtocolVersionUpdate)
+            // {
+            //     // das betrifft das ProtocolVersionUpdate. Hier habe ich keine Ahnung!
+            //     publicKey = resolved.Value.DidDocument.PublicKeys.FirstOrDefault(p => p.KeyId.Equals(signedWith, StringComparison.InvariantCultureIgnoreCase));
+            // }
+            // else
+            // {
+            //     throw new NotImplementedException();
+            // }
+            //
+            // if (publicKey is null)
+            // {
+            //     {
+            //         return Result.Fail(ParserErrors.UnableToResolveForPublicKeys + $" for {GetOperationResultType.GetFromSignedAtalaOperation(signedAtalaOperation)} operation for DID {did.Identifier}");
+            //     }
+            // }
+            //
+            // if (publicKey.RevokedOn is not null)
+            // {
+            //     // a bit complicated and could easily be optimized, but this code does not run often
+            //     var transactionModel = await _mediator.Send(new GetTransactionByHashRequest(Hash.CreateFrom(PrismEncoding.HexToByteArray(publicKey.RevokedOn.TransactionId))), CancellationToken.None);
+            //     var blockHash = transactionModel.Value.BlockHash;
+            //     var blockModel = await _mediator.Send(new GetBlockByHashRequest(blockHash), cancellationToken: CancellationToken.None);
+            //     var blochHeightOfTheUpdateDidOperationWhichRevokedThePublicKey = blockModel.Value.BlockHeight;
+            //
+            //     if (blochHeightOfTheUpdateDidOperationWhichRevokedThePublicKey < resolveMode.BlockHeight ||
+            //         blochHeightOfTheUpdateDidOperationWhichRevokedThePublicKey == resolveMode.BlockHeight && transactionModel.Value.Index < resolveMode.BlockSequence ||
+            //         blochHeightOfTheUpdateDidOperationWhichRevokedThePublicKey == resolveMode.BlockHeight && transactionModel.Value.Index == resolveMode.BlockSequence && publicKey.RevokedOn.TimestampInfo.OperationSequenceNumber < resolveMode.OperationSequence)
+            //     {
+            //         return Result.Fail(ParserErrors.UnableToVerifyDueToRevokedPublicKey + $" for {GetOperationResultType.GetFromSignedAtalaOperation(signedAtalaOperation)} operation for DID {did.Identifier}");
+            //     }
+            // }
+            //
+            // var verificationResult = _ecService.VerifyData(PrismEncoding.ByteStringToByteArray(signedAtalaOperation.Operation.ToByteString()), signature, publicKey.LongByteArray);
+            // if (!verificationResult)
+            // {
+            //     {
+            //         return Result.Fail(ParserErrors.UnableToVerifySignature + $" for {GetOperationResultType.GetFromSignedAtalaOperation(signedAtalaOperation)} operation for DID {did.Identifier}");
+            //     }
+            // }
+        }
+        else
+        {
+            {
+                // return Result.Fail(ParserErrors.UnableToResolveForPublicKeys + $" for {GetOperationResultType.GetFromSignedAtalaOperation(signedAtalaOperation)} operation for DID {did.Identifier}");
+                return Result.Fail("test");
+            }
+        }
+
+        return Result.Ok(resolved.Value);
     }
 }

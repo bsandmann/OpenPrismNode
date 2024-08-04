@@ -2,20 +2,20 @@
 
 public class ResolveMode
 {
-    public ResolveMode(ParserResolveMode resolveMode)
-    {
-        if (resolveMode == ParserResolveMode.NoResolveNoSignatureVerification)
-        {
-            ParserResolveMode = ParserResolveMode.NoResolveNoSignatureVerification;
-            BlockHeight = null;
-            BlockSequence = null;
-            OperationSequence = null;
-        }
-        else
-        {
-            throw new ArgumentException("When resolving a Did, the blockHeight, blockSequence and operationSequence must be provided");
-        }
-    }
+    // public ResolveMode()
+    // {
+    //     if (resolveMode == ParserResolveMode.NoResolveNoSignatureVerification)
+    //     {
+    //         // ParserResolveMode = ParserResolveMode.NoResolveNoSignatureVerification;
+    //         BlockHeight = null;
+    //         BlockSequence = null;
+    //         OperationSequence = null;
+    //     }
+    //     else
+    //     {
+    //         throw new ArgumentException("When resolving a Did, the blockHeight, blockSequence and operationSequence must be provided");
+    //     }
+    // }
 
     /// <summary>
     /// What information should be considered, when resolving a did?
@@ -26,32 +26,32 @@ public class ResolveMode
     /// <param name="operationSequence">When null: consider all inforation available in the db</param>
     /// <exception cref="AggregateException"></exception>
     /// <exception cref="ArgumentException"></exception>
-    public ResolveMode(ParserResolveMode resolveMode, long? blockHeight, int? blockSequence, int? operationSequence)
+    public ResolveMode(long? blockHeight, int? blockSequence, int? operationSequence)
     {
-        if (resolveMode == ParserResolveMode.ResolveAgainstDatabaseAndVerifySignature)
-        {
-            BlockHeight = blockHeight;
-            BlockSequence = blockSequence;
-            OperationSequence = operationSequence;
-            ParserResolveMode = ParserResolveMode.ResolveAgainstDatabaseAndVerifySignature;
+        // if (resolveMode == ParserResolveMode.ResolveAgainstDatabaseAndVerifySignature)
+        // {
+        BlockHeight = blockHeight;
+        BlockSequence = blockSequence;
+        OperationSequence = operationSequence;
+        // ParserResolveMode = ParserResolveMode.ResolveAgainstDatabaseAndVerifySignature;
 
-            if (blockHeight is null && (blockSequence is not null || operationSequence is not null))
-            {
-                throw new ArgumentException("If providing blockSequence or operationSequnce, the blockHeigt has also be provided");
-            }
-            else if (blockSequence is null && operationSequence is not null)
-            {
-                throw new ArgumentException("If providing operationSequnce, the blockHeigt and  blockSequence has also be provided");
-            }
-        }
-        else
+        if (blockHeight is null && (blockSequence is not null || operationSequence is not null))
         {
-            throw new AggregateException("When not resolving a did, don't provide values for blochheight, blockSequence and operationSequence");
+            throw new ArgumentException("If providing blockSequence or operationSequnce, the blockHeigt has also be provided");
         }
+        else if (blockSequence is null && operationSequence is not null)
+        {
+            throw new ArgumentException("If providing operationSequnce, the blockHeigt and  blockSequence has also be provided");
+        }
+        // }
+        // else
+        // {
+        //     throw new AggregateException("When not resolving a did, don't provide values for blochheight, blockSequence and operationSequence");
+        // }
     }
 
 
-    public ParserResolveMode ParserResolveMode { get; }
+    // public ParserResolveMode ParserResolveMode { get; }
 
     /// <summary>
     /// The last blockHeight to include into the Resolving-Process

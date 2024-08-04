@@ -9,6 +9,7 @@ using OpenPrismNode.Sync.Commands.ProcessTransaction;
 namespace OpenPrismNode.Sync.Commands.ProcessBlock;
 
 using System.Diagnostics;
+using Core.Common;
 
 public class ProcessBlockHandler : IRequestHandler<ProcessBlockRequest, Result<Hash?>>
 {

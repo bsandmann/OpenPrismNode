@@ -6,7 +6,7 @@ using Models;
 
 public class ParseTransactionRequest : IRequest<Result<OperationResultWrapper>>
 {
-    public ParseTransactionRequest(SignedAtalaOperation signedAtalaOperation, int index, ResolveMode resolveMode)
+    public ParseTransactionRequest(SignedAtalaOperation signedAtalaOperation, int index, ResolveMode? resolveMode = null)
     {
         SignedAtalaOperation = signedAtalaOperation;
         Index = index;
@@ -19,6 +19,7 @@ public class ParseTransactionRequest : IRequest<Result<OperationResultWrapper>>
 
     /// <summary>
     /// Definition of how a Did might be resolved
+    /// Can be null, depending on the operation. A Create DID operation does not need to be resolved
     /// </summary>
-    public ResolveMode ResolveMode { get; }
+    public ResolveMode? ResolveMode { get; }
 }

@@ -1,6 +1,7 @@
 ﻿namespace OpenPrismNode.Sync.Commands.EncodeTransaction;
 
 using System.Text.Json;
+using Core.Common;
 using Core.Models;
 using FluentResults;
 using Google.Protobuf;

@@ -1,5 +1,6 @@
 namespace OpenPrismNode.Sync.Tests.ParseTransaction.ArtificialData;
 
+using Core.Common;
 using FluentResults.Extensions.FluentAssertions;
 using MediatR;
 using Microsoft.Extensions.Logging;
@@ -25,7 +26,7 @@ public class CreateDidTransaction
     }
 
     [Fact]
-    public async Task CreateDid_TransactionHandler_succeds_for_well_constructed_CreateDid()
+    public async Task CreateDid_TransactionHandler_succeeds_for_well_constructed_CreateDid()
     {
         // Arrange
         var publicKeyTestData = DeconstructExisitingDidForPublicKeys(TestDocuments.TransactionSampleData.PrismV2_LongForm_Did_with_Services_and_multipleKeys, KeyUsage.MasterKey);
@@ -62,8 +63,7 @@ public class CreateDidTransaction
                 SignedWith = "master0",
                 Signature = PrismEncoding.Utf8StringToByteString("someSignature")
             },
-            0,
-            resolveMode: new ResolveMode(ParserResolveMode.NoResolveNoSignatureVerification)
+            0
         );
 
         // Act
@@ -119,8 +119,7 @@ public class CreateDidTransaction
                 SignedWith = "master0",
                 Signature = PrismEncoding.Utf8StringToByteString("someSignature")
             },
-            0,
-            resolveMode: new ResolveMode(ParserResolveMode.NoResolveNoSignatureVerification)
+            0
         );
 
         // Act
@@ -172,8 +171,7 @@ public class CreateDidTransaction
                 SignedWith = "master0",
                 Signature = PrismEncoding.Utf8StringToByteString("someSignature")
             },
-            0,
-            resolveMode: new ResolveMode(ParserResolveMode.NoResolveNoSignatureVerification)
+            0
         );
 
         // Act
@@ -225,8 +223,7 @@ public class CreateDidTransaction
                 SignedWith = "master0",
                 Signature = PrismEncoding.Utf8StringToByteString("someSignature")
             },
-            0,
-            resolveMode: new ResolveMode(ParserResolveMode.NoResolveNoSignatureVerification)
+            0
         );
 
         // Act
@@ -278,8 +275,7 @@ public class CreateDidTransaction
                 SignedWith = "master0",
                 Signature = PrismEncoding.Utf8StringToByteString("someSignature")
             },
-            0,
-            resolveMode: new ResolveMode(ParserResolveMode.NoResolveNoSignatureVerification)
+            0
         );
 
         // Act
@@ -291,7 +287,7 @@ public class CreateDidTransaction
     }
 
     [Fact]
-    public async Task CreateDid_TransactionHandler_succeds_with_json_array_of_EndpointUris()
+    public async Task CreateDid_TransactionHandler_succeeds_with_json_array_of_EndpointUris()
     {
         // Arrange
         var publicKeyTestData = DeconstructExisitingDidForPublicKeys(TestDocuments.TransactionSampleData.PrismV2_LongForm_Did_with_Services_and_multipleKeys, KeyUsage.MasterKey);
@@ -331,8 +327,7 @@ public class CreateDidTransaction
                 SignedWith = "master0",
                 Signature = PrismEncoding.Utf8StringToByteString("someSignature")
             },
-            0,
-            resolveMode: new ResolveMode(ParserResolveMode.NoResolveNoSignatureVerification)
+            0
         );
 
         // Act
@@ -384,8 +379,7 @@ public class CreateDidTransaction
                 SignedWith = "master0",
                 Signature = PrismEncoding.Utf8StringToByteString("someSignature")
             },
-            0,
-            resolveMode: new ResolveMode(ParserResolveMode.NoResolveNoSignatureVerification)
+            0
         );
 
         // Act
@@ -437,8 +431,7 @@ public class CreateDidTransaction
                 SignedWith = "master0",
                 Signature = PrismEncoding.Utf8StringToByteString("someSignature")
             },
-            0,
-            resolveMode: new ResolveMode(ParserResolveMode.NoResolveNoSignatureVerification)
+            0
         );
 
         // Act
@@ -495,8 +488,7 @@ public class CreateDidTransaction
                 SignedWith = "master0",
                 Signature = PrismEncoding.Utf8StringToByteString("someSignature")
             },
-            0,
-            resolveMode: new ResolveMode(ParserResolveMode.NoResolveNoSignatureVerification)
+            0
         );
 
         // Act
@@ -545,8 +537,7 @@ public class CreateDidTransaction
                 SignedWith = "master0",
                 Signature = PrismEncoding.Utf8StringToByteString("someSignature")
             },
-            0,
-            resolveMode: new ResolveMode(ParserResolveMode.NoResolveNoSignatureVerification)
+            0
         );
 
         // Act
@@ -558,7 +549,7 @@ public class CreateDidTransaction
     }
 
     [Fact]
-    public async Task CreateDid_TransactionHandler_succeds_with_MasterKey_Type_and_another_non_MasterKey_Type()
+    public async Task CreateDid_TransactionHandler_succeeds_with_MasterKey_Type_and_another_non_MasterKey_Type()
     {
         // Arrange
         var publicKeyTestData = DeconstructExisitingDidForPublicKeys(TestDocuments.TransactionSampleData.PrismV2_LongForm_Did_with_Services_and_multipleKeys, KeyUsage.MasterKey);
@@ -605,8 +596,7 @@ public class CreateDidTransaction
                 SignedWith = "myMasterKey",
                 Signature = PrismEncoding.Utf8StringToByteString("someSignature")
             },
-            0,
-            resolveMode: new ResolveMode(ParserResolveMode.NoResolveNoSignatureVerification)
+            0
         );
 
         // Act
@@ -675,8 +665,7 @@ public class CreateDidTransaction
                 SignedWith = "myMasterKey",
                 Signature = PrismEncoding.Utf8StringToByteString("someSignature")
             },
-            0,
-            resolveMode: new ResolveMode(ParserResolveMode.NoResolveNoSignatureVerification)
+            0
         );
 
         // Act
@@ -735,8 +724,7 @@ public class CreateDidTransaction
                 SignedWith = "myMasterKey",
                 Signature = PrismEncoding.Utf8StringToByteString("someSignature")
             },
-            0,
-            resolveMode: new ResolveMode(ParserResolveMode.NoResolveNoSignatureVerification)
+            0
         );
 
         // Act
