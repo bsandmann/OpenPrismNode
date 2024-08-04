@@ -10,7 +10,32 @@ using TestDocuments;
 public class DecodingUpdateDid
 {
     [Fact]
-    public async Task UpdateDid_Transaction_decodes_correctly_for_Prism_v2()
+    public async Task UpdateDid_Transaction_decodes_correctly_for_Prism_v2_with_updating_services()
+    {
+        // Arrange
+        var serializedTransaction = TransactionSampleData.PrismV2_UpdateDid_Transaction_updating_services;
+        var decodeTransactionRequest = new DecodeTransactionRequest(serializedTransaction);
+        var handler = new DecodeTransactionHandler();
+
+        // Act
+        var result = await handler.Handle(decodeTransactionRequest, new CancellationToken());
+
+        // Assert
+        result.Should().BeSuccess();
+        result.Value.Count.Should().Be(1);
+        result.Value.Single().Operation.OperationCase.Should().Be(AtalaOperation.OperationOneofCase.UpdateDid);
+        result.Value.Single().Operation.UpdateDid.Should().NotBeNull();
+        result.Value.Single().Operation.UpdateDid.Id.Should().Be("01d5d374c0bb9b4fe5b56896996e508d0a14dd84e4693357189c5c5b8e763a0c");
+        result.Value.Single().Operation.UpdateDid.PreviousOperationHash.Length.Should().Be(32);
+        result.Value.Single().Operation.UpdateDid.Actions.Count.Should().Be(1);
+        result.Value.Single().Operation.UpdateDid.Actions[0].ActionCase.Should().Be(UpdateDIDAction.ActionOneofCase.UpdateService);
+        result.Value.Single().Operation.UpdateDid.Actions[0].UpdateService.ServiceId.Should().Be("https://update.com");
+        result.Value.Single().Operation.UpdateDid.Actions[0].UpdateService.Type.Should().Be("LinkedDomains");
+        result.Value.Single().Operation.UpdateDid.Actions[0].UpdateService.ServiceEndpoints.Should().Be("[\"https://bar.foo.com/\"]");
+    }
+
+    [Fact]
+    public async Task UpdateDid_Transaction_decodes_correctly_for_Prism_v2_Legacy()
     {
         // Arrange
         var serializedTransaction = TransactionSampleData.PrismV2_Legacy_UpdateDid_Transaction_with_4Actions;
@@ -47,7 +72,7 @@ public class DecodingUpdateDid
         result.Value.Single().Operation.UpdateDid.Actions[3].AddService.Service.ServiceEndpoint.Should().Be("https://bar.example.com/");
         result.Value.Single().Operation.UpdateDid.Actions[3].AddService.Service.Type.Should().Be("LinkedDomains");
     }
-    
+
     [Fact]
     public async Task UpdateDid_Transaction_decodes_correctly_for_Prism_v1()
     {
@@ -75,7 +100,7 @@ public class DecodingUpdateDid
         result.Value.Single().Operation.UpdateDid.Actions[0].AddKey.Key.CompressedEcKeyData.Curve.Should().Be(PrismParameters.Secp256k1CurveName);
         result.Value.Single().Operation.UpdateDid.Actions[0].AddKey.Key.CompressedEcKeyData.Data.Length.Should().Be(33);
     }
-    
+
     [Fact]
     public async Task UpdateDid_Transaction_decodes_correctly_for_Prism_v1_with_two_operations()
     {

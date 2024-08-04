@@ -10,7 +10,7 @@ public sealed class PrismProtocolVersion
     
     /// <summary>
     /// If minor value changes, the node can opt to not update. All events _published_ by this node would be also
-    // understood by other nodes with the same major version. However, there may be new events that this node won't _read_
+    /// understood by other nodes with the same major version. However, there may be new events that this node won't _read_
     /// </summary>
     public int MinorVersion { get; }
     

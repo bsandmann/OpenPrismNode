@@ -13,5 +13,5 @@ public enum ParserResolveMode
     /// Skip the resolving and thus skip checking the signatures of a parsed transaction
     /// Only for testting purposes!
     /// </summary>
-    NoResolveNoSignatureVerication,
+    NoResolveNoSignatureVerification,
 }

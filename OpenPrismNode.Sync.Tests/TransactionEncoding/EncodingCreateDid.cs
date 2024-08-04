@@ -35,4 +35,24 @@ public class EncodingCreateDid
         JsonNode? roundTripTransaction = JsonNode.Parse(roundTripResult.Value);
         JsonNode.DeepEquals(originalTransaction, roundTripTransaction).Should().BeTrue();
     }
+    
+    [Fact]
+    public async Task CreateDid_roundtrip_encoding_for_Prism_v2_with_services()
+    {
+        // Arrange
+        var serializedTransaction = TransactionSampleData.PrismV2_CreateDid_Transaction_with_services;
+        var decodeTransactionRequest = new DecodeTransactionRequest(serializedTransaction);
+        var decodeHandler = new DecodeTransactionHandler();
+        var decodedResult = await decodeHandler.Handle(decodeTransactionRequest, new CancellationToken());
+        var encodeHandler = new EncodeTransactionHandler();
+
+        // Act
+        var roundTripResult = await encodeHandler.Handle(new EncodeTransactionRequest(decodedResult.Value), new CancellationToken());
+
+        // Assert
+        roundTripResult.Should().BeSuccess();
+        JsonNode? originalTransaction = JsonNode.Parse(serializedTransaction);
+        JsonNode? roundTripTransaction = JsonNode.Parse(roundTripResult.Value);
+        JsonNode.DeepEquals(originalTransaction, roundTripTransaction).Should().BeTrue();
+    }
 }

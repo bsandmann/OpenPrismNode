@@ -1,14 +1,12 @@
-namespace OpenPrismNode.Sync.Tests.ParseTransaction;
+namespace OpenPrismNode.Sync.Tests.ParseTransaction.ArtificialData;
 
-using Commands.ParseTransaction;
-using Core.Crypto;
-using Core.Models;
 using FluentResults.Extensions.FluentAssertions;
-using Google.Protobuf;
-using Google.Protobuf.Collections;
 using MediatR;
 using Microsoft.Extensions.Logging;
 using Moq;
+using OpenPrismNode.Core.Crypto;
+using OpenPrismNode.Core.Models;
+using OpenPrismNode.Sync.Commands.ParseTransaction;
 
 public class UpdateDidTransaction
 {
@@ -68,7 +66,7 @@ public class UpdateDidTransaction
                 Signature = PrismEncoding.Utf8StringToByteString("someSignature")
             },
             0,
-            resolveMode: new ResolveMode(ParserResolveMode.NoResolveNoSignatureVerication)
+            resolveMode: new ResolveMode(ParserResolveMode.NoResolveNoSignatureVerification)
         );
 
         // Act
@@ -107,7 +105,7 @@ public class UpdateDidTransaction
                 Signature = PrismEncoding.Utf8StringToByteString("someSignature")
             },
             0,
-            resolveMode: new ResolveMode(ParserResolveMode.NoResolveNoSignatureVerication)
+            resolveMode: new ResolveMode(ParserResolveMode.NoResolveNoSignatureVerification)
         );
 
         // Act
@@ -150,7 +148,7 @@ public class UpdateDidTransaction
                 Signature = PrismEncoding.Utf8StringToByteString("someSignature")
             },
             0,
-            resolveMode: new ResolveMode(ParserResolveMode.NoResolveNoSignatureVerication)
+            resolveMode: new ResolveMode(ParserResolveMode.NoResolveNoSignatureVerification)
         );
 
         // Act
@@ -198,7 +196,7 @@ public class UpdateDidTransaction
                 Signature = PrismEncoding.Utf8StringToByteString("someSignature")
             },
             0,
-            resolveMode: new ResolveMode(ParserResolveMode.NoResolveNoSignatureVerication)
+            resolveMode: new ResolveMode(ParserResolveMode.NoResolveNoSignatureVerification)
         );
 
         // Act
@@ -241,7 +239,7 @@ public class UpdateDidTransaction
                 Signature = PrismEncoding.Utf8StringToByteString("someSignature")
             },
             0,
-            resolveMode: new ResolveMode(ParserResolveMode.NoResolveNoSignatureVerication)
+            resolveMode: new ResolveMode(ParserResolveMode.NoResolveNoSignatureVerification)
         );
 
         // Act
@@ -285,7 +283,7 @@ public class UpdateDidTransaction
                 Signature = PrismEncoding.Utf8StringToByteString("someSignature")
             },
             0,
-            resolveMode: new ResolveMode(ParserResolveMode.NoResolveNoSignatureVerication)
+            resolveMode: new ResolveMode(ParserResolveMode.NoResolveNoSignatureVerification)
         );
 
         // Act
@@ -324,7 +322,7 @@ public class UpdateDidTransaction
                 Signature = PrismEncoding.Utf8StringToByteString("someSignature")
             },
             0,
-            resolveMode: new ResolveMode(ParserResolveMode.NoResolveNoSignatureVerication)
+            resolveMode: new ResolveMode(ParserResolveMode.NoResolveNoSignatureVerification)
         );
         parseTransactionRequest.SignedAtalaOperation.Operation.UpdateDid.Actions.Add(new UpdateDIDAction() { PatchContext = patchedContextAction });
 
@@ -363,7 +361,7 @@ public class UpdateDidTransaction
                 Signature = PrismEncoding.Utf8StringToByteString("someSignature")
             },
             0,
-            resolveMode: new ResolveMode(ParserResolveMode.NoResolveNoSignatureVerication)
+            resolveMode: new ResolveMode(ParserResolveMode.NoResolveNoSignatureVerification)
         );
         parseTransactionRequest.SignedAtalaOperation.Operation.UpdateDid.Actions.Add(new UpdateDIDAction() { PatchContext = patchedContextAction });
 

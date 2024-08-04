@@ -1,14 +1,12 @@
-namespace OpenPrismNode.Sync.Tests.ParseTransaction;
+namespace OpenPrismNode.Sync.Tests.ParseTransaction.ArtificialData;
 
-using Commands.ParseTransaction;
-using Core.Crypto;
-using Core.Models;
 using FluentResults.Extensions.FluentAssertions;
-using Google.Protobuf;
-using Google.Protobuf.Collections;
 using MediatR;
 using Microsoft.Extensions.Logging;
 using Moq;
+using OpenPrismNode.Core.Crypto;
+using OpenPrismNode.Core.Models;
+using OpenPrismNode.Sync.Commands.ParseTransaction;
 
 public class CreateDidTransaction
 {
@@ -65,7 +63,7 @@ public class CreateDidTransaction
                 Signature = PrismEncoding.Utf8StringToByteString("someSignature")
             },
             0,
-            resolveMode: new ResolveMode(ParserResolveMode.NoResolveNoSignatureVerication)
+            resolveMode: new ResolveMode(ParserResolveMode.NoResolveNoSignatureVerification)
         );
 
         // Act
@@ -122,7 +120,7 @@ public class CreateDidTransaction
                 Signature = PrismEncoding.Utf8StringToByteString("someSignature")
             },
             0,
-            resolveMode: new ResolveMode(ParserResolveMode.NoResolveNoSignatureVerication)
+            resolveMode: new ResolveMode(ParserResolveMode.NoResolveNoSignatureVerification)
         );
 
         // Act
@@ -175,7 +173,7 @@ public class CreateDidTransaction
                 Signature = PrismEncoding.Utf8StringToByteString("someSignature")
             },
             0,
-            resolveMode: new ResolveMode(ParserResolveMode.NoResolveNoSignatureVerication)
+            resolveMode: new ResolveMode(ParserResolveMode.NoResolveNoSignatureVerification)
         );
 
         // Act
@@ -228,7 +226,7 @@ public class CreateDidTransaction
                 Signature = PrismEncoding.Utf8StringToByteString("someSignature")
             },
             0,
-            resolveMode: new ResolveMode(ParserResolveMode.NoResolveNoSignatureVerication)
+            resolveMode: new ResolveMode(ParserResolveMode.NoResolveNoSignatureVerification)
         );
 
         // Act
@@ -281,7 +279,7 @@ public class CreateDidTransaction
                 Signature = PrismEncoding.Utf8StringToByteString("someSignature")
             },
             0,
-            resolveMode: new ResolveMode(ParserResolveMode.NoResolveNoSignatureVerication)
+            resolveMode: new ResolveMode(ParserResolveMode.NoResolveNoSignatureVerification)
         );
 
         // Act
@@ -334,7 +332,7 @@ public class CreateDidTransaction
                 Signature = PrismEncoding.Utf8StringToByteString("someSignature")
             },
             0,
-            resolveMode: new ResolveMode(ParserResolveMode.NoResolveNoSignatureVerication)
+            resolveMode: new ResolveMode(ParserResolveMode.NoResolveNoSignatureVerification)
         );
 
         // Act
@@ -387,7 +385,7 @@ public class CreateDidTransaction
                 Signature = PrismEncoding.Utf8StringToByteString("someSignature")
             },
             0,
-            resolveMode: new ResolveMode(ParserResolveMode.NoResolveNoSignatureVerication)
+            resolveMode: new ResolveMode(ParserResolveMode.NoResolveNoSignatureVerification)
         );
 
         // Act
@@ -440,7 +438,7 @@ public class CreateDidTransaction
                 Signature = PrismEncoding.Utf8StringToByteString("someSignature")
             },
             0,
-            resolveMode: new ResolveMode(ParserResolveMode.NoResolveNoSignatureVerication)
+            resolveMode: new ResolveMode(ParserResolveMode.NoResolveNoSignatureVerification)
         );
 
         // Act
@@ -498,7 +496,7 @@ public class CreateDidTransaction
                 Signature = PrismEncoding.Utf8StringToByteString("someSignature")
             },
             0,
-            resolveMode: new ResolveMode(ParserResolveMode.NoResolveNoSignatureVerication)
+            resolveMode: new ResolveMode(ParserResolveMode.NoResolveNoSignatureVerification)
         );
 
         // Act
@@ -548,7 +546,7 @@ public class CreateDidTransaction
                 Signature = PrismEncoding.Utf8StringToByteString("someSignature")
             },
             0,
-            resolveMode: new ResolveMode(ParserResolveMode.NoResolveNoSignatureVerication)
+            resolveMode: new ResolveMode(ParserResolveMode.NoResolveNoSignatureVerification)
         );
 
         // Act
@@ -608,7 +606,7 @@ public class CreateDidTransaction
                 Signature = PrismEncoding.Utf8StringToByteString("someSignature")
             },
             0,
-            resolveMode: new ResolveMode(ParserResolveMode.NoResolveNoSignatureVerication)
+            resolveMode: new ResolveMode(ParserResolveMode.NoResolveNoSignatureVerification)
         );
 
         // Act
@@ -617,6 +615,76 @@ public class CreateDidTransaction
 
         // Assert
         result.Should().BeSuccess();
+    }
+
+    [Fact]
+    public async Task CreateDid_TransactionHandler_fails_with_identical_named_keys()
+    {
+        // Arrange
+        var publicKeyTestData = DeconstructExisitingDidForPublicKeys(TestDocuments.TransactionSampleData.PrismV2_LongForm_Did_with_Services_and_multipleKeys, KeyUsage.MasterKey);
+        var mockedEcService = new Mock<IEcService>();
+        mockedEcService.Setup(p => p.VerifyData(It.IsAny<byte[]>(), It.IsAny<byte[]>(), It.IsAny<byte[]>())).Returns(true);
+
+        var parseTransactionRequest = new ParseTransactionRequest(
+            new SignedAtalaOperation
+            {
+                Operation = new AtalaOperation
+                {
+                    CreateDid = new CreateDIDOperation()
+                    {
+                        DidData = new CreateDIDOperation.Types.DIDCreationData()
+                        {
+                            Context = { "myContext" },
+                            PublicKeys =
+                            {
+                                new PublicKey()
+                                {
+                                    Id = "myMasterKey",
+                                    Usage = KeyUsage.MasterKey,
+                                    CompressedEcKeyData = new CompressedECKeyData()
+                                    {
+                                        Curve = "secp256k1",
+                                        Data = publicKeyTestData.CompressedEcKeyData.Data
+                                    }
+                                },
+                                new PublicKey()
+                                {
+                                    Id = "myIssuingKey",
+                                    Usage = KeyUsage.IssuingKey,
+                                    CompressedEcKeyData = new CompressedECKeyData()
+                                    {
+                                        Curve = "secp256k1",
+                                        Data = publicKeyTestData.CompressedEcKeyData.Data
+                                    }
+                                },
+                                new PublicKey()
+                                {
+                                    Id = "myIssuingKey",
+                                    Usage = KeyUsage.AuthenticationKey,
+                                    CompressedEcKeyData = new CompressedECKeyData()
+                                    {
+                                        Curve = "secp256k1",
+                                        Data = publicKeyTestData.CompressedEcKeyData.Data
+                                    }
+                                },
+                            },
+                            Services = { }
+                        }
+                    }
+                },
+                SignedWith = "myMasterKey",
+                Signature = PrismEncoding.Utf8StringToByteString("someSignature")
+            },
+            0,
+            resolveMode: new ResolveMode(ParserResolveMode.NoResolveNoSignatureVerification)
+        );
+
+        // Act
+        _parseTransactionHandler = new ParseTransactionHandler(_mediatorMock.Object, _sha256Service, mockedEcService.Object, _logger);
+        var result = await _parseTransactionHandler.Handle(parseTransactionRequest, CancellationToken.None);
+
+        // Assert
+        result.Should().BeFailure().And.Match(n => n.Errors.FirstOrDefault().Message.Contains("Duplicate key IDs detected. Each key ID must be unique"));
     }
 
     [Fact]
@@ -668,7 +736,7 @@ public class CreateDidTransaction
                 Signature = PrismEncoding.Utf8StringToByteString("someSignature")
             },
             0,
-            resolveMode: new ResolveMode(ParserResolveMode.NoResolveNoSignatureVerication)
+            resolveMode: new ResolveMode(ParserResolveMode.NoResolveNoSignatureVerification)
         );
 
         // Act

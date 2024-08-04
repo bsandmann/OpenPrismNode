@@ -4,9 +4,9 @@ public class ResolveMode
 {
     public ResolveMode(ParserResolveMode resolveMode)
     {
-        if (resolveMode == ParserResolveMode.NoResolveNoSignatureVerication)
+        if (resolveMode == ParserResolveMode.NoResolveNoSignatureVerification)
         {
-            ParserResolveMode = ParserResolveMode.NoResolveNoSignatureVerication;
+            ParserResolveMode = ParserResolveMode.NoResolveNoSignatureVerification;
             BlockHeight = null;
             BlockSequence = null;
             OperationSequence = null;

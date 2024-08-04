@@ -1,16 +1,14 @@
-namespace OpenPrismNode.Sync.Tests.ParseTransaction;
+namespace OpenPrismNode.Sync.Tests.ParseTransaction.ArtificialData;
 
-using Commands.ParseTransaction;
-using Core.Crypto;
-using Core.Models;
 using FluentResults.Extensions.FluentAssertions;
-using Google.Protobuf;
-using Google.Protobuf.Collections;
 using MediatR;
 using Microsoft.Extensions.Logging;
 using Moq;
+using OpenPrismNode.Core.Crypto;
+using OpenPrismNode.Core.Models;
+using OpenPrismNode.Sync.Commands.ParseTransaction;
 
-public class DeactivateDidTransaction
+public class ProtocolUpdateTransaction
 {
     private ParseTransactionHandler _parseTransactionHandler;
     private readonly ISha256Service _sha256Service;
@@ -18,7 +16,7 @@ public class DeactivateDidTransaction
     private readonly Mock<IMediator> _mediatorMock;
     private readonly ILogger<ParseTransactionHandler> _logger;
 
-    public DeactivateDidTransaction()
+    public ProtocolUpdateTransaction()
     {
         _mediatorMock = new Mock<IMediator>();
         _sha256Service = new Sha256ServiceBouncyCastle();
@@ -27,7 +25,7 @@ public class DeactivateDidTransaction
     }
 
     [Fact]
-    public async Task DeactivateDid_TransactionHandler_succeds_for_well_constructed_request()
+    public async Task ProtocolVersionUpdate_TransactionHandler_succeds_for_well_constructed_request()
     {
         // Arrange
         var mockedEcService = new Mock<IEcService>();
@@ -38,17 +36,25 @@ public class DeactivateDidTransaction
             {
                 Operation = new AtalaOperation
                 {
-                    DeactivateDid = new DeactivateDIDOperation()
+                    ProtocolVersionUpdate = new ProtocolVersionUpdateOperation()
                     {
-                        PreviousOperationHash = PrismEncoding.Utf8StringToByteString("previousOperationHash"),
-                        Id = "someId",
+                        Version = new ProtocolVersionInfo()
+                        {
+                            EffectiveSince = 123,
+                            ProtocolVersion = new ProtocolVersion()
+                            {
+                                MajorVersion = 1,
+                                MinorVersion = 2
+                            },
+                            VersionName = "someVersionName"
+                        }
                     }
                 },
                 SignedWith = "master0",
                 Signature = PrismEncoding.Utf8StringToByteString("someSignature")
             },
             0,
-            resolveMode: new ResolveMode(ParserResolveMode.NoResolveNoSignatureVerication)
+            resolveMode: new ResolveMode(ParserResolveMode.NoResolveNoSignatureVerification)
         );
 
         // Act
@@ -60,7 +66,7 @@ public class DeactivateDidTransaction
     }
     
     [Fact]
-    public async Task DeactivateDid_TransactionHandler_fails_with_missing_previous_OperationHash()
+    public async Task ProtocolVersionUpdate_TransactionHandler_fails_if_effectiveSince_is_missing()
     {
         // Arrange
         var mockedEcService = new Mock<IEcService>();
@@ -71,16 +77,24 @@ public class DeactivateDidTransaction
             {
                 Operation = new AtalaOperation
                 {
-                    DeactivateDid = new DeactivateDIDOperation()
+                    ProtocolVersionUpdate = new ProtocolVersionUpdateOperation()
                     {
-                        Id = "someId",
+                        Version = new ProtocolVersionInfo()
+                        {
+                            ProtocolVersion = new ProtocolVersion()
+                            {
+                                MajorVersion = 1,
+                                MinorVersion = 2
+                            },
+                            VersionName = "someVersionName"
+                        }
                     }
                 },
                 SignedWith = "master0",
                 Signature = PrismEncoding.Utf8StringToByteString("someSignature")
             },
             0,
-            resolveMode: new ResolveMode(ParserResolveMode.NoResolveNoSignatureVerication)
+            resolveMode: new ResolveMode(ParserResolveMode.NoResolveNoSignatureVerification)
         );
 
         // Act
@@ -88,7 +102,7 @@ public class DeactivateDidTransaction
         var result = await _parseTransactionHandler.Handle(parseTransactionRequest, CancellationToken.None);
 
         // Assert
-        result.Should().BeFailure().And.Match(n => n.Errors.FirstOrDefault().Message.Contains("nvalid previous operation hash"));
+        result.Should().BeFailure().And.Match(n => n.Errors.FirstOrDefault().Message.Contains("Invalid protocol version update: The effectiveSince block must be greater than 0."));
 
     }
 }

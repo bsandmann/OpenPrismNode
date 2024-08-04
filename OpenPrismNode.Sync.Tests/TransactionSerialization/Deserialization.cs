@@ -18,7 +18,7 @@ public class Deserialization
 
         // Assert
         transaction.Should().NotBeNull();
-        transaction.Content.Count.Should().Be(5);
+        transaction!.Content.Count.Should().Be(5);
         transaction.Version.Should().Be(1);
     }
     
@@ -33,7 +33,7 @@ public class Deserialization
 
         // Assert
         transaction.Should().NotBeNull();
-        transaction.Content.Count.Should().Be(5);
+        transaction!.Content.Count.Should().Be(5);
         transaction.Version.Should().Be(1);
     }
 }

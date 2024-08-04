@@ -90,6 +90,23 @@ public class TransactionSampleData
         """;
 
     /// <summary>
+    /// Real world example of a transaction <see cref="https://preprod.beta.explorer.cardano.org/en/transaction/d0f42355ae5ba350fcc9a0541e49ff559ac2387e0c5f2115128803908b720e29"/>
+    /// </summary>
+    public const string PrismV2_UpdateDid_Transaction_updating_services =
+        """
+        {
+            "c":[
+                "0x22800212fd010a076d6173746572301247304502210087de7d66cf0ff963564bcfe54f600ef0f8976957ee1ee85ff79f5c1ddd241e1b022051ebcceb61e520e2",
+                "0x9d2c32959e54fab869a93d48e74cb5f60053291f18e2c4fb1aa80112a5010a2001d5d374c0bb9b4fe5b56896996e508d0a14dd84e4693357189c5c5b8e763a0c",
+                "0x12403031643564333734633062623962346665356235363839363939366535303864306131346464383465343639333335373138396335633562386537363361",
+                "0x30631a3f2a3d0a1268747470733a2f2f7570646174652e636f6d120d4c696e6b6564446f6d61696e731a185b2268747470733a2f2f6261722e666f6f2e636f6d",
+                "0x2f225d"
+                ],
+            "v":1
+        }
+        """;
+    
+    /// <summary>
     /// Real world example of a transaction <see cref="https://preprod.cexplorer.io/tx/b7a5b74b379e64a716427ef6dae32138f132c122e041529e89f998e3bdaf50a5"/>
     /// </summary>
     public const string PrismV2_DeactivateDid_Transaction =
@@ -102,6 +119,21 @@ public class TransactionSampleData
                 "0x33386364"
             ],
             "v": 1
+        }
+        """;
+
+    /// <summary>
+    /// Real world example of a transaction <see cref="https://preprod.beta.explorer.cardano.org/en/transaction/fddcfae5003df238744ea4bab3169dad14f6edd79e4c623a98e8e0d19e5faf47"/>
+    /// </summary>
+    public const string PrismV2_DeactivateDid_Transaction_2 =
+        """
+        {
+          "c":[
+             "0x22bd0112ba010a076d61737465723012473045022017cad33188e706e10374ff3789a5ba53abd4f64191725854599fd7678bfeac0502210094233f35c9594c20",
+             "0x78ee41d14fe290be3b2f36066b0a3adf7d88ab41de9932501a6632640a20ef65c1cdf01e12d6d6e342042da8868599e3bc7c3719fbb190f42b56dfcb1cb81240",
+             "0x37366238303031643561383730373038333430393237393366356639643437303261633234653235663661656136306631313338323831393535316334393263"
+              ],
+          "v":1
         }
         """;
 
@@ -184,5 +216,20 @@ public class TransactionSampleData
     public const string PrismV2_LongForm_Did_with_Services_and_multipleKeys =
         """
         CqgCCqUCEjkKBWtleS0xEARKLgoJc2VjcDI1NmsxEiEDqu_Ps1uEgWJFwG6iMxH0Apl9ahs-WpY5YZQrGtI7Bh8SOQoFa2V5LTIQA0ouCglzZWNwMjU2azESIQOr05NZhWgJuodAoPDBEGkIYtOhyZn7NZZtyR5XxV1WjxI5CgVrZXktMxACSi4KCXNlY3AyNTZrMRIhAj1Q8csrEvWCvYPGqhnPitXynQwpeRRCXdRbHRGI8zV3EjsKB21hc3RlcjAQAUouCglzZWNwMjU2azESIQIXBznT7K6Nj5EhL-hyunEbFnsa5uI2NkvuYFZENIma_xo1CglzZXJ2aWNlLTESDUxpbmtlZERvbWFpbnMaGVsiaHR0cHM6Ly9zb21lLnNlcnZpY2UvIl0
+        """;
+
+    public const string PrismV2_CreateDid_Transaction_with_services =
+        """
+        {
+        "c":[
+        "0x22c60212c3020a076d61737465723012463044022007a66810de54b8362297afeffd6274f13576dba2385ac912dbda53bab13bb98102201179b6682c10d0e5e7",
+        "0xe1c752e321b5d401b0cd23c68240128be7f2faed7228491aef010aec010ae90112390a056b65792d3110044a2e0a09736563703235366b31122102447a1746cc",
+        "0xc1032b8471f3906b9b1ab507aa6ec6d2f25903a82ccce3d98a275112390a056b65792d3210024a2e0a09736563703235366b31122103b07d9cade268680a502e",
+        "0x3d20aacb79bd283ab2cf8b5703d3cc5e7be9626bcb7b123b0a076d61737465723010014a2e0a09736563703235366b31122102888a4ccec8d6309d3c2e4adcb0",
+        "0x46b7808608660c69340968a927013aa7b2002c1a340a09736572766963652d31120d4c696e6b6564446f6d61696e731a185b2268747470733a2f2f6d342e6373",
+        "0x69676e2e696f2f225d"
+        ],
+        "v":1
+        }
         """;
 }
