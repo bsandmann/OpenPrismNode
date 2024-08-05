@@ -119,4 +119,58 @@ public static class UpdateStackEvaluation
 
         return lastActionWasUpdate;
     }
+    
+    public static int GetNumberOfServices(List<UpdateDidActionResult> updateActionResults, List<string> existingServiceIds)
+    {
+        var effectiveServiceIds = existingServiceIds;
+        foreach (var updateActionResult in updateActionResults)
+        {
+            if (updateActionResult.UpdateDidActionType == UpdateDidActionType.AddService && updateActionResult.PrismService is not null)
+            {
+               effectiveServiceIds.Add(updateActionResult.PrismService.ServiceId); 
+            }
+            else if (updateActionResult.UpdateDidActionType == UpdateDidActionType.RemoveService)
+            {
+                effectiveServiceIds = existingServiceIds.Where(p => p != updateActionResult.RemovedKeyId).ToList();
+            }
+        }
+
+        return effectiveServiceIds.Count();
+    }
+    
+    public static int GetNumberOfVerificationMethods(List<UpdateDidActionResult> updateActionResults, List<string> existingVerificationMethods)
+    {
+        var effectiveVerificationMethods = existingVerificationMethods;
+        foreach (var updateActionResult in updateActionResults)
+        {
+            if (updateActionResult.UpdateDidActionType == UpdateDidActionType.AddKey && updateActionResult.PrismPublicKey is not null)
+            {
+                effectiveVerificationMethods.Add(updateActionResult.PrismPublicKey.KeyId); 
+            }
+            else if (updateActionResult.UpdateDidActionType == UpdateDidActionType.RemoveKey)
+            {
+                effectiveVerificationMethods = existingVerificationMethods.Where(p => p != updateActionResult.RemovedKeyId).ToList();
+            }
+        }
+
+        return effectiveVerificationMethods.Count();
+    }
+    
+    public static int GetNumberOfMasterKeys(List<UpdateDidActionResult> updateActionResults, List<string> existingMasterKeys)
+    {
+        var effectiveMasterKeys = existingMasterKeys;
+        foreach (var updateActionResult in updateActionResults)
+        {
+            if (updateActionResult.UpdateDidActionType == UpdateDidActionType.AddKey && updateActionResult.PrismPublicKey is not null && updateActionResult.PrismPublicKey.KeyUsage == PrismKeyUsage.MasterKey)
+            {
+                effectiveMasterKeys.Add(updateActionResult.PrismPublicKey.KeyId); 
+            }
+            else if (updateActionResult.UpdateDidActionType == UpdateDidActionType.RemoveKey)
+            {
+                effectiveMasterKeys = existingMasterKeys.Where(p => p != updateActionResult.RemovedKeyId).ToList();
+            }
+        }
+
+        return effectiveMasterKeys.Count();
+    }
 }

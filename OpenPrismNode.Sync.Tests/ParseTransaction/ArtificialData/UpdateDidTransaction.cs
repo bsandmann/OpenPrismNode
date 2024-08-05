@@ -34,6 +34,7 @@ public class UpdateDidTransaction
         var publicKeyTestData = DeconstructExisitingDidForPublicKeys(TestDocuments.TransactionSampleData.PrismV2_LongForm_Did_with_Services_and_multipleKeys, KeyUsage.MasterKey);
         var mockedEcService = new Mock<IEcService>();
         mockedEcService.Setup(p => p.VerifyData(It.IsAny<byte[]>(), It.IsAny<byte[]>(), It.IsAny<byte[]>())).Returns(true);
+        var previousOperationHash = PrismEncoding.Utf8StringToByteString("previousOperationHash");
 
         var parseTransactionRequest = new ParseTransactionRequest(
             new SignedAtalaOperation
@@ -43,7 +44,7 @@ public class UpdateDidTransaction
                     UpdateDid = new UpdateDIDOperation
                     {
                         Id = "did:prism:someDid",
-                        PreviousOperationHash = PrismEncoding.Utf8StringToByteString("previousOperationHash"),
+                        PreviousOperationHash = previousOperationHash,
                         Actions =
                         {
                             new UpdateDIDAction()
@@ -52,7 +53,7 @@ public class UpdateDidTransaction
                                 {
                                     Key = new PublicKey()
                                     {
-                                        Id = "master0",
+                                        Id = "testKey",
                                         Usage = KeyUsage.MasterKey,
                                         CompressedEcKeyData = new CompressedECKeyData()
                                         {
@@ -74,7 +75,10 @@ public class UpdateDidTransaction
 
         // Resolve-Result of DID which should be updated
         _mediatorMock.Setup(p => p.Send(It.IsAny<ResolveDidRequest>(), It.IsAny<CancellationToken>()))
-            .Returns(Task.FromResult(Result.Ok(new ResolveDidResponse(new DidDocument("did:prism:someDid", new List<PrismPublicKey>(), new List<PrismService>(), new List<string>()), new Hash(_sha256Service)))));
+            .Returns(Task.FromResult(Result.Ok(new ResolveDidResponse(new DidDocument("did:prism:someDid", new List<PrismPublicKey>()
+            {
+                new PrismPublicKey(PrismKeyUsage.MasterKey, "master0", "secp256k1", new byte[32], new byte[32]),
+            }, new List<PrismService>(), new List<string>()), Hash.CreateFrom(previousOperationHash.ToByteArray())))));
 
         // Act
         _parseTransactionHandler = new ParseTransactionHandler(_mediatorMock.Object, _sha256Service, mockedEcService.Object, _logger);
@@ -90,6 +94,7 @@ public class UpdateDidTransaction
         // Arrange
         var mockedEcService = new Mock<IEcService>();
         mockedEcService.Setup(p => p.VerifyData(It.IsAny<byte[]>(), It.IsAny<byte[]>(), It.IsAny<byte[]>())).Returns(true);
+        var previousOperationHash = PrismEncoding.Utf8StringToByteString("previousOperationHash");
 
         var parseTransactionRequest = new ParseTransactionRequest(
             new SignedAtalaOperation
@@ -99,7 +104,7 @@ public class UpdateDidTransaction
                     UpdateDid = new UpdateDIDOperation
                     {
                         Id = "did:prism:someDid",
-                        PreviousOperationHash = PrismEncoding.Utf8StringToByteString("previousOperationHash"),
+                        PreviousOperationHash = previousOperationHash,
                         Actions =
                         {
                             new UpdateDIDAction()
@@ -117,7 +122,11 @@ public class UpdateDidTransaction
 
         // Resolve-Result of DID which should be updated
         _mediatorMock.Setup(p => p.Send(It.IsAny<ResolveDidRequest>(), It.IsAny<CancellationToken>()))
-            .Returns(Task.FromResult(Result.Ok(new ResolveDidResponse(new DidDocument("did:prism:someDid", new List<PrismPublicKey>(), new List<PrismService>(), new List<string>()), new Hash(_sha256Service)))));
+            .Returns(Task.FromResult(Result.Ok(new ResolveDidResponse(new DidDocument("did:prism:someDid", new List<PrismPublicKey>()
+                {
+                    new PrismPublicKey(PrismKeyUsage.MasterKey, "master0", "secp256k1", new byte[32], new byte[32]),
+                }
+                , new List<PrismService>(), new List<string>()), Hash.CreateFrom(previousOperationHash.ToByteArray())))));
 
         // Act
         _parseTransactionHandler = new ParseTransactionHandler(_mediatorMock.Object, _sha256Service, mockedEcService.Object, _logger);
@@ -133,6 +142,7 @@ public class UpdateDidTransaction
         // Arrange
         var mockedEcService = new Mock<IEcService>();
         mockedEcService.Setup(p => p.VerifyData(It.IsAny<byte[]>(), It.IsAny<byte[]>(), It.IsAny<byte[]>())).Returns(true);
+        var previousOperationHash = PrismEncoding.Utf8StringToByteString("previousOperationHash");
 
         var parseTransactionRequest = new ParseTransactionRequest(
             new SignedAtalaOperation
@@ -142,7 +152,7 @@ public class UpdateDidTransaction
                     UpdateDid = new UpdateDIDOperation
                     {
                         Id = "did:prism:someDid",
-                        PreviousOperationHash = PrismEncoding.Utf8StringToByteString("previousOperationHash"),
+                        PreviousOperationHash = previousOperationHash,
                         Actions =
                         {
                             new UpdateDIDAction()
@@ -168,7 +178,7 @@ public class UpdateDidTransaction
             {
                 new PrismPublicKey(PrismKeyUsage.MasterKey, "master0", "secp256k1", new byte[32], new byte[32]),
                 new PrismPublicKey(PrismKeyUsage.IssuingKey, "someId", "secp256k1", new byte[32], new byte[32]),
-            }, new List<PrismService>(), new List<string>()), new Hash(_sha256Service)))));
+            }, new List<PrismService>(), new List<string>()), Hash.CreateFrom(previousOperationHash.ToByteArray())))));
 
         // Act
         _parseTransactionHandler = new ParseTransactionHandler(_mediatorMock.Object, _sha256Service, mockedEcService.Object, _logger);
@@ -184,6 +194,7 @@ public class UpdateDidTransaction
         // Arrange
         var mockedEcService = new Mock<IEcService>();
         mockedEcService.Setup(p => p.VerifyData(It.IsAny<byte[]>(), It.IsAny<byte[]>(), It.IsAny<byte[]>())).Returns(true);
+        var previousOperationHash = PrismEncoding.Utf8StringToByteString("previousOperationHash");
 
         var parseTransactionRequest = new ParseTransactionRequest(
             new SignedAtalaOperation
@@ -193,7 +204,7 @@ public class UpdateDidTransaction
                     UpdateDid = new UpdateDIDOperation
                     {
                         Id = "did:prism:someDid",
-                        PreviousOperationHash = PrismEncoding.Utf8StringToByteString("previousOperationHash"),
+                        PreviousOperationHash = previousOperationHash,
                         Actions =
                         {
                             new UpdateDIDAction()
@@ -223,7 +234,7 @@ public class UpdateDidTransaction
             .Returns(Task.FromResult(Result.Ok(new ResolveDidResponse(new DidDocument("did:prism:someDid", new List<PrismPublicKey>()
             {
                 new PrismPublicKey(PrismKeyUsage.MasterKey, "master0", "secp256k1", new byte[32], new byte[32]),
-            }, new List<PrismService>(), new List<string>()), new Hash(_sha256Service)))));
+            }, new List<PrismService>(), new List<string>()), Hash.CreateFrom(previousOperationHash.ToByteArray())))));
 
         // Act
         _parseTransactionHandler = new ParseTransactionHandler(_mediatorMock.Object, _sha256Service, mockedEcService.Object, _logger);
@@ -239,6 +250,7 @@ public class UpdateDidTransaction
         // Arrange
         var mockedEcService = new Mock<IEcService>();
         mockedEcService.Setup(p => p.VerifyData(It.IsAny<byte[]>(), It.IsAny<byte[]>(), It.IsAny<byte[]>())).Returns(true);
+        var previousOperationHash = PrismEncoding.Utf8StringToByteString("previousOperationHash");
 
         var parseTransactionRequest = new ParseTransactionRequest(
             new SignedAtalaOperation
@@ -248,7 +260,7 @@ public class UpdateDidTransaction
                     UpdateDid = new UpdateDIDOperation
                     {
                         Id = "did:prism:someDid",
-                        PreviousOperationHash = PrismEncoding.Utf8StringToByteString("previousOperationHash"),
+                        PreviousOperationHash = previousOperationHash,
                         Actions =
                         {
                             new UpdateDIDAction()
@@ -275,7 +287,7 @@ public class UpdateDidTransaction
             }, new List<PrismService>()
             {
                 new PrismService("someServiceId", "someType", new PrismServiceEndpoints())
-            }, new List<string>()), new Hash(_sha256Service)))));
+            }, new List<string>()), Hash.CreateFrom(previousOperationHash.ToByteArray())))));
 
 
         // Act
@@ -292,6 +304,7 @@ public class UpdateDidTransaction
         // Arrange
         var mockedEcService = new Mock<IEcService>();
         mockedEcService.Setup(p => p.VerifyData(It.IsAny<byte[]>(), It.IsAny<byte[]>(), It.IsAny<byte[]>())).Returns(true);
+        var previousOperationHash = PrismEncoding.Utf8StringToByteString("previousOperationHash");
 
         var parseTransactionRequest = new ParseTransactionRequest(
             new SignedAtalaOperation
@@ -301,7 +314,7 @@ public class UpdateDidTransaction
                     UpdateDid = new UpdateDIDOperation
                     {
                         Id = "did:prism:someDid",
-                        PreviousOperationHash = PrismEncoding.Utf8StringToByteString("previousOperationHash"),
+                        PreviousOperationHash = previousOperationHash,
                         Actions =
                         {
                             new UpdateDIDAction()
@@ -330,7 +343,7 @@ public class UpdateDidTransaction
             }, new List<PrismService>()
             {
                 new PrismService("someServiceId", "someType", new PrismServiceEndpoints())
-            }, new List<string>()), new Hash(_sha256Service)))));
+            }, new List<string>()), Hash.CreateFrom(previousOperationHash.ToByteArray())))));
 
         // Act
         _parseTransactionHandler = new ParseTransactionHandler(_mediatorMock.Object, _sha256Service, mockedEcService.Object, _logger);
@@ -346,6 +359,7 @@ public class UpdateDidTransaction
         // Arrange
         var mockedEcService = new Mock<IEcService>();
         mockedEcService.Setup(p => p.VerifyData(It.IsAny<byte[]>(), It.IsAny<byte[]>(), It.IsAny<byte[]>())).Returns(true);
+        var previousOperationHash = PrismEncoding.Utf8StringToByteString("previousOperationHash");
 
         var patchedContextAction = new PatchContextAction();
         patchedContextAction.Context.Add("someContext");
@@ -357,7 +371,7 @@ public class UpdateDidTransaction
                 {
                     UpdateDid = new UpdateDIDOperation()
                     {
-                        PreviousOperationHash = PrismEncoding.Utf8StringToByteString("previousOperationHash"),
+                        PreviousOperationHash = previousOperationHash,
                         Actions =
                         {
                             // see constrction below. Constructor is not supported here by the protobuf generator
@@ -376,7 +390,7 @@ public class UpdateDidTransaction
             .Returns(Task.FromResult(Result.Ok(new ResolveDidResponse(new DidDocument("did:prism:someDid", new List<PrismPublicKey>()
             {
                 new PrismPublicKey(PrismKeyUsage.MasterKey, "master0", "secp256k1", new byte[32], new byte[32]),
-            }, new List<PrismService>(), new List<string>()), new Hash(_sha256Service)))));
+            }, new List<PrismService>(), new List<string>()), Hash.CreateFrom(previousOperationHash.ToByteArray())))));
 
         // Act
         _parseTransactionHandler = new ParseTransactionHandler(_mediatorMock.Object, _sha256Service, mockedEcService.Object, _logger);
@@ -392,7 +406,7 @@ public class UpdateDidTransaction
         // Arrange
         var mockedEcService = new Mock<IEcService>();
         mockedEcService.Setup(p => p.VerifyData(It.IsAny<byte[]>(), It.IsAny<byte[]>(), It.IsAny<byte[]>())).Returns(true);
-
+        var previousOperationHash = PrismEncoding.Utf8StringToByteString("previousOperationHash");
         var patchedContextAction = new PatchContextAction();
         patchedContextAction.Context.Add("someContext");
 
@@ -416,12 +430,12 @@ public class UpdateDidTransaction
             resolveMode: new ResolveMode(0, 0, 0)
         );
         parseTransactionRequest.SignedAtalaOperation.Operation.UpdateDid.Actions.Add(new UpdateDIDAction() { PatchContext = patchedContextAction });
-        
+
         _mediatorMock.Setup(p => p.Send(It.IsAny<ResolveDidRequest>(), It.IsAny<CancellationToken>()))
             .Returns(Task.FromResult(Result.Ok(new ResolveDidResponse(new DidDocument("did:prism:someDid", new List<PrismPublicKey>()
             {
                 new PrismPublicKey(PrismKeyUsage.MasterKey, "master0", "secp256k1", new byte[32], new byte[32]),
-            }, new List<PrismService>(), new List<string>()), new Hash(_sha256Service)))));
+            }, new List<PrismService>(), new List<string>()), Hash.CreateFrom(previousOperationHash.ToByteArray())))));
 
         // Act
         _parseTransactionHandler = new ParseTransactionHandler(_mediatorMock.Object, _sha256Service, mockedEcService.Object, _logger);

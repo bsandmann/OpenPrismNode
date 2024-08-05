@@ -1,6 +1,8 @@
 namespace OpenPrismNode.Sync.Tests.ParseTransaction.ArtificialData;
 
+using Core.Commands.ResolveDid;
 using Core.Common;
+using FluentResults;
 using FluentResults.Extensions.FluentAssertions;
 using MediatR;
 using Microsoft.Extensions.Logging;
@@ -31,6 +33,7 @@ public class DeactivateDidTransaction
         // Arrange
         var mockedEcService = new Mock<IEcService>();
         mockedEcService.Setup(p => p.VerifyData(It.IsAny<byte[]>(), It.IsAny<byte[]>(), It.IsAny<byte[]>())).Returns(true);
+        var previousOperationHash = PrismEncoding.Utf8StringToByteString("previousOperationHash");
 
         var parseTransactionRequest = new ParseTransactionRequest(
             new SignedAtalaOperation
@@ -39,15 +42,22 @@ public class DeactivateDidTransaction
                 {
                     DeactivateDid = new DeactivateDIDOperation()
                     {
-                        PreviousOperationHash = PrismEncoding.Utf8StringToByteString("previousOperationHash"),
+                        PreviousOperationHash = previousOperationHash,
                         Id = "someId",
                     }
                 },
                 SignedWith = "master0",
                 Signature = PrismEncoding.Utf8StringToByteString("someSignature")
             },
-            0
+            0,
+            resolveMode: new ResolveMode(0, 0, 0)
         );
+
+        _mediatorMock.Setup(p => p.Send(It.IsAny<ResolveDidRequest>(), It.IsAny<CancellationToken>()))
+            .Returns(Task.FromResult(Result.Ok(new ResolveDidResponse(new DidDocument("did:prism:someDid", new List<PrismPublicKey>()
+            {
+                new PrismPublicKey(PrismKeyUsage.MasterKey, "master0", "secp256k1", new byte[32], new byte[32]),
+            }, new List<PrismService>(), new List<string>()), Hash.CreateFrom(previousOperationHash.ToByteArray())))));
 
         // Act
         _parseTransactionHandler = new ParseTransactionHandler(_mediatorMock.Object, _sha256Service, mockedEcService.Object, _logger);
@@ -56,7 +66,7 @@ public class DeactivateDidTransaction
         // Assert
         result.Should().BeSuccess();
     }
-    
+
     [Fact]
     public async Task DeactivateDid_TransactionHandler_fails_with_missing_previous_OperationHash()
     {
@@ -77,7 +87,8 @@ public class DeactivateDidTransaction
                 SignedWith = "master0",
                 Signature = PrismEncoding.Utf8StringToByteString("someSignature")
             },
-            0
+            0,
+            resolveMode: new ResolveMode(0, 0, 0)
         );
 
         // Act
@@ -86,6 +97,5 @@ public class DeactivateDidTransaction
 
         // Assert
         result.Should().BeFailure().And.Match(n => n.Errors.FirstOrDefault().Message.Contains("nvalid previous operation hash"));
-
     }
 }
