@@ -18,7 +18,20 @@ public class EncodingDeactivateDid
     [Fact]
     public async Task DeactivateDid_roundtrip_encoding_for_Prism_v2()
     {
-        // TODO I currently cannot find a PRISM v2 deactive operation which is not a legacy operation
-        // Without any I'm unable to run the rountrip test
+        // Arrange
+        var serializedTransaction = TransactionSampleData.PrismV2_DeactivateDid_Transaction_2;
+        var decodeTransactionRequest = new DecodeTransactionRequest(serializedTransaction);
+        var decodeHandler = new DecodeTransactionHandler();
+        var decodedResult = await decodeHandler.Handle(decodeTransactionRequest, new CancellationToken());
+        var encodeHandler = new EncodeTransactionHandler();
+
+        // Act
+        var roundTripResult = await encodeHandler.Handle(new EncodeTransactionRequest(decodedResult.Value), new CancellationToken());
+
+        // Assert
+        roundTripResult.Should().BeSuccess();
+        JsonNode? originalTransaction = JsonNode.Parse(serializedTransaction);
+        JsonNode? roundTripTransaction = JsonNode.Parse(roundTripResult.Value);
+        JsonNode.DeepEquals(originalTransaction, roundTripTransaction).Should().BeTrue();
     }
 }

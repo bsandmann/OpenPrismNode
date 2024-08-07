@@ -79,11 +79,6 @@ public class ParseTransactionHandler : IRequestHandler<ParseTransactionRequest, 
             _logger.LogWarning("No context found in the createDid operation. At least one context should be required");
             // return Result.Fail("No context found in the createDid operation. At least one context is required.");
         }
-        else // this can be remove later. The breakpoint is just for testing and see what contexts exits
-        {
-            //TODO remove
-            var wow = true;
-        }
 
         var signature = PrismEncoding.ByteStringToByteArray(signedAtalaOperation.Signature);
         var signedWith = signedAtalaOperation.SignedWith;
@@ -546,13 +541,6 @@ public class ParseTransactionHandler : IRequestHandler<ParseTransactionRequest, 
         ));
     }
 
-
-    private async Task<Result> VerifySignature(SignedAtalaOperation signedAtalaOperation, string signedWith, byte[] signature)
-    {
-       //TODO Don't I have to verifiy the signature of just the create-operation?
-       return null;
-    }
-
     private async Task<Result<ResolveDidResponse>> ResolveAndVerifySignature(SignedAtalaOperation signedAtalaOperation, ResolveMode resolveMode, string didIdentifier, string signedWith, byte[] signature)
     {
         var resolved = await _mediator.Send(new ResolveDidRequest(didIdentifier, resolveMode.BlockHeight, resolveMode.BlockSequence, resolveMode.OperationSequence));
@@ -600,9 +588,7 @@ public class ParseTransactionHandler : IRequestHandler<ParseTransactionRequest, 
         var verificationResult = _ecService.VerifyData(PrismEncoding.ByteStringToByteArray(signedAtalaOperation.Operation.ToByteString()), signature, publicKey.LongByteArray);
         if (!verificationResult)
         {
-            {
-                return Result.Fail(ParserErrors.UnableToVerifySignature + $" for {GetOperationResultType.GetFromSignedAtalaOperation(signedAtalaOperation)} operation for DID {didIdentifier}");
-            }
+            return Result.Fail(ParserErrors.UnableToVerifySignature + $" for {GetOperationResultType.GetFromSignedAtalaOperation(signedAtalaOperation)} operation for DID {didIdentifier}");
         }
 
         return Result.Ok(resolved.Value);

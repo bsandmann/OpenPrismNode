@@ -108,6 +108,7 @@ public class TransactionSampleData
     
     /// <summary>
     /// Real world example of a transaction <see cref="https://preprod.cexplorer.io/tx/b7a5b74b379e64a716427ef6dae32138f132c122e041529e89f998e3bdaf50a5"/>
+    /// This is a legay 
     /// </summary>
     public const string PrismV2_DeactivateDid_Transaction =
         """
