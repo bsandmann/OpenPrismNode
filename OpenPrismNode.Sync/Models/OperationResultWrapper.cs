@@ -64,19 +64,19 @@ public class OperationResultWrapper
     /// </summary>
     /// <param name="operationResultType"></param>
     /// <param name="operationSequenceNumber"></param>
-    /// <param name="prismProtocolVersionUpdate"></param>
+    /// <param name="protocolVersionUpdate"></param>
     /// <param name="proposerDidIdentifier"></param>
     /// <param name="operationBytes"></param>
     /// <param name="signature"></param>
     /// <param name="signingKeyId"></param>
     /// <exception cref="ArgumentException"></exception>
-    public OperationResultWrapper(OperationResultType operationResultType, int operationSequenceNumber, PrismProtocolVersionUpdate prismProtocolVersionUpdate, string proposerDidIdentifier, byte[] operationBytes, byte[] signature, string signingKeyId)
+    public OperationResultWrapper(OperationResultType operationResultType, int operationSequenceNumber, ProtocolVersionUpdate protocolVersionUpdate, string proposerDidIdentifier, byte[] operationBytes, byte[] signature, string signingKeyId)
     {
         if (operationResultType == OperationResultType.ProtocolVersionUpdate)
         {
             OperationSequenceNumber = operationSequenceNumber;
             OperationResultType = operationResultType;
-            PrismProtocolVersionUpdate = prismProtocolVersionUpdate;
+            ProtocolVersionUpdate = protocolVersionUpdate;
             DidIdentifer = proposerDidIdentifier;
             OperationBytes = operationBytes;
             Signature = signature;
@@ -142,7 +142,7 @@ public class OperationResultWrapper
     private string SigningKeyId { get; }
     
     
-    private PrismProtocolVersionUpdate? PrismProtocolVersionUpdate { get; }
+    private ProtocolVersionUpdate? ProtocolVersionUpdate { get; }
     
     public (DidDocument didDocument, string signingKeyId) AsCreateDid()
     {

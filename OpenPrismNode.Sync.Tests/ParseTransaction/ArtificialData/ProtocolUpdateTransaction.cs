@@ -10,6 +10,7 @@ using Moq;
 using OpenPrismNode.Core.Crypto;
 using OpenPrismNode.Core.Models;
 using OpenPrismNode.Sync.Commands.ParseTransaction;
+using ProtocolVersion = OpenPrismNode.ProtocolVersion;
 
 public class ProtocolUpdateTransaction
 {

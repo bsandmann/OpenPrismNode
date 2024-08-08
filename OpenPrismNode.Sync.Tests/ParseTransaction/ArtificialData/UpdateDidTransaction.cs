@@ -286,7 +286,7 @@ public class UpdateDidTransaction
                 new PrismPublicKey(PrismKeyUsage.MasterKey, "master0", "secp256k1", new byte[32], new byte[32]),
             }, new List<PrismService>()
             {
-                new PrismService("someServiceId", "someType", new PrismServiceEndpoints())
+                new PrismService("someServiceId", "someType", new ServiceEndpoints())
             }, new List<string>()), Hash.CreateFrom(previousOperationHash.ToByteArray())))));
 
 
@@ -342,7 +342,7 @@ public class UpdateDidTransaction
                 new PrismPublicKey(PrismKeyUsage.MasterKey, "master0", "secp256k1", new byte[32], new byte[32]),
             }, new List<PrismService>()
             {
-                new PrismService("someServiceId", "someType", new PrismServiceEndpoints())
+                new PrismService("someServiceId", "someType", new ServiceEndpoints())
             }, new List<string>()), Hash.CreateFrom(previousOperationHash.ToByteArray())))));
 
         // Act

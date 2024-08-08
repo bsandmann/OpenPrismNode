@@ -1,8 +1,8 @@
 ﻿namespace OpenPrismNode.Core.Models;
 
-public sealed class PrismProtocolVersionUpdate
+public sealed class ProtocolVersionUpdate
 {
-    public PrismProtocolVersionUpdate(PrismProtocolVersion? prismProtocolVersion, string versionName, int effectiveSinceBlock, string proposerDidIdentifier)
+    public ProtocolVersionUpdate(ProtocolVersion? prismProtocolVersion, string versionName, int effectiveSinceBlock, string proposerDidIdentifier)
     {
         PrismProtocolVersion = prismProtocolVersion;
         VersionName = versionName;
@@ -15,7 +15,7 @@ public sealed class PrismProtocolVersionUpdate
     /// </summary>
     public int EffectiveSinceBlock { get; }
 
-    public PrismProtocolVersion? PrismProtocolVersion { get; }
+    public ProtocolVersion? PrismProtocolVersion { get; }
 
     /// <summary>
     /// (optional) name of the version

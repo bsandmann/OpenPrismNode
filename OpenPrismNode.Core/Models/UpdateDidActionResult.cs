@@ -28,7 +28,7 @@ public class UpdateDidActionResult
         PrismService = prismService;
     }
 
-    public UpdateDidActionResult(string serviceId, string type, PrismServiceEndpoints serviceEndpoints)
+    public UpdateDidActionResult(string serviceId, string type, ServiceEndpoints serviceEndpoints)
     {
         UpdateDidActionType = UpdateDidActionType.UpdateService;
         PrismService = new PrismService(serviceId, type, serviceEndpoints);

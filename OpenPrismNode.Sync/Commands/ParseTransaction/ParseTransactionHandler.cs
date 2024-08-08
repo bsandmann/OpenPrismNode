@@ -264,7 +264,7 @@ public class ParseTransactionHandler : IRequestHandler<ParseTransactionRequest, 
                     return parsedService.ToResult();
                 }
 
-                updateActionResults.Add(new UpdateDidActionResult(parsedService.Value.ServiceId, parsedService.Value.Type, parsedService.Value.PrismServiceEndpoints));
+                updateActionResults.Add(new UpdateDidActionResult(parsedService.Value.ServiceId, parsedService.Value.Type, parsedService.Value.ServiceEndpoints));
             }
             else if (action.ActionCase == UpdateDIDAction.ActionOneofCase.PatchContext)
             {
@@ -329,7 +329,7 @@ public class ParseTransactionHandler : IRequestHandler<ParseTransactionRequest, 
 
         //TODO fetch the current version in the databse
 
-        var previousVersionDummy = new PrismProtocolVersion(1, 0);
+        var previousVersionDummy = new ProtocolVersion(1, 0);
 
         if (!(previousVersionDummy.MajorVersion < version.ProtocolVersion.MajorVersion ||
               (previousVersionDummy.MajorVersion == version.ProtocolVersion.MajorVersion && previousVersionDummy.MinorVersion < version.ProtocolVersion.MinorVersion)))
@@ -342,9 +342,9 @@ public class ParseTransactionHandler : IRequestHandler<ParseTransactionRequest, 
             return Result.Fail(ParserErrors.InvalidProtocolVersionUpdate + ": The effectiveSince block must be greater than 0.");
         }
 
-        var prismProtocolVersion = new PrismProtocolVersionUpdate(
+        var prismProtocolVersion = new ProtocolVersionUpdate(
             effectiveSinceBlock: version.EffectiveSince,
-            prismProtocolVersion: version.ProtocolVersion is null ? null : new PrismProtocolVersion(majorVersion: version.ProtocolVersion.MajorVersion, minorVersion: version.ProtocolVersion.MinorVersion),
+            prismProtocolVersion: version.ProtocolVersion is null ? null : new ProtocolVersion(majorVersion: version.ProtocolVersion.MajorVersion, minorVersion: version.ProtocolVersion.MinorVersion),
             versionName: version.VersionName,
             proposerDidIdentifier: proposerDidIdentifier
         );
@@ -534,7 +534,7 @@ public class ParseTransactionHandler : IRequestHandler<ParseTransactionRequest, 
             return Result.Fail($"{ParserErrors.ServiceEndpointInvalid}: {id}");
         }
 
-        var parsedServiceEndpoint = PrismServiceEndpoints.Parse(serviceEndpoint);
+        var parsedServiceEndpoint = ServiceEndpoints.Parse(serviceEndpoint);
         if (parsedServiceEndpoint.IsFailed)
         {
             return parsedServiceEndpoint.ToResult();
@@ -543,7 +543,7 @@ public class ParseTransactionHandler : IRequestHandler<ParseTransactionRequest, 
         return Result.Ok(new PrismService(
             serviceId: id,
             type: type,
-            prismPrismServiceEndpoints: parsedServiceEndpoint.Value
+            serviceEndpoints: parsedServiceEndpoint.Value
         ));
     }
 

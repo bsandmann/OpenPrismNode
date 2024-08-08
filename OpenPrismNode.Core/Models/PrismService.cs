@@ -5,11 +5,11 @@ using System.Text.Json.Serialization;
 public record PrismService
 {
     [JsonConstructor]
-    public PrismService(string serviceId, string type, PrismServiceEndpoints prismPrismServiceEndpoints)
+    public PrismService(string serviceId, string type, ServiceEndpoints serviceEndpoints)
     {
         this.ServiceId = serviceId;
         this.Type = type;
-        this.PrismServiceEndpoints = prismPrismServiceEndpoints;
+        this.ServiceEndpoints = serviceEndpoints;
     }
 
     /// <summary>
@@ -25,5 +25,5 @@ public record PrismService
     /// <summary>
     /// List of URIs
     /// </summary>
-    public PrismServiceEndpoints PrismServiceEndpoints { get; set; }
+    public ServiceEndpoints ServiceEndpoints { get; set; }
 }

@@ -129,11 +129,11 @@ public class CreateDidTransactions
         result.Value.AsCreateDid().didDocument.PrismServices.Count.Should().Be(1);
         result.Value.AsCreateDid().didDocument.PrismServices[0].ServiceId.Should().Be("service-1");
         result.Value.AsCreateDid().didDocument.PrismServices[0].Type.Should().Be("LinkedDomains");
-        result.Value.AsCreateDid().didDocument.PrismServices[0].PrismServiceEndpoints.Should().NotBeNull();
-        result.Value.AsCreateDid().didDocument.PrismServices[0].PrismServiceEndpoints.Json.Should().BeNull();
-        result.Value.AsCreateDid().didDocument.PrismServices[0].PrismServiceEndpoints.Uri.Should().BeNull();
-        result.Value.AsCreateDid().didDocument.PrismServices[0].PrismServiceEndpoints.ListOfUris.Should().NotBeNull();
-        result.Value.AsCreateDid().didDocument.PrismServices[0].PrismServiceEndpoints.ListOfUris!.Count.Should().Be(1);
-        result.Value.AsCreateDid().didDocument.PrismServices[0].PrismServiceEndpoints.ListOfUris[0]!.AbsoluteUri.Should().Be(new Uri("https://m4.csign.io/").AbsoluteUri);
+        result.Value.AsCreateDid().didDocument.PrismServices[0].ServiceEndpoints.Should().NotBeNull();
+        result.Value.AsCreateDid().didDocument.PrismServices[0].ServiceEndpoints.Json.Should().BeNull();
+        result.Value.AsCreateDid().didDocument.PrismServices[0].ServiceEndpoints.Uri.Should().BeNull();
+        result.Value.AsCreateDid().didDocument.PrismServices[0].ServiceEndpoints.ListOfUris.Should().NotBeNull();
+        result.Value.AsCreateDid().didDocument.PrismServices[0].ServiceEndpoints.ListOfUris!.Count.Should().Be(1);
+        result.Value.AsCreateDid().didDocument.PrismServices[0].ServiceEndpoints.ListOfUris[0]!.AbsoluteUri.Should().Be(new Uri("https://m4.csign.io/").AbsoluteUri);
     }
 }

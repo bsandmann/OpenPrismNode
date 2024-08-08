@@ -3,7 +3,7 @@ namespace OpenPrismNode.Core.Models;
 using System.Text.Json;
 using FluentResults;
 
-public class PrismServiceEndpoints
+public class ServiceEndpoints
 {
     public Uri? Uri { get; set; }
 
@@ -11,12 +11,12 @@ public class PrismServiceEndpoints
 
     public List<Uri>? ListOfUris { get; set; }
 
-    public static Result<PrismServiceEndpoints> Parse(string serviceEndpoint)
+    public static Result<ServiceEndpoints> Parse(string serviceEndpoint)
     {
         var isSingleUri = Uri.TryCreate(serviceEndpoint, UriKind.Absolute, out var uri);
         if (isSingleUri)
         {
-            return new PrismServiceEndpoints { Uri = uri };
+            return new ServiceEndpoints { Uri = uri };
         }
 
         try
@@ -45,7 +45,7 @@ public class PrismServiceEndpoints
                 return Result.Fail("Invalid ServiceEndpointUri: Could not convert all items to Uri.");
             }
 
-            return new PrismServiceEndpoints { ListOfUris = uris };
+            return new ServiceEndpoints { ListOfUris = uris };
         }
         catch (Exception e)
         {

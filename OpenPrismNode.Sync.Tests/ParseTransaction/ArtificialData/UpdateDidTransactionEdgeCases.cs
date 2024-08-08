@@ -1075,7 +1075,7 @@ public class UpdateDidTransactionEdgeCases
                 },
                 new List<PrismService>()
                 {
-                    new PrismService("service0", "someType", new PrismServiceEndpoints())
+                    new PrismService("service0", "someType", new ServiceEndpoints())
                 }, new List<string>()), Hash.CreateFrom(previousOperationHash.ToByteArray())))));
 
         // Act
@@ -1211,7 +1211,7 @@ public class UpdateDidTransactionEdgeCases
                 },
                 new List<PrismService>()
                 {
-                    new PrismService("service0", "someType", new PrismServiceEndpoints())
+                    new PrismService("service0", "someType", new ServiceEndpoints())
                 }, new List<string>()), Hash.CreateFrom(previousOperationHash.ToByteArray())))));
 
         // Act

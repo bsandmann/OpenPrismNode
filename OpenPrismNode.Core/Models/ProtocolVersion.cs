@@ -1,8 +1,8 @@
 ﻿namespace OpenPrismNode.Core.Models;
 
-public sealed class PrismProtocolVersion
+public sealed class ProtocolVersion
 {
-    public PrismProtocolVersion(int majorVersion, int minorVersion)
+    public ProtocolVersion(int majorVersion, int minorVersion)
     {
         MajorVersion = majorVersion;
         MinorVersion = minorVersion;
