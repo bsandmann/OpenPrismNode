@@ -15,7 +15,7 @@ public class NpgsqlConnectionFactory : INpgsqlConnectionFactory
 
     public NpgsqlConnectionFactory(IOptions<AppSettings> appSettings)
     {
-        _connectionString = appSettings.Value.PrismNetwork.PostgresConnectionString;
+        _connectionString = appSettings.Value.PrismNetwork.DbSyncPostgresConnectionString;
     }
 
     public NpgsqlConnection CreateConnection()
