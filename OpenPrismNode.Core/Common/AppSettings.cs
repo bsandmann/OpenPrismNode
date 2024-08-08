@@ -9,7 +9,7 @@ public class AppSettings
     // /// <summary>
     // /// Time between the Postgres-DB is checked for new entries
     // /// </summary>
-    // public int DelayBetweenSyncsInMs { get; set; }
+    public int DelayBetweenSyncsInMs { get; set; }
     
     /// <summary>
     /// Configuration of all supported PRISM-networks for which data is in the postgres-db

@@ -30,40 +30,40 @@ public static class SyncService
             return Result.Fail(postgresBlockTipResult.Errors.First().Message);
         }
 
-        // if (isInitialStartup)
-        // {
-        //     var existingStartingEpoch = await mediator.Send(new GetEpochRequest(0), CancellationToken.None);
-        //     if (existingStartingEpoch.IsFailed)
-        //     {
-        //         // This indicates that we have not yet created the starting epoch
-        //         var networkResult = await mediator.Send(new CreateNetworkRequest(ledgerType));
-        //         var createStartingEpochResult = await mediator.Send(new CreateEpochRequest(ledgerType, 0), CancellationToken.None);
-        //         if (createStartingEpochResult.IsFailed)
-        //         {
-        //             return Result.Fail("Cannot create starting epoch. Database connection error?");
-        //         }
-        //
-        //         var blocksOfEpoch = await mediator.Send(new GetPostgresBlocksOfEpochRequest(0));
-        //         var firstBlock = blocksOfEpoch.Value.MinBy(p => p.block_no);
-        //         if (firstBlock is null)
-        //         {
-        //             return Result.Fail("First block could not be found. Database connection error?");
-        //         }
-        //
-        //         var firstBlockResult = await mediator.Send(new CreateBlockRequest(
-        //             blockHash: Hash.CreateFrom(firstBlock.hash),
-        //             blockHeight: firstBlock.block_no,
-        //             epoch: (uint)firstBlock.epoch_no,
-        //             epochSlot: firstBlock.epoch_slot_no,
-        //             timeUtc: firstBlock.time,
-        //             txCount: (uint)firstBlock.tx_count,
-        //             previousBlockHash: null));
-        //         if (firstBlockResult.IsFailed)
-        //         {
-        //             return Result.Fail("Cannot create first block. Database connection error?");
-        //         }
-        //     }
-        // }
+        if (isInitialStartup)
+        {
+            // var existingStartingEpoch = await mediator.Send(new GetEpochRequest(0), CancellationToken.None);
+            // if (existingStartingEpoch.IsFailed)
+            // {
+            //     // This indicates that we have not yet created the starting epoch
+            //     var networkResult = await mediator.Send(new CreateNetworkRequest(ledgerType));
+            //     var createStartingEpochResult = await mediator.Send(new CreateEpochRequest(ledgerType, 0), CancellationToken.None);
+            //     if (createStartingEpochResult.IsFailed)
+            //     {
+            //         return Result.Fail("Cannot create starting epoch. Database connection error?");
+            //     }
+            //
+            //     var blocksOfEpoch = await mediator.Send(new GetPostgresBlocksOfEpochRequest(0));
+            //     var firstBlock = blocksOfEpoch.Value.MinBy(p => p.block_no);
+            //     if (firstBlock is null)
+            //     {
+            //         return Result.Fail("First block could not be found. Database connection error?");
+            //     }
+            //
+            //     var firstBlockResult = await mediator.Send(new CreateBlockRequest(
+            //         blockHash: Hash.CreateFrom(firstBlock.hash),
+            //         blockHeight: firstBlock.block_no,
+            //         epoch: (uint)firstBlock.epoch_no,
+            //         epochSlot: firstBlock.epoch_slot_no,
+            //         timeUtc: firstBlock.time,
+            //         txCount: (uint)firstBlock.tx_count,
+            //         previousBlockHash: null));
+            //     if (firstBlockResult.IsFailed)
+            //     {
+            //         return Result.Fail("Cannot create first block. Database connection error?");
+            //     }
+            // }
+        }
 
         // var sqlBlockTipResult = await mediator.Send(new GetMostRecentBlockRequest());
         // if (sqlBlockTipResult.IsFailed)

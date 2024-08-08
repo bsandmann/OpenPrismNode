@@ -24,7 +24,7 @@ public class GetPostgresBlockTipHandler : IRequestHandler<GetPostgresBlockTipReq
         await using (var connection = _connectionFactory.CreateConnection())
         {
             // TODO optimize query to get only what is needed. Also can this be done faster?
-            string commandText = $"SELECT * FROM public.block WHERE block_no IS NOT NULL ORDER BY block_no DESC LIMIT 1";
+            string commandText = $"SELECT block_no, epoch_no FROM public.block WHERE block_no IS NOT NULL ORDER BY block_no DESC LIMIT 1";
             var block = await connection.QueryFirstOrDefaultAsync<Block>(commandText);
             if (block is null)
             {

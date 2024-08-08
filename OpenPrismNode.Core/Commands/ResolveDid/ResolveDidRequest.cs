@@ -10,7 +10,7 @@ public class ResolveDidRequest : IRequest<Result<ResolveDid.ResolveDidResponse>>
     /// <summary>
     /// Constructor for the Resolve-Requset to resolve a DID
     /// </summary>
-    /// <param name="did"></param>
+    /// <param name="didIdentifier"></param>
     /// <param name="blockHeight">Setting this value to null, means to consider all available information up to the current point int time. Providing a value insted resolves up to that point in time, allowing for the resolving past events correctly.</param>
     /// <param name="blockSequence">Setting this value to null, means to consider all available information up to the current point int time. Providing a value insted resolves up to that point in time, allowing for the resolving past events correctly. </param>
     /// <param name="operationSequence">Setting this value to null, means to consider all available information up to the current point int time. Providing a value insted resolves up to that point in time, allowing for the resolving past events correctly.</param>
