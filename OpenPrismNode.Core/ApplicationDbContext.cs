@@ -15,6 +15,6 @@ public class ApplicationDbContext : DbContext
     }
 
     // DbSet property
-    public DbSet<PrismNetworkEntity> PrismNetworkEntities { get; set; }
+    public DbSet<NetworkEntity> PrismNetworkEntities { get; set; }
   
 }

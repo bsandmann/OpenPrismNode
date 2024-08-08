@@ -5,7 +5,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 /// <summary>
 /// PrismCreateDidEntities 
 /// </summary>
-public class PrismCreateDidEntity : PrismBaseOperationEntity
+public class CreateDidEntity : BaseOperationEntity
 {
     /// <summary>
     /// The Did created
@@ -31,10 +31,10 @@ public class PrismCreateDidEntity : PrismBaseOperationEntity
     /// <summary>
     /// Reference to all updates
     /// </summary>
-    public List<PrismUpdateDidEntity> DidUpdates { get; set; }
+    public List<UpdateDidEntity> DidUpdates { get; set; }
 
     /// <summary>
     /// Reference to possible Deactivation
     /// </summary>
-    public PrismDeactivateDidEntity? DidDeactivation { get; set; }
+    public DeactivateDidEntity? DidDeactivation { get; set; }
 }

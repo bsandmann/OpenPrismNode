@@ -3,7 +3,7 @@
 using System.ComponentModel.DataAnnotations.Schema;
 using OpenPrismNode.Core.Models;
 
-public class PrismEpochEntity
+public class EpochEntity
 {
     /// <summary>
     /// Just the Epoch-Number
@@ -14,12 +14,12 @@ public class PrismEpochEntity
     /// <summary>
     /// Reference to the Block-Entities
     /// </summary>
-    public List<PrismBlockEntity> PrismBlockEntities { get; set; } = new List<PrismBlockEntity>();
+    public List<BlockEntity> PrismBlockEntities { get; set; } = new List<BlockEntity>();
 
     /// <summary>
     /// Reference to the network
     /// </summary>
-    public PrismNetworkEntity PrismNetworkEntity { get; set; }  // don't add a default value here!
+    public NetworkEntity NetworkEntity { get; set; }  // don't add a default value here!
     
     /// <summary>
     /// Network Type

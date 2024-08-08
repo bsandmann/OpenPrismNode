@@ -1,6 +1,6 @@
 ﻿namespace OpenPrismNode.Core.Entities;
 
-public class PrismIncomingUtxoEntity
+public class IncomingUtxoEntity
 {
     /// <summary>
     /// IK
@@ -25,7 +25,7 @@ public class PrismIncomingUtxoEntity
     /// <summary>
     /// Wallet-Address used in this Utxo
     /// </summary>
-    public PrismWalletAddressEntity PrismWalletAddress { get; set; }
+    public WalletAddressEntity WalletAddress { get; set; }
    
     /// <summary>
     /// Wallet-Address used in this Utxo
@@ -35,6 +35,6 @@ public class PrismIncomingUtxoEntity
     /// <summary>
     /// Reference of the connected Transaction
     /// </summary>
-    public PrismTransactionEntity PrismTransactionEntity { get; set; } = null!;
+    public TransactionEntity TransactionEntity { get; set; } = null!;
 
 }

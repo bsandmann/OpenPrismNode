@@ -2,7 +2,7 @@
 
 using System.ComponentModel.DataAnnotations.Schema;
 
-public abstract class PrismBaseOperationEntity
+public abstract class BaseOperationEntity
 {
     /// <summary>
     /// Identifier
@@ -20,7 +20,7 @@ public abstract class PrismBaseOperationEntity
     /// <summary>
     /// Reference of the connected Transaction
     /// </summary>
-    public PrismTransactionEntity PrismTransactionEntity { get; set; } = null!;
+    public TransactionEntity TransactionEntity { get; set; } = null!;
 
     /// <summary>
     /// Reference of the connected Transaction

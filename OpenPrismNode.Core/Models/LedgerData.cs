@@ -2,10 +2,10 @@
 
 using System.Text.Json.Serialization;
 
-public sealed class PrismLedgerData
+public sealed class LedgerData
 {
     [JsonConstructor]
-    public PrismLedgerData(string transactionId, LedgerType ledgerType, LedgerTimestampInfo timestampInfo)
+    public LedgerData(string transactionId, LedgerType ledgerType, LedgerTimestampInfo timestampInfo)
     {
         TransactionId = transactionId;
         TimestampInfo = timestampInfo;

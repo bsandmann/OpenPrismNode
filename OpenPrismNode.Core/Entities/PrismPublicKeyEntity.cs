@@ -43,11 +43,11 @@ public class PrismPublicKeyEntity
     /// References to the linked operation which created this key
     /// </summary>
     // ReSharper disable once UnusedAutoPropertyAccessor.Global
-    public PrismCreateDidEntity? PrismCreateDidEntity { get; set; }
+    public CreateDidEntity? PrismCreateDidEntity { get; set; }
     
     /// <summary>
     /// References to the linked operation which added this key
     /// </summary>
     // ReSharper disable once UnusedAutoPropertyAccessor.Global
-    public PrismUpdateDidEntity? PrismUpdateDidEntity { get; set; }
+    public UpdateDidEntity? PrismUpdateDidEntity { get; set; }
 }

@@ -2,7 +2,7 @@
 
 using System.ComponentModel.DataAnnotations;
 
-public class PrismWalletAddressEntity
+public class WalletAddressEntity
 {
     // PK
     //  addr_test1vqytjd593rsk6w3azlfv59y5fgdqpev4jrc4ca4g0mt9zwqkvw42s
@@ -20,10 +20,10 @@ public class PrismWalletAddressEntity
     /// <summary>
     /// Reference Utxos
     /// </summary>
-    public List<PrismIncomingUtxoEntity> IncomingUtxos { get; set; } = new List<PrismIncomingUtxoEntity>();
+    public List<IncomingUtxoEntity> IncomingUtxos { get; set; } = new List<IncomingUtxoEntity>();
 
     /// <summary>
     /// Reference Utxos
     /// </summary>
-    public List<PrismOutgoingUtxoEntity> OutgoingUtxos { get; set; } = new List<PrismOutgoingUtxoEntity>();
+    public List<OutgoingUtxoEntity> OutgoingUtxos { get; set; } = new List<OutgoingUtxoEntity>();
 }

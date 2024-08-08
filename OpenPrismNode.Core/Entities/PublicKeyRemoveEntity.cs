@@ -1,10 +1,9 @@
 ﻿namespace OpenPrismNode.Core.Entities;
 
-#pragma warning disable CS8618
 /// <summary>
 /// PrismPublicKeyRemoveEntity 
 /// </summary>
-public class PrismPublicKeyRemoveEntity
+public class PublicKeyRemoveEntity
 {
     /// <summary>
     /// Identifier
@@ -26,5 +25,5 @@ public class PrismPublicKeyRemoveEntity
     /// References to the linked operation which added this key
     /// </summary>
     // ReSharper disable once UnusedAutoPropertyAccessor.Global
-    public PrismUpdateDidEntity PrismUpdateDidEntity { get; set; }
+    public UpdateDidEntity UpdateDidEntity { get; set; }
 }

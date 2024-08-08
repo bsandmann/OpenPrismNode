@@ -2,7 +2,7 @@
 
 using System.ComponentModel.DataAnnotations.Schema;
 
-public class PrismDeactivateDidEntity : PrismBaseOperationEntity
+public class DeactivateDidEntity : BaseOperationEntity
 {
     /// <summary>
     /// Previous OperationHash
@@ -18,7 +18,7 @@ public class PrismDeactivateDidEntity : PrismBaseOperationEntity
     /// <summary>
     /// Reference to the createDid operation which was saved on the blockchain prior
     /// </summary>
-    public PrismCreateDidEntity PrismCreateDidEntity { get; set; }
+    public CreateDidEntity CreateDidEntity { get; set; }
 
     /// <summary>
     /// Reference to the createDid operation

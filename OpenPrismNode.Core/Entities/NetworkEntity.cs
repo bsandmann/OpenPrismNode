@@ -2,7 +2,7 @@
 
 using OpenPrismNode.Core.Models;
 
-public class PrismNetworkEntity
+public class NetworkEntity
 {
     /// <summary>
     /// Name des Networks (0 = Testnet, 1 = Mainnet)
@@ -17,5 +17,5 @@ public class PrismNetworkEntity
     /// <summary>
     /// Referencing all epochs
     /// </summary>
-    public List<PrismEpochEntity> Epochs { get; set; } = new List<PrismEpochEntity>();
+    public List<EpochEntity> Epochs { get; set; } = new List<EpochEntity>();
 }

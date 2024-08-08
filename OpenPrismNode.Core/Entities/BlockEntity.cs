@@ -6,7 +6,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 /// <summary>
 /// PrismBlockEntity 
 /// </summary>
-public class PrismBlockEntity
+public class BlockEntity
 {
     /// <summary>
     /// Hash of the block as hex
@@ -45,12 +45,12 @@ public class PrismBlockEntity
     /// </summary>
     // ReSharper disable once UnusedAutoPropertyAccessor.Global
     // ReSharper disable once CollectionNeverUpdated.Global
-    public List<PrismTransactionEntity>? PrismTransactionEntities { get; set; }
+    public List<TransactionEntity>? PrismTransactionEntities { get; set; }
 
     /// <summary>
     /// Reference to connected Epoch
     /// </summary>
-    public PrismEpochEntity PrismEpochEntity { get; set; }
+    public EpochEntity EpochEntity { get; set; }
 
     /// <summary>
     /// Epoch FK
@@ -62,13 +62,13 @@ public class PrismBlockEntity
     /// This always should be just one block. It is implemented here as a list
     /// because implementing as a list allows for forks to handle and detect those easier
     /// </summary>
-    public List<PrismBlockEntity> NextBlocks { get; set; } = new List<PrismBlockEntity>();
+    public List<BlockEntity> NextBlocks { get; set; } = new List<BlockEntity>();
 
     /// <summary>
     /// Reference to the previous block
     /// Every Block should have a previous block except the first
     /// </summary>
-    public PrismBlockEntity? PreviousBlock { get; set; }
+    public BlockEntity? PreviousBlock { get; set; }
 
     /// <summary>
     /// Reference to the previous block

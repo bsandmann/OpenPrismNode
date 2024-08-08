@@ -2,11 +2,10 @@
 
 using System.ComponentModel.DataAnnotations.Schema;
 
-#pragma warning disable CS8618
 /// <summary>
 /// PrismTransactionEntity 
 /// </summary>
-public class PrismTransactionEntity
+public class TransactionEntity
 {
     /// <summary>
     /// Identifier of the Transaction
@@ -17,7 +16,7 @@ public class PrismTransactionEntity
     /// <summary>
     /// Reference to the block this transactions lives in
     /// </summary>
-    public PrismBlockEntity PrismBlockEntity { get; set; }
+    public BlockEntity BlockEntity { get; set; }
 
     /// <summary>
     /// Reference to the block this transactions lives in
@@ -48,30 +47,30 @@ public class PrismTransactionEntity
     /// <summary>
     /// Optional CreateDid Operation
     /// </summary>
-    public List<PrismCreateDidEntity> PrismCreateDidEntities { get; set; }
+    public List<CreateDidEntity> PrismCreateDidEntities { get; set; }
 
     /// <summary>
     /// Optional UpdateDid Operation
     /// </summary>
-    public List<PrismUpdateDidEntity> PrismUpdateDidEntities { get; set; }
+    public List<UpdateDidEntity> PrismUpdateDidEntities { get; set; }
     
     /// <summary>
     /// Optional DeactivateDid Operation
     /// </summary>
-    public List<PrismDeactivateDidEntity> PrismDeactivateDidEntities { get; set; }
+    public List<DeactivateDidEntity> PrismDeactivateDidEntities { get; set; }
 
     /// <summary>
     /// Optional ProtocolVersionUpdate Operation
     /// </summary>
-    public List<PrismProtocolVersionUpdateEntity> PrismProtocolVersionUpdateEntities { get; set; }
+    public List<ProtocolVersionUpdateEntity> PrismProtocolVersionUpdateEntities { get; set; }
 
     /// <summary>
     /// List of the incoming Utxos of this transaction
     /// </summary>
-    public List<PrismIncomingUtxoEntity> UtxosIncoming { get; set; }
+    public List<IncomingUtxoEntity> UtxosIncoming { get; set; }
     
     /// <summary>
     /// List of the outgoing Utxos of this transaction
     /// </summary>
-    public List<PrismOutgoingUtxoEntity> UtxosOutgoing { get; set; }
+    public List<OutgoingUtxoEntity> UtxosOutgoing { get; set; }
 }

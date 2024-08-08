@@ -1,10 +1,9 @@
 ﻿namespace OpenPrismNode.Core.Entities;
 
-#pragma warning disable CS8618
 /// <summary>
 /// PrismProtocolVersionUpdateEntities 
 /// </summary>
-public class PrismProtocolVersionUpdateEntity : PrismBaseOperationEntity
+public class ProtocolVersionUpdateEntity : BaseOperationEntity
 {
     /// <summary>
     /// The signing Key used in the CreateDid Operation
