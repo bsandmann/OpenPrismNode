@@ -13,7 +13,7 @@ public record PrismService
     }
 
     /// <summary>
-    /// The did with #Linked-Domain
+    /// The serviceID fragment
     /// </summary>
     public string ServiceId { get; }
 

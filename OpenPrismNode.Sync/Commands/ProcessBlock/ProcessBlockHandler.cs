@@ -3,13 +3,13 @@ using MediatR;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using OpenPrismNode.Core.Models;
-using OpenPrismNode.Sync.Commands.GetPostgresTransactionInsideBlock;
 using OpenPrismNode.Sync.Commands.ProcessTransaction;
 
 namespace OpenPrismNode.Sync.Commands.ProcessBlock;
 
 using System.Diagnostics;
 using Core.Common;
+using GetTransactionsWithPrismMetadataForBlockId;
 
 public class ProcessBlockHandler : IRequestHandler<ProcessBlockRequest, Result<Hash?>>
 {
@@ -65,16 +65,16 @@ public class ProcessBlockHandler : IRequestHandler<ProcessBlockRequest, Result<H
         //     previousBlockHash = prismBlockModelResult.Value.BlockHash;
 
 
-        var blockTransactions = await _mediator.Send(new GetPostgresTransactionsInsideBlockRequest(request.Block.id), cancellationToken);
+        var blockTransactions = await _mediator.Send(new GetTransactionsWithPrismMetadataForBlockIdRequest(request.Block.id), cancellationToken);
         if (blockTransactions.IsFailed)
         {
-            _logger.LogError("Failed while reading transactions of block {BlockHash}: {Error}", request.Block.hash, blockTransactions.Errors.First().Message);
+            _logger.LogError($"Failed while reading transactions of block # {request.Block.block_no}: {blockTransactions.Errors.First().Message}");
         }
 
         foreach (var blockTransaction in blockTransactions.Value)
         {
             var result = await _mediator.Send(new ProcessTransactionRequest(request.Block, blockTransaction), cancellationToken);
-            
+
             Debug.Assert(result.IsSuccess);
         }
 

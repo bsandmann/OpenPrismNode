@@ -1,6 +1,5 @@
 ﻿namespace OpenPrismNode.Sync.Commands.ParseTransaction;
 
-using System.Diagnostics.CodeAnalysis;
 using Core;
 using Core.Commands.ResolveDid;
 using Core.Common;
@@ -15,8 +14,13 @@ using OpenPrismNode.Sync;
 using OpenPrismNode.Sync.Models;
 
 /// <summary>
-/// Parses a json string and outputs a object describing the parsed operation
-/// Parsing might fail, exspecially if it involves resolving the did and checking the validity of the operation
+/// Takes in the SignedAtalaOpertion and parses it into a OperationResultWrapper.
+/// In this process all the signtatures get verified and the operation is checked for validity.
+/// Parsing might fail, exspecially if it involves resolving a DID (required for UpdateDid and DeactivateDid operations),
+/// which rely on a previous operation.
+/// The parsing operation can be used either when reading data from chain, to check their validity and if the operation
+/// should be added to the database of valid opertions, or when creating a new operation, to check if the operation is valid
+/// and is aligned with previous operations.
 /// </summary>
 public class ParseTransactionHandler : IRequestHandler<ParseTransactionRequest, Result<OperationResultWrapper>>
 {
@@ -41,15 +45,15 @@ public class ParseTransactionHandler : IRequestHandler<ParseTransactionRequest, 
         }
         else if (request.SignedAtalaOperation.Operation.UpdateDid != null)
         {
-            return await ParseUpdateDidOperation(request.SignedAtalaOperation, request.Index, request.ResolveMode);
+            return await ParseUpdateDidOperation(request.SignedAtalaOperation, request.Index, request.ResolveMode!);
         }
         else if (request.SignedAtalaOperation.Operation.ProtocolVersionUpdate != null)
         {
-            return await ParseProtocolVersionUpdateOperation(request.SignedAtalaOperation, request.Index, request.ResolveMode);
+            return await ParseProtocolVersionUpdateOperation(request.SignedAtalaOperation, request.Index, request.ResolveMode!);
         }
         else if (request.SignedAtalaOperation.Operation.DeactivateDid != null)
         {
-            return await ParseDeactivateDidOperation(request.SignedAtalaOperation, request.Index, request.ResolveMode);
+            return await ParseDeactivateDidOperation(request.SignedAtalaOperation, request.Index, request.ResolveMode!);
         }
         else
         {
@@ -101,6 +105,8 @@ public class ParseTransactionHandler : IRequestHandler<ParseTransactionRequest, 
             return Result.Fail(ParserErrors.UnableToVerifySignature + $" for keyId: {publicKeyMaster.KeyId} on DID-Creation for did {didIdentifier}");
         }
 
+        // TODO: Chekc if the DID already exists in the database. See spec
+        
         var didDocument = new DidDocument(didIdentifier, publicKeyParseResult.Value, serviceParseResult.Value, contexts);
         var operationResultWrapper = new OperationResultWrapper(OperationResultType.CreateDid, index, didDocument, signedWith);
         return Result.Ok(operationResultWrapper);

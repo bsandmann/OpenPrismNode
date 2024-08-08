@@ -6,27 +6,20 @@
 /// </summary>
 public class TransactionOut
 {
-    public long id { get; set; }
-    public long tx_id { get; set; }
     public int index { get; set; }
 
     /// <summary>
-    /// Lesabres adressen format "addr_test1....."
+    /// Address of the wallet
     /// </summary>
     public string address { get; set; }
 
     /// <summary>
-    /// Keine Ahnung wie ich das Umwandel in die Adress, scheint mir aber das geeignetere Format zu sein
+    /// Reference to the stake address table 
     /// </summary>
-    public byte[] address_raw { get; set; }
+    public int stake_address_id { get; set; }
 
     /// <summary>
-    /// Verweis aud den Stake-adress-table
-    /// </summary>
-    public long stake_address_id { get; set; }
-    
-    /// <summary>
-    /// Ausgehender betrag
+    /// Value / Amount
     /// </summary>
     public long value { get; set; }
 }

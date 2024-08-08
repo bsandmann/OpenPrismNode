@@ -1,8 +1,10 @@
 namespace OpenPrismNode.Sync.Commands.ProcessTransaction;
 
+using Core;
 using DecodeTransaction;
 using FluentResults;
-using GetMetadataFromPrismTransactions;
+using GetMetadataFromTransaction;
+using GetPaymentDataFromTransaction;
 using MediatR;
 using Microsoft.Extensions.Logging;
 using Models;
@@ -22,45 +24,40 @@ public class ProcessTransactionHandler : IRequestHandler<ProcessTransactionReque
 
     public async Task<Result> Handle(ProcessTransactionRequest request, CancellationToken cancellationToken)
     {
-        uint key = 21325;
-        var metadata = await _mediator.Send(new GetMetadataOfPrismTransactionRequest(request.Transaction.id, key), cancellationToken);
+        var metadata = await _mediator.Send(new GetMetadataFromTransactionRequest(request.Transaction.id, PrismParameters.MetadataKey), cancellationToken);
         if (metadata.IsFailed)
         {
-            //TODO: what to do here?
-            _logger.LogError("Failed while reading metadata of transaction {TransactionId}: {Error}", request.Transaction.id, metadata.Errors.First().Message);
+            _logger.LogError($"Failed while reading metadata of transaction # {request.Transaction.block_index} in block # {request.Block.block_no}: {metadata.Errors.First().Message}");
         }
 
         if (metadata.IsSuccess)
         {
             var jsonMetadata = metadata.Value.json;
-            var label = metadata.Value.key;
-
             try
             {
-                //TODO resolve mode correct? 
                 var decodeResult = await _mediator.Send(new DecodeTransactionRequest(jsonMetadata), cancellationToken);
                 if (decodeResult.IsFailed)
                 {
                     var parsingErrorMessage = decodeResult.Errors.SingleOrDefault()?.Message;
                     if (string.IsNullOrEmpty(parsingErrorMessage) || parsingErrorMessage.Equals(ParserErrors.UnableToDeserializeBlockchainMetadata))
                     {
-                        // The normal case for nearly all non-PRISM-Operations
+                        // This happens if the metadata is not PRISM related, but still has the PRISM key
+                        // Unsual, but can happen. Also happens for initial PRISM operations
                     }
                     else
                     {
-                        // transaction = await _transactionsService.GetAsync(blocktransaction);
-                        _logger.LogError("Failed while parsing transaction {TransactionId}: {Error}", request.Transaction.id, parsingErrorMessage);
-                        // await this._mediator.Send(new CreatePrismParsingErrorRequest(Hash.CreateFrom(request.Transaction.hash), operationSequenceNumber: -1, Hash.CreateFrom(selectedBlock.hash), parsingErrorMessage));
+                        _logger.LogError($"Failed while parsing transaction # {request.Transaction.block_index} in block # {request.Block.block_no}: {parsingErrorMessage}");
                     }
                 }
                 else if (decodeResult.IsSuccess)
                 {
                     // Create all wallet-addresses upfront
-                    // var paymentdata = await _mediator.Send(new GetPaymentDataOfPrismTransactionRequest(blockTransaction.id));
-                    // if (paymentdata.IsFailed)
-                    // {
-                    //     _logger.LogError("Failed while reading payment data of transaction {TransactionId}: {Error}", blockTransaction.id, paymentdata.Errors.First().Message);
-                    // }
+                    var paymentdata = await _mediator.Send(new GetPaymentDataFromTransactionRequest(request.Transaction.id), cancellationToken);
+                    if (paymentdata.IsFailed)
+                    {
+                        _logger.LogError($"Failed while reading payment data of transaction # {request.Transaction.block_index} in block # {request.Block.block_no}: {paymentdata.Errors.First().Message}");
+                    }
+
                     //
                     // var combinedWalletAddresses = new List<WalletAddress>();
                     // combinedWalletAddresses.AddRange(paymentdata.Value.Incoming.Select(p => p.WalletAddress));
@@ -74,12 +71,12 @@ public class ProcessTransactionHandler : IRequestHandler<ProcessTransactionReque
                     foreach (var operation in decodeResult.Value)
                     {
                         var resolveMode = new ResolveMode(request.Block.block_no, request.Transaction.block_index, operationSequenceIndex);
-                        var parsingResult = await _mediator.Send(new ParseTransactionRequest(operation, operationSequenceIndex), cancellationToken);
+                        var parsingResult = await _mediator.Send(new ParseTransactionRequest(operation, operationSequenceIndex, resolveMode), cancellationToken);
                         if (parsingResult.IsSuccess)
                         {
                             try
                             {
-                                _logger.LogInformation($"Parsing successful for transaction with id '{request.Transaction.id}' in Block-No '{request.Block.block_no}'");
+                                _logger.LogInformation($"Parsing successful for transaction # {request.Transaction.block_index} in block # {request.Block.block_no}");
                                 // var transactionRequest = new CreateTransactionRequest(
                                 //     transactionHash: Hash.CreateFrom(blockTransaction.hash),
                                 //     transactionBlock: Hash.CreateFrom(selectedBlock.hash),
@@ -119,7 +116,7 @@ public class ProcessTransactionHandler : IRequestHandler<ProcessTransactionReque
                             }
                             catch (Exception e)
                             {
-                                _logger.LogError($"Unable to write transaction with id '{request.Transaction.id}' in Block-No '{request.Block.block_no}' to error: {e.ToString()}");
+                                _logger.LogError($"Unable to for transaction # {request.Transaction.block_index} in block # {request.Block.block_no}: {e.Message} {e.InnerException?.Message}");
                                 continue;
                             }
                         }
@@ -130,25 +127,24 @@ public class ProcessTransactionHandler : IRequestHandler<ProcessTransactionReque
                             continue;
                         }
 
-                        string? did = null;
+                        string? didIdentifier = null;
                         if (parsingResult.Value.OperationResultType == OperationResultType.CreateDid)
                         {
-                            did = parsingResult.Value.AsCreateDid().didDocument.DidIdentifier;
+                            didIdentifier = parsingResult.Value.AsCreateDid().didDocument.DidIdentifier;
                         }
                         else if (parsingResult.Value.OperationResultType == OperationResultType.UpdateDid)
                         {
-                            did = parsingResult.Value.AsUpdateDid().didIdentifier;
+                            didIdentifier = parsingResult.Value.AsUpdateDid().didIdentifier;
                         }
                         else if (parsingResult.Value.OperationResultType == OperationResultType.DeactivateDid)
                         {
-                            did = parsingResult.Value.AsDeactivateDid().deactivatedDid;
+                            didIdentifier = parsingResult.Value.AsDeactivateDid().deactivatedDid;
                         }
 
-                        if (did is not null)
+                        if (didIdentifier is not null)
                         {
-                            
                             // OUT OF SCOPE
-                            
+
                             // var resolvedDid = await _mediator.Send(new ResolveDidRequest(new Did(did)));
                             // if (resolvedDid.IsFailed)
                             // {
@@ -215,7 +211,6 @@ public class ProcessTransactionHandler : IRequestHandler<ProcessTransactionReque
             }
         }
 
-        //??
         return Result.Ok();
     }
 }

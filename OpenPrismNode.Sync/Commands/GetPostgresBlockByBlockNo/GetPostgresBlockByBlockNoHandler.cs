@@ -20,6 +20,7 @@ public class GetPostgresBlockByBlockNoHandler : IRequestHandler<GetPostgresBlock
     {
         await using (var connection = _connectionFactory.CreateConnection())
         {
+            // TODO optimize query to get only what is needed.
             string commandText = $"SELECT * FROM public.block WHERE block_no = {request.BlockNo};";
             var block = await connection.QueryFirstOrDefaultAsync<Block>(commandText);
             if (block is null)

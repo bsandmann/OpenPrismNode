@@ -2,6 +2,13 @@
 
 public sealed record DidDocument
 {
+    /// <summary>
+    /// Simplified representation of a DID Document focus on PRISM related information
+    /// </summary>
+    /// <param name="didIdentifierIdentifier"></param>
+    /// <param name="publicKeys"></param>
+    /// <param name="prismServices"></param>
+    /// <param name="contexts"></param>
     public DidDocument(string didIdentifierIdentifier, List<PrismPublicKey> publicKeys, List<PrismService> prismServices, List<string> contexts)
     {
         DidIdentifier = didIdentifierIdentifier;

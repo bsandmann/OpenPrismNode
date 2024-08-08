@@ -3,7 +3,6 @@ namespace OpenPrismNode.Sync.Services;
 using Core.Common;
 using Microsoft.Extensions.Options;
 using Npgsql;
-using OpenPrismNode.Core.Models;
 
 public interface INpgsqlConnectionFactory
 {

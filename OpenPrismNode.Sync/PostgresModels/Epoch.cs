@@ -5,7 +5,7 @@
 /// </summary>
 public class Epoch
 {
-    public long id { get; set; }
+    public int id { get; set; }
     public decimal out_sum { get; set; }
     public decimal fees { get; set; }
     public int tx_count { get; set; }

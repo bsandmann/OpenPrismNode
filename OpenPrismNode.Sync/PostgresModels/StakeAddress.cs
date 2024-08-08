@@ -3,7 +3,7 @@
 
 public class StakeAddress
 {
-    public long id { get; set; }
+    public int id { get; set; }
     public byte[] hash_raw { get; set; }
     /// <summary>
     /// stake-address ("stake_test1.....")
