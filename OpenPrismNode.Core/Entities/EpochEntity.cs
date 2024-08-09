@@ -9,12 +9,12 @@ public class EpochEntity
     /// Just the Epoch-Number
     /// </summary>
     [DatabaseGenerated(DatabaseGeneratedOption.None)]
-    public uint Epoch { get; set; }
+    public required int EpochNumber { get; set; }
 
     /// <summary>
     /// Reference to the Block-Entities
     /// </summary>
-    public List<BlockEntity> PrismBlockEntities { get; set; } = new List<BlockEntity>();
+    public List<BlockEntity> BlockEntities { get; set; } = new List<BlockEntity>();
 
     /// <summary>
     /// Reference to the network
@@ -22,7 +22,7 @@ public class EpochEntity
     public NetworkEntity NetworkEntity { get; set; }  // don't add a default value here!
     
     /// <summary>
-    /// Network Type
+    /// FK of the Network
     /// </summary>
     public LedgerType NetworkType { get; set; }
 }

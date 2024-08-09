@@ -17,17 +17,28 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-
-builder.Services.Configure<AppSettings>(builder.Configuration.GetSection("AppSettings"));
+var appSettingsSection = builder.Configuration.GetSection("AppSettings");
+builder.Services.Configure<AppSettings>(appSettingsSection);
+var appSettings = appSettingsSection.Get<AppSettings>();
 builder.Services.AddSingleton<IEcService, EcServiceBouncyCastle>();
 builder.Services.AddSingleton<ISha256Service, Sha256ServiceBouncyCastle>();
 builder.Services.AddScoped<INpgsqlConnectionFactory, NpgsqlConnectionFactory>();
 builder.Services.AddScoped<BackgroundSyncService>();
 builder.Services.AddHostedService<BackgroundSyncService>();
 builder.Services.AddMediatR(cfg => cfg.RegisterServicesFromAssemblies(AppDomain.CurrentDomain.GetAssemblies()));
-builder.Services.AddDbContext<ApplicationDbContext>(options =>
-    options.UseNpgsql(builder.Configuration.GetConnectionString("CredentialBadgesDatabase")));
-
+builder.Services.AddDbContext<DataContext>(options =>
+    options.UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking)
+        .EnableSensitiveDataLogging(false)
+        .UseNpgsql(appSettings!.PrismNetwork.PrismPostgresConnectionString)
+        .UseNpgsql(p =>
+        {
+            p.MigrationsAssembly("OpenPrismNode.Web");
+            p.EnableRetryOnFailure(
+                maxRetryCount: 5,
+                maxRetryDelay: TimeSpan.FromSeconds(15),
+                errorCodesToAdd: null
+            );
+        }));
 
 
 var app = builder.Build();

@@ -28,6 +28,7 @@ public class GetPostgresBlockByBlockNoHandler : IRequestHandler<GetPostgresBlock
                 return Result.Fail("Block could not be found");
             }
 
+            block.time = DateTime.SpecifyKind(block.time, DateTimeKind.Utc);
             return Result.Ok(block);
         }
     }

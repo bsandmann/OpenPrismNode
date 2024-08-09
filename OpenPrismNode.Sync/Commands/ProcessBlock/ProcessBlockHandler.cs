@@ -8,7 +8,9 @@ using OpenPrismNode.Sync.Commands.ProcessTransaction;
 namespace OpenPrismNode.Sync.Commands.ProcessBlock;
 
 using System.Diagnostics;
+using Core.Commands.GetBlockByBlockHash;
 using Core.Common;
+using Core.Entities;
 using GetTransactionsWithPrismMetadataForBlockId;
 
 public class ProcessBlockHandler : IRequestHandler<ProcessBlockRequest, Result<Hash?>>
@@ -25,15 +27,14 @@ public class ProcessBlockHandler : IRequestHandler<ProcessBlockRequest, Result<H
         _logger = logger;
     }
 
-
     public async Task<Result<Hash?>> Handle(ProcessBlockRequest request, CancellationToken cancellationToken)
     {
-        // Hash? previousBlockHash = request.PreviousBlockHash;
-        // var block = await _mediator.Send(new GetBlockByHashRequest(Hash.CreateFrom(request.Block.hash)));
-        // if (block.IsSuccess)
-        // {
-        //     // already in the db. Nothing to do here anymore
-        // }
+        byte[]? previousBlockHash = request.PreviousBlockHash;
+        var block = await _mediator.Send(new GetBlockByBlockHashRequest(request.Block.block_no, BlockEntity.CalculateBlockHashPrefix(request.Block.hash), request.LedgerType), cancellationToken);
+        if (block.IsSuccess)
+        {
+            // already in the db. Nothing to do here anymore
+        }
         // else
         // {
         //     if (previousBlockHash is null)

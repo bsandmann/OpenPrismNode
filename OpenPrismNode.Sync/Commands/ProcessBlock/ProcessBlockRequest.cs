@@ -7,12 +7,14 @@ namespace OpenPrismNode.Sync.Commands.ProcessBlock;
 
 public class ProcessBlockRequest : IRequest<Result<Hash?>>
 {
-    public ProcessBlockRequest(Block block, Hash? previousHash)
+    public ProcessBlockRequest(Block block, byte[]? previousHash, LedgerType ledgerType)
     {
         Block = block;
         PreviousBlockHash = previousHash;
+        LedgerType = ledgerType;
     }
 
     public Block Block { get; }
-    public Hash? PreviousBlockHash { get; }
+    public byte[]? PreviousBlockHash { get; }
+    public LedgerType LedgerType { get; }
 }

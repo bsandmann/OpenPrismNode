@@ -5,14 +5,14 @@ using OpenPrismNode.Core.Models;
 public class NetworkEntity
 {
     /// <summary>
-    /// Name des Networks (0 = Testnet, 1 = Mainnet)
+    /// Configured network (InMemory, prerpod, mainnet)
     /// </summary>
-    public LedgerType NetworkType { get; set; }
+    public required LedgerType NetworkType { get; set; }
     
     /// <summary>
     /// Last synced Block
     /// </summary>
-    public DateTime LastSynced { get; set; }
+    public DateTime? LastSynced { get; set; }
 
     /// <summary>
     /// Referencing all epochs
