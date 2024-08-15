@@ -8,12 +8,13 @@ using OpenPrismNode.Sync.Commands.ProcessTransaction;
 namespace OpenPrismNode.Sync.Commands.ProcessBlock;
 
 using System.Diagnostics;
+using Core.Commands.CreateBlock;
 using Core.Commands.GetBlockByBlockHash;
 using Core.Common;
 using Core.Entities;
 using GetTransactionsWithPrismMetadataForBlockId;
 
-public class ProcessBlockHandler : IRequestHandler<ProcessBlockRequest, Result<Hash?>>
+public class ProcessBlockHandler : IRequestHandler<ProcessBlockRequest, Result<ProcessBlockResponse>>
 {
     private readonly IMediator _mediator;
     private readonly AppSettings _appSettings;
@@ -27,44 +28,53 @@ public class ProcessBlockHandler : IRequestHandler<ProcessBlockRequest, Result<H
         _logger = logger;
     }
 
-    public async Task<Result<Hash?>> Handle(ProcessBlockRequest request, CancellationToken cancellationToken)
+    public async Task<Result<ProcessBlockResponse>> Handle(ProcessBlockRequest request, CancellationToken cancellationToken)
     {
         byte[]? previousBlockHash = request.PreviousBlockHash;
+        int? previousBlockHeight = request.PreviousBlockHeight;
+
         var block = await _mediator.Send(new GetBlockByBlockHashRequest(request.Block.block_no, BlockEntity.CalculateBlockHashPrefix(request.Block.hash), request.LedgerType), cancellationToken);
         if (block.IsSuccess)
         {
             // already in the db. Nothing to do here anymore
+            return Result.Ok(new ProcessBlockResponse(block.Value.BlockHash, block.Value.BlockHeight));
         }
-        // else
-        // {
-        //     if (previousBlockHash is null)
-        //     {
-        //         // special case, when starting this method. The previous blockHash should be null when we start the db
-        //         // but when we have done a rollback before we have to connect the oldchain to new continuation
-        //         var previousBlock = await _mediator.Send(new GetPostgresBlockByBlockIdRequest(request.Block.previous_id));
-        //         if (previousBlock.IsSuccess)
-        //         {
-        //             //lets try to find that block in our db
-        //             var previousBlockHashDb = Hash.CreateFrom(previousBlock.Value.hash);
-        //             var previousBlockInDb = await _mediator.Send(new GetBlockByHashRequest(previousBlockHashDb));
-        //             if (previousBlockInDb.IsSuccess)
-        //             {
-        //                 previousBlockHash = previousBlockInDb.Value.BlockHash;
-        //             }
-        //         }
-        //     }
-        //
-        //     var prismBlockModelResult = await _mediator.Send(new CreateBlockRequest(
-        //         blockHash: Hash.CreateFrom(request.Block.hash),
-        //         blockHeight: request.Block.block_no,
-        //         epoch: (uint)request.Block.epoch_no,
-        //         epochSlot: request.Block.epoch_slot_no,
-        //         timeUtc: request.Block.time,
-        //         txCount: (uint)request.Block.tx_count,
-        //         previousBlockHash: previousBlockHash
-        //     ));
-        //     previousBlockHash = prismBlockModelResult.Value.BlockHash;
 
+        if (previousBlockHash is null)
+        {
+            // TODO ?
+            //         // special case, when starting this method. The previous blockHash should be null when we start the db
+            //         // but when we have done a rollback before we have to connect the oldchain to new continuation
+            //         var previousBlock = await _mediator.Send(new GetPostgresBlockByBlockIdRequest(request.Block.previous_id));
+            //         if (previousBlock.IsSuccess)
+            //         {
+            //             //lets try to find that block in our db
+            //             var previousBlockHashDb = Hash.CreateFrom(previousBlock.Value.hash);
+            //             var previousBlockInDb = await _mediator.Send(new GetBlockByHashRequest(previousBlockHashDb));
+            //             if (previousBlockInDb.IsSuccess)
+            //             {
+            //                 previousBlockHash = previousBlockInDb.Value.BlockHash;
+            //              previousBlockHeight = previousBlockInDb.Value.BlockHeight;
+            //             }
+            //         }
+        }
+
+        var prismBlockResult = await _mediator.Send(new CreateBlockRequest(
+            ledgerType: request.LedgerType,
+            blockHeight: request.Block.block_no,
+            blockHash: Hash.CreateFrom(request.Block.hash),
+            previousBlockHash: Hash.CreateFrom(previousBlockHash),
+            previousBlockHeight: previousBlockHeight,
+            epochNumber: request.Block.epoch_no,
+            timeUtc: request.Block.time,
+            txCount: request.Block.tx_count
+        ), cancellationToken);
+        if (prismBlockResult.IsFailed)
+        {
+            return Result.Fail($"Error while creating block #{block.Value.BlockHeight} for {request.LedgerType}: {prismBlockResult.Errors.First().Message}");
+        }
+
+        var response = new ProcessBlockResponse(prismBlockResult.Value.BlockHash, prismBlockResult.Value.BlockHeight);
 
         var blockTransactions = await _mediator.Send(new GetTransactionsWithPrismMetadataForBlockIdRequest(request.Block.id), cancellationToken);
         if (blockTransactions.IsFailed)
@@ -79,7 +89,6 @@ public class ProcessBlockHandler : IRequestHandler<ProcessBlockRequest, Result<H
             Debug.Assert(result.IsSuccess);
         }
 
-        return Result.Ok();
-        // return Result.Ok(previousBlockHash);
+        return Result.Ok(response);
     }
 }

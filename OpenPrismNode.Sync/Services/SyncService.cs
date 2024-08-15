@@ -2,6 +2,7 @@ namespace OpenPrismNode.Sync.Services;
 
 using Commands.GetPostgresBlockByBlockNo;
 using Commands.GetPostgresBlockTip;
+using Commands.GetPostgresFirstBlockOfEpoch;
 using Commands.ProcessBlock;
 using Core.Commands.CreateBlock;
 using Core.Commands.CreateEpoch;
@@ -13,10 +14,11 @@ using Core.Models;
 using FluentResults;
 using MediatR;
 using Microsoft.Extensions.Logging;
+using PostgresModels;
 
 public static class SyncService
 {
-    public static async Task<Result> RunSync(IMediator mediator, ILogger logger, string networkName, bool isInitialStartup = false)
+    public static async Task<Result> RunSync(IMediator mediator, ILogger logger, string networkName, int startAtEpochNumber = 0, bool isInitialStartup = false)
     {
         LedgerType ledgerType;
         if (networkName.Equals("mainnet", StringComparison.InvariantCultureIgnoreCase))
@@ -40,7 +42,7 @@ public static class SyncService
 
         if (isInitialStartup)
         {
-            var existingStartingEpoch = await mediator.Send(new GetEpochRequest(ledgerType, 0), CancellationToken.None);
+            var existingStartingEpoch = await mediator.Send(new GetEpochRequest(ledgerType, startAtEpochNumber), CancellationToken.None);
             if (existingStartingEpoch.IsFailed)
             {
                 // This indicates that we have not yet created the starting epoch
@@ -50,13 +52,22 @@ public static class SyncService
                     return Result.Fail($"Cannot create network {ledgerType}. Database connection error?");
                 }
 
-                var createStartingEpochResult = await mediator.Send(new CreateEpochRequest(ledgerType, 0), CancellationToken.None);
+                var createStartingEpochResult = await mediator.Send(new CreateEpochRequest(ledgerType, startAtEpochNumber), CancellationToken.None);
                 if (createStartingEpochResult.IsFailed)
                 {
                     return Result.Fail($"Cannot create starting epoch 0 for {ledgerType}. Database connection error?");
                 }
 
-                var firstBlock = await mediator.Send(new GetPostgresBlockByBlockNoRequest(1));
+                Result<Block> firstBlock;
+                if (startAtEpochNumber != 0)
+                {
+                    firstBlock = await mediator.Send(new GetPostgresFirstBlockOfEpochRequest(startAtEpochNumber));
+                }
+                else
+                {
+                    firstBlock = await mediator.Send(new GetPostgresBlockByBlockNoRequest(1));
+                }
+
                 if (firstBlock.IsFailed)
                 {
                     return Result.Fail($"First block could not be found on dbSyncs postgresdatabase for {ledgerType}. Database connection error?: {firstBlock.Errors.First().Message}");
@@ -79,12 +90,14 @@ public static class SyncService
             }
         }
 
+        // Gets the tip of the internal database of blocks
         var mostRecentBlockResult = await mediator.Send(new GetMostRecentBlockRequest(ledgerType));
         if (mostRecentBlockResult.IsFailed)
         {
             return Result.Fail(mostRecentBlockResult.Errors.First().Message);
         }
 
+        // Checks if we have the tip of the postgrs-dbSync database also in our internal database
         // This does only check the longest chain. If a new fork is shorter than the longest chain, we'll still cling to the longest chain.
         // The check for forks is done in the ProcessBlockHandler
         var blockInDb = await mediator.Send(new GetBlockByBlockHeightRequest(ledgerType, postgresBlockTipResult.Value.block_no));
@@ -95,9 +108,22 @@ public static class SyncService
         }
 
         var previousBlockHash = mostRecentBlockResult.Value.BlockHash;
+        var previousBlockHeight = mostRecentBlockResult.Value.BlockHeight;
         // TODO ?var lastAnalyticsUpdate = DateTime.MinValue;
         for (int i = mostRecentBlockResult.Value.BlockHeight + 1; i <= postgresBlockTipResult.Value.block_no; i++)
         {
+            if (i == 197355)
+            {
+                // This block is broken in the dbSync database
+            }
+            
+#if !DEBUG
+            if (i == 179966)
+            {
+                break;
+            }
+#endif
+
             var getBlockByIdResult = await mediator.Send(new GetPostgresBlockByBlockNoRequest(i));
             if (getBlockByIdResult.IsFailed)
             {
@@ -115,7 +141,7 @@ public static class SyncService
             }
 
             //TODO fix the uglieness with the Hash-class?
-            var processBlockResult = await mediator.Send(new ProcessBlockRequest(getBlockByIdResult.Value, previousBlockHash, ledgerType));
+            var processBlockResult = await mediator.Send(new ProcessBlockRequest(getBlockByIdResult.Value, previousBlockHash, previousBlockHeight, ledgerType));
             if (processBlockResult.IsFailed)
             {
                 logger.LogError(processBlockResult.Errors.First().Message);
@@ -123,7 +149,8 @@ public static class SyncService
 
             // TODO implement the notifications
 
-            previousBlockHash = processBlockResult.Value?.Value;
+            previousBlockHash = processBlockResult.Value.PreviousBlockHash;
+            previousBlockHeight = processBlockResult.Value.PreviousBlockHeight;
         }
 
         //

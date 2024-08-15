@@ -1,6 +1,4 @@
-﻿namespace OpenPrismNode.Sync.Models;
-
-using Core.Models;
+﻿namespace OpenPrismNode.Core.Models;
 
 public class OperationResultWrapper
 {
@@ -147,18 +145,13 @@ public class OperationResultWrapper
     public (DidDocument didDocument, string signingKeyId) AsCreateDid()
     {
         return (DidDocument!, SigningKeyId);
+        
     }
     public (string didIdentifier, Hash previousOperationHash, List<UpdateDidActionResult> updateDidActionResults, byte[] operationBytes, byte[] signature, string signingKeyId) AsUpdateDid()
     {
         return (DidIdentifer!, PreviousOperationHash!, UpdateDidActionResults!, OperationBytes!, Signature!, SigningKeyId);
     }
-    //
-    //
-    // public (PrismProtocolVersionUpdate prismProtocolUpdateVersion, Did proposerDid, byte[] operationBytes, byte[] signature, string signingKeyId) AsProtocolVersionUpdate()
-    // {
-    //     return (PrismProtocolVersionUpdate!, Did!, OperationBytes!, Signature!, SigningKeyId);
-    // }
-    //
+  
     public (string deactivatedDid, Hash previousOperationHash, byte[] operationBytes, byte[] signature, string signingKeyId) AsDeactivateDid()
     {
         return (DidIdentifer!, PreviousOperationHash!, OperationBytes!, Signature!, SigningKeyId);

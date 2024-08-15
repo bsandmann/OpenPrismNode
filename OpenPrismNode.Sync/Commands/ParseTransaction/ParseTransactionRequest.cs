@@ -1,5 +1,6 @@
 ﻿namespace OpenPrismNode.Sync.Commands.ParseTransaction;
 
+using Core.Models;
 using FluentResults;
 using MediatR;
 using Models;

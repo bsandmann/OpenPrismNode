@@ -24,12 +24,13 @@ public class CreateNetworkHandler : IRequestHandler<CreateNetworkRequest, Result
         _context.ChangeTracker.Clear();
         _context.ChangeTracker.AutoDetectChangesEnabled = false;
         var existingNetwork = await _context.PrismNetworkEntities.FirstOrDefaultAsync(p => p.NetworkType == request.LedgerType, cancellationToken: cancellationToken);
+        var dateTimeNow = DateTime.SpecifyKind(DateTime.UtcNow,DateTimeKind.Unspecified);
         if (existingNetwork is null)
         {
             var network = new NetworkEntity()
             {
                 NetworkType = request.LedgerType,
-                LastSynced = DateTime.UtcNow
+                LastSynced = dateTimeNow
             };
 
             await _context.AddAsync(network, cancellationToken);

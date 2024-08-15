@@ -5,16 +5,18 @@ using OpenPrismNode.Sync.PostgresModels;
 
 namespace OpenPrismNode.Sync.Commands.ProcessBlock;
 
-public class ProcessBlockRequest : IRequest<Result<Hash?>>
+public class ProcessBlockRequest : IRequest<Result<ProcessBlockResponse>>
 {
-    public ProcessBlockRequest(Block block, byte[]? previousHash, LedgerType ledgerType)
+    public ProcessBlockRequest(Block block, byte[]? previousHash, int? previousBlockHeight, LedgerType ledgerType)
     {
         Block = block;
         PreviousBlockHash = previousHash;
+        PreviousBlockHeight = previousBlockHeight;
         LedgerType = ledgerType;
     }
 
     public Block Block { get; }
     public byte[]? PreviousBlockHash { get; }
+    public int? PreviousBlockHeight { get; }
     public LedgerType LedgerType { get; }
 }

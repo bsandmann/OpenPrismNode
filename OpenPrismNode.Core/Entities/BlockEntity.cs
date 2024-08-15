@@ -25,24 +25,25 @@ public class BlockEntity
     /// <summary>
     /// Time when the block was created on the blockchain
     /// </summary>
+    [Column(TypeName = "timestamp without time zone")]
     public required DateTime TimeUtc { get; set; }
 
     /// <summary>
     /// Number of transactions in this block
-    /// </summary> 
+    /// </summary>
+    [Column(TypeName = "smallint")]
     public required int TxCount { get; set; }
 
     /// <summary>
     /// When the block was created/updated in the database
     /// </summary>
+    [Column(TypeName = "timestamp without time zone")]
     public DateTime? LastParsedOnUtc { get; set; }
 
-    // /// <summary>
-    // /// Transactions inside this block
-    // /// </summary>
-    // // ReSharper disable once UnusedAutoPropertyAccessor.Global
-    // // ReSharper disable once CollectionNeverUpdated.Global
-    // public List<TransactionEntity>? PrismTransactionEntities { get; set; }
+    /// <summary>
+    /// Transactions inside this block
+    /// </summary>
+    public ICollection<TransactionEntity> PrismTransactionEntities { get; set; } = new List<TransactionEntity>();
 
     /// <summary>
     /// Reference to connected Epoch
@@ -52,6 +53,7 @@ public class BlockEntity
     /// <summary>
     /// Epoch FK
     /// </summary>
+    [Column(TypeName = "smallint")]
     public int EpochNumber { get; set; }
     
     /// <summary>

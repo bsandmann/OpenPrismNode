@@ -5,6 +5,7 @@ using OpenPrismNode.Core;
 using OpenPrismNode.Core.Common;
 using OpenPrismNode.Core.Crypto;
 using OpenPrismNode.Core.Models;
+using OpenPrismNode.Core.Services;
 using OpenPrismNode.Sync.Services;
 using OpenPrismNode.Web;
 
@@ -24,11 +25,14 @@ builder.Services.AddSingleton<IEcService, EcServiceBouncyCastle>();
 builder.Services.AddSingleton<ISha256Service, Sha256ServiceBouncyCastle>();
 builder.Services.AddScoped<INpgsqlConnectionFactory, NpgsqlConnectionFactory>();
 builder.Services.AddScoped<BackgroundSyncService>();
+builder.Services.AddSingleton<IWalletAddressCache>(new WalletAddressCache(appSettings!.WalletCacheSize));
+builder.Services.AddSingleton<IStakeAddressCache>(new StakeAddressCache(appSettings.WalletCacheSize));
+builder.Services.AddLazyCache();
 builder.Services.AddHostedService<BackgroundSyncService>();
 builder.Services.AddMediatR(cfg => cfg.RegisterServicesFromAssemblies(AppDomain.CurrentDomain.GetAssemblies()));
 builder.Services.AddDbContext<DataContext>(options =>
     options.UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking)
-        .EnableSensitiveDataLogging(false)
+        .EnableSensitiveDataLogging(true)
         .UseNpgsql(appSettings!.PrismNetwork.PrismPostgresConnectionString)
         .UseNpgsql(p =>
         {
@@ -39,7 +43,10 @@ builder.Services.AddDbContext<DataContext>(options =>
                 errorCodesToAdd: null
             );
         }));
-
+builder.Services.AddLogging(p =>
+    p.AddConsole()
+        .AddSeq(builder.Configuration.GetSection("Seq"))
+);
 
 var app = builder.Build();
 

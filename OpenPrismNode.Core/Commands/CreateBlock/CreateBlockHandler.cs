@@ -32,19 +32,21 @@ public class CreateBlockHandler : IRequestHandler<CreateBlockRequest, Result<Blo
     {
         _context.ChangeTracker.Clear();
         _context.ChangeTracker.AutoDetectChangesEnabled = false;
-        var now = DateTime.UtcNow;
 
-        if (!_context.BlockEntities.Any(p => p.BlockHeight == request.BlockHeight))
+        if (!await _context.BlockEntities.AnyAsync(p => p.BlockHeight == request.BlockHeight, cancellationToken: cancellationToken))
         {
+            var dateTimeNow = DateTime.SpecifyKind(DateTime.UtcNow, DateTimeKind.Unspecified);
+            var timeCreatedUtc = DateTime.SpecifyKind(request.TimeUtc, DateTimeKind.Unspecified);
+
             var blockEntity = new BlockEntity()
             {
                 BlockHeight = request.BlockHeight,
                 BlockHashPrefix = BlockEntity.CalculateBlockHashPrefix(request.BlockHash.Value) ?? 0,
                 BlockHash = request.BlockHash.Value!,
                 EpochNumber = request.EpochNumber,
-                TimeUtc = request.TimeUtc,
+                TimeUtc = timeCreatedUtc,
                 TxCount = request.TxCount,
-                LastParsedOnUtc = now,
+                LastParsedOnUtc = dateTimeNow,
                 PreviousBlockHeight = request.PreviousBlockHeight,
                 PreviousBlockHashPrefix = BlockEntity.CalculateBlockHashPrefix(request.PreviousBlockHash?.Value),
                 IsFork = request.IsFork
@@ -55,10 +57,13 @@ public class CreateBlockHandler : IRequestHandler<CreateBlockRequest, Result<Blo
             // Update network LastSynced time
             await _context.PrismNetworkEntities
                 .Where(n => n.NetworkType == request.NetworkType)
-                .ExecuteUpdateAsync(s => s.SetProperty(n => n.LastSynced, now), cancellationToken);
+                .ExecuteUpdateAsync(s => s.SetProperty(n => n.LastSynced, dateTimeNow), cancellationToken);
 
             await _context.SaveChangesAsync(cancellationToken);
 
+            blockEntity.TimeUtc = DateTime.SpecifyKind(blockEntity.TimeUtc, DateTimeKind.Utc);
+            blockEntity.LastParsedOnUtc = blockEntity.LastParsedOnUtc is not null ? DateTime.SpecifyKind(blockEntity.LastParsedOnUtc!.Value, DateTimeKind.Utc) : null;
+            
             return Result.Ok(blockEntity);
         }
         else

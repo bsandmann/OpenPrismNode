@@ -12,7 +12,7 @@ public class PrismParameters
     public const int MaxServiceEndpointSize = 300;
     public static readonly List<string> ExpectedServiceTypes = new List<string> { "LinkedDomains", "DIDCommMessaging", "CredentialRegistry", "OID4VCI", "OID4VP" };
     public const string Secp256k1CurveName = "secp256k1";
-    public const string Ed25519CurveName = "edd25519";
-    public const string X25519CurveName = "x25519";
+    public const string Ed25519CurveName = "Ed25519";
+    public const string X25519CurveName = "X25519";
     public const int MetadataKey = 21325;
 }

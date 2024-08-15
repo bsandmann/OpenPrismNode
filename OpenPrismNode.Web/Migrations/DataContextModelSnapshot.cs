@@ -34,20 +34,14 @@ namespace OpenPrismNode.Web.Migrations
                         .IsRequired()
                         .HasColumnType("bytea");
 
-                    b.Property<int>("EpochNumber")
-                        .HasColumnType("integer");
+                    b.Property<short>("EpochNumber")
+                        .HasColumnType("smallint");
 
                     b.Property<bool>("IsFork")
                         .HasColumnType("boolean");
 
                     b.Property<DateTime?>("LastParsedOnUtc")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<int?>("PreviousBlockBlockHashPrefix")
-                        .HasColumnType("integer");
-
-                    b.Property<int?>("PreviousBlockBlockHeight")
-                        .HasColumnType("integer");
+                        .HasColumnType("timestamp without time zone");
 
                     b.Property<int?>("PreviousBlockHashPrefix")
                         .HasColumnType("integer");
@@ -56,18 +50,51 @@ namespace OpenPrismNode.Web.Migrations
                         .HasColumnType("integer");
 
                     b.Property<DateTime>("TimeUtc")
-                        .HasColumnType("timestamp with time zone");
+                        .HasColumnType("timestamp without time zone");
 
-                    b.Property<int>("TxCount")
-                        .HasColumnType("integer");
+                    b.Property<short>("TxCount")
+                        .HasColumnType("smallint");
 
                     b.HasKey("BlockHeight", "BlockHashPrefix");
 
                     b.HasIndex("EpochNumber");
 
-                    b.HasIndex("PreviousBlockBlockHeight", "PreviousBlockBlockHashPrefix");
+                    b.HasIndex("PreviousBlockHeight", "PreviousBlockHashPrefix");
 
                     b.ToTable("BlockEntities");
+                });
+
+            modelBuilder.Entity("OpenPrismNode.Core.Entities.CreateDidEntity", b =>
+                {
+                    b.Property<byte[]>("OperationHash")
+                        .HasColumnType("bytea");
+
+                    b.Property<int>("BlockHashPrefix")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("BlockHeight")
+                        .HasColumnType("integer");
+
+                    b.Property<byte[]>("Did")
+                        .IsRequired()
+                        .HasColumnType("bytea");
+
+                    b.Property<int>("OperationSequenceNumber")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("SigningKeyId")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<byte[]>("TransactionHash")
+                        .IsRequired()
+                        .HasColumnType("bytea");
+
+                    b.HasKey("OperationHash");
+
+                    b.HasIndex("TransactionHash", "BlockHeight", "BlockHashPrefix");
+
+                    b.ToTable("CreateDidEntities");
                 });
 
             modelBuilder.Entity("OpenPrismNode.Core.Entities.EpochEntity", b =>
@@ -91,11 +118,181 @@ namespace OpenPrismNode.Web.Migrations
                         .HasColumnType("integer");
 
                     b.Property<DateTime?>("LastSynced")
-                        .HasColumnType("timestamp with time zone");
+                        .HasColumnType("timestamp without time zone");
 
                     b.HasKey("NetworkType");
 
                     b.ToTable("PrismNetworkEntities");
+                });
+
+            modelBuilder.Entity("OpenPrismNode.Core.Entities.PrismPublicKeyEntity", b =>
+                {
+                    b.Property<int>("PrismPublicKeyEntityId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("PrismPublicKeyEntityId"));
+
+                    b.Property<byte[]>("CreateDidEntityOperationHash")
+                        .IsRequired()
+                        .HasColumnType("bytea");
+
+                    b.Property<string>("Curve")
+                        .IsRequired()
+                        .HasMaxLength(12)
+                        .HasColumnType("character varying(12)");
+
+                    b.Property<string>("KeyId")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
+
+                    b.Property<int>("PrismKeyUsage")
+                        .HasColumnType("integer");
+
+                    b.Property<byte[]>("PublicKey")
+                        .IsRequired()
+                        .HasColumnType("bytea");
+
+                    b.HasKey("PrismPublicKeyEntityId");
+
+                    b.HasIndex("CreateDidEntityOperationHash");
+
+                    b.ToTable("PrismPublicKeyEntities");
+                });
+
+            modelBuilder.Entity("OpenPrismNode.Core.Entities.PrismServiceEntity", b =>
+                {
+                    b.Property<int>("PrismServiceEntityId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("PrismServiceEntityId"));
+
+                    b.Property<byte[]>("CreateDidEntityOperationHash")
+                        .IsRequired()
+                        .HasColumnType("bytea");
+
+                    b.Property<string>("JsonData")
+                        .HasColumnType("jsonb");
+
+                    b.Property<string>("ListOfUrisJson")
+                        .HasColumnType("jsonb");
+
+                    b.Property<string>("ServiceId")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
+
+                    b.Property<string>("Type")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<string>("UriString")
+                        .HasColumnType("text");
+
+                    b.HasKey("PrismServiceEntityId");
+
+                    b.HasIndex("CreateDidEntityOperationHash");
+
+                    b.ToTable("PrismServiceEntities");
+                });
+
+            modelBuilder.Entity("OpenPrismNode.Core.Entities.StakeAddressEntity", b =>
+                {
+                    b.Property<string>("StakeAddress")
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)");
+
+                    b.HasKey("StakeAddress");
+
+                    b.ToTable("StakeAddressEntities");
+                });
+
+            modelBuilder.Entity("OpenPrismNode.Core.Entities.TransactionEntity", b =>
+                {
+                    b.Property<byte[]>("TransactionHash")
+                        .HasColumnType("bytea");
+
+                    b.Property<int>("BlockHeight")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("BlockHashPrefix")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("Fees")
+                        .HasColumnType("integer");
+
+                    b.Property<short>("Index")
+                        .HasColumnType("smallint");
+
+                    b.Property<short>("Size")
+                        .HasColumnType("smallint");
+
+                    b.HasKey("TransactionHash", "BlockHeight", "BlockHashPrefix");
+
+                    b.HasIndex("TransactionHash")
+                        .IsUnique();
+
+                    b.HasIndex("BlockHeight", "BlockHashPrefix");
+
+                    b.ToTable("TransactionEntities");
+                });
+
+            modelBuilder.Entity("OpenPrismNode.Core.Entities.UtxoEntity", b =>
+                {
+                    b.Property<int>("UtxoEntityId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("UtxoEntityId"));
+
+                    b.Property<int>("BlockHashPrefix")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("BlockHeight")
+                        .HasColumnType("integer");
+
+                    b.Property<short>("Index")
+                        .HasColumnType("smallint");
+
+                    b.Property<bool>("IsOutgoing")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("StakeAddress")
+                        .HasColumnType("character varying(64)");
+
+                    b.Property<byte[]>("TransactionHash")
+                        .IsRequired()
+                        .HasColumnType("bytea");
+
+                    b.Property<long>("Value")
+                        .HasColumnType("bigint");
+
+                    b.Property<string>("WalletAddress")
+                        .HasColumnType("character varying(114)");
+
+                    b.HasKey("UtxoEntityId");
+
+                    b.HasIndex("StakeAddress");
+
+                    b.HasIndex("WalletAddress");
+
+                    b.HasIndex("TransactionHash", "BlockHeight", "BlockHashPrefix", "Index", "IsOutgoing", "Value")
+                        .IsUnique();
+
+                    b.ToTable("UtxoEntities");
+                });
+
+            modelBuilder.Entity("OpenPrismNode.Core.Entities.WalletAddressEntity", b =>
+                {
+                    b.Property<string>("WalletAddress")
+                        .HasMaxLength(114)
+                        .HasColumnType("character varying(114)");
+
+                    b.HasKey("WalletAddress");
+
+                    b.ToTable("WalletAddressEntities");
                 });
 
             modelBuilder.Entity("OpenPrismNode.Core.Entities.BlockEntity", b =>
@@ -108,11 +305,23 @@ namespace OpenPrismNode.Web.Migrations
 
                     b.HasOne("OpenPrismNode.Core.Entities.BlockEntity", "PreviousBlock")
                         .WithMany("NextBlocks")
-                        .HasForeignKey("PreviousBlockBlockHeight", "PreviousBlockBlockHashPrefix");
+                        .HasForeignKey("PreviousBlockHeight", "PreviousBlockHashPrefix")
+                        .OnDelete(DeleteBehavior.NoAction);
 
                     b.Navigation("EpochEntity");
 
                     b.Navigation("PreviousBlock");
+                });
+
+            modelBuilder.Entity("OpenPrismNode.Core.Entities.CreateDidEntity", b =>
+                {
+                    b.HasOne("OpenPrismNode.Core.Entities.TransactionEntity", "TransactionEntity")
+                        .WithMany("CreateDidEntities")
+                        .HasForeignKey("TransactionHash", "BlockHeight", "BlockHashPrefix")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("TransactionEntity");
                 });
 
             modelBuilder.Entity("OpenPrismNode.Core.Entities.EpochEntity", b =>
@@ -126,9 +335,72 @@ namespace OpenPrismNode.Web.Migrations
                     b.Navigation("NetworkEntity");
                 });
 
+            modelBuilder.Entity("OpenPrismNode.Core.Entities.PrismPublicKeyEntity", b =>
+                {
+                    b.HasOne("OpenPrismNode.Core.Entities.CreateDidEntity", null)
+                        .WithMany("PrismPublicKeys")
+                        .HasForeignKey("CreateDidEntityOperationHash")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("OpenPrismNode.Core.Entities.PrismServiceEntity", b =>
+                {
+                    b.HasOne("OpenPrismNode.Core.Entities.CreateDidEntity", null)
+                        .WithMany("PrismServices")
+                        .HasForeignKey("CreateDidEntityOperationHash")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("OpenPrismNode.Core.Entities.TransactionEntity", b =>
+                {
+                    b.HasOne("OpenPrismNode.Core.Entities.BlockEntity", "BlockEntity")
+                        .WithMany("PrismTransactionEntities")
+                        .HasForeignKey("BlockHeight", "BlockHashPrefix")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("BlockEntity");
+                });
+
+            modelBuilder.Entity("OpenPrismNode.Core.Entities.UtxoEntity", b =>
+                {
+                    b.HasOne("OpenPrismNode.Core.Entities.StakeAddressEntity", "StakeAddressEntity")
+                        .WithMany("Utxos")
+                        .HasForeignKey("StakeAddress")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.HasOne("OpenPrismNode.Core.Entities.WalletAddressEntity", "WalletAddressEntity")
+                        .WithMany("Utxos")
+                        .HasForeignKey("WalletAddress")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.HasOne("OpenPrismNode.Core.Entities.TransactionEntity", "Transaction")
+                        .WithMany("Utxos")
+                        .HasForeignKey("TransactionHash", "BlockHeight", "BlockHashPrefix")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("StakeAddressEntity");
+
+                    b.Navigation("Transaction");
+
+                    b.Navigation("WalletAddressEntity");
+                });
+
             modelBuilder.Entity("OpenPrismNode.Core.Entities.BlockEntity", b =>
                 {
                     b.Navigation("NextBlocks");
+
+                    b.Navigation("PrismTransactionEntities");
+                });
+
+            modelBuilder.Entity("OpenPrismNode.Core.Entities.CreateDidEntity", b =>
+                {
+                    b.Navigation("PrismPublicKeys");
+
+                    b.Navigation("PrismServices");
                 });
 
             modelBuilder.Entity("OpenPrismNode.Core.Entities.EpochEntity", b =>
@@ -139,6 +411,23 @@ namespace OpenPrismNode.Web.Migrations
             modelBuilder.Entity("OpenPrismNode.Core.Entities.NetworkEntity", b =>
                 {
                     b.Navigation("Epochs");
+                });
+
+            modelBuilder.Entity("OpenPrismNode.Core.Entities.StakeAddressEntity", b =>
+                {
+                    b.Navigation("Utxos");
+                });
+
+            modelBuilder.Entity("OpenPrismNode.Core.Entities.TransactionEntity", b =>
+                {
+                    b.Navigation("CreateDidEntities");
+
+                    b.Navigation("Utxos");
+                });
+
+            modelBuilder.Entity("OpenPrismNode.Core.Entities.WalletAddressEntity", b =>
+                {
+                    b.Navigation("Utxos");
                 });
 #pragma warning restore 612, 618
         }

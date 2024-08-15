@@ -17,4 +17,10 @@ public class PrismNetwork
     /// </summary>
     public string DbSyncPostgresConnectionString { get; set; }
 
+    /// <summary>
+    /// Usually the sync starts at epoch 0, but can be set to a different epoch, to start syncing from there
+    /// This can be useful, if no PRISM data exists prior to a certain epoch
+    /// </summary>
+    public int StartAtEpochNumber { get; set; } = 0;
+
 }

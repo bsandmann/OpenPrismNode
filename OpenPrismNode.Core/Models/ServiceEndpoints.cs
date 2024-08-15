@@ -24,7 +24,7 @@ public class ServiceEndpoints
             var deserializationResult = JsonSerializer.Deserialize<List<string>>(serviceEndpoint);
             if (deserializationResult is null)
             {
-                return Result.Fail("Invalid ServiceEndpointUri: Deserialization failed.");
+                return Result.Fail($"Invalid ServiceEndpointUri: Deserialization failed: {serviceEndpoint}");
             }
 
             var uriConversionFailed = false;
@@ -42,14 +42,14 @@ public class ServiceEndpoints
 
             if (uriConversionFailed)
             {
-                return Result.Fail("Invalid ServiceEndpointUri: Could not convert all items to Uri.");
+                return Result.Fail($"Invalid ServiceEndpointUri: Could not convert all items to Uri: {serviceEndpoint}");
             }
 
             return new ServiceEndpoints { ListOfUris = uris };
         }
         catch (Exception e)
         {
-            return Result.Fail("Invalid ServiceEndpointUri: Could not parse as Uri or List of Uris.");
+            return Result.Fail($"Invalid ServiceEndpointUri: Could not parse as Uri or List of Uris: {serviceEndpoint}");
         }
     }
 }

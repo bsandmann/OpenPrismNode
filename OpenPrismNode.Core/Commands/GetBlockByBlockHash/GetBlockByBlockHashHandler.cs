@@ -44,6 +44,8 @@ public class GetBlockByBlockHashHandler : IRequestHandler<GetBlockByBlockHashReq
             return Result.Fail($"No block found with height {request.BlockHeight} and hash prefix {request.BlockHashPrefix} in the {request.NetworkType} network.");
         }
 
+        block.TimeUtc = DateTime.SpecifyKind(block.TimeUtc, DateTimeKind.Utc);
+        block.LastParsedOnUtc = block.LastParsedOnUtc is not null ? DateTime.SpecifyKind(block.LastParsedOnUtc!.Value, DateTimeKind.Utc) : null;
         return Result.Ok(block);
     }
 }

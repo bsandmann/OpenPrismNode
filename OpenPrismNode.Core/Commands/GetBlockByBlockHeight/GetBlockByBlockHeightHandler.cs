@@ -25,7 +25,9 @@ public class GetBlockByBlockHeightHandler : IRequestHandler<GetBlockByBlockHeigh
         {
             return Result.Fail($"No blocks found in the database with the given block height: {request.BlockHeight}");
         }
-
+        
+        block.TimeUtc = DateTime.SpecifyKind(block.TimeUtc, DateTimeKind.Utc);
+        block.LastParsedOnUtc = block.LastParsedOnUtc is not null ? DateTime.SpecifyKind(block.LastParsedOnUtc!.Value, DateTimeKind.Utc) : null;
         return Result.Ok(block);
     }
 }

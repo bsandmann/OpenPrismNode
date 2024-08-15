@@ -2,6 +2,8 @@ using OpenPrismNode.Sync.Models;
 
 namespace OpenPrismNode.Sync.Commands.ParseTransaction;
 
+using Core.Models;
+
 public static class GetOperationResultType
 {
     public static OperationResultType GetFromSignedAtalaOperation(SignedAtalaOperation signedAtalaOperation)

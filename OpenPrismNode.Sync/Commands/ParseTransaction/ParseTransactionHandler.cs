@@ -57,6 +57,12 @@ public class ParseTransactionHandler : IRequestHandler<ParseTransactionRequest, 
         }
         else
         {
+            if (request.SignedAtalaOperation.Operation.OperationCase == AtalaOperation.OperationOneofCase.None)
+            {
+                // Likely an old issuing operation
+                return Result.Fail(ParserErrors.UnsupportedOperation);
+            }
+
             return Result.Fail(ParserErrors.UnknownOperation);
         }
     }
@@ -106,7 +112,7 @@ public class ParseTransactionHandler : IRequestHandler<ParseTransactionRequest, 
         }
 
         // TODO: Chekc if the DID already exists in the database. See spec
-        
+
         var didDocument = new DidDocument(didIdentifier, publicKeyParseResult.Value, serviceParseResult.Value, contexts);
         var operationResultWrapper = new OperationResultWrapper(OperationResultType.CreateDid, index, didDocument, signedWith);
         return Result.Ok(operationResultWrapper);
@@ -411,50 +417,63 @@ public class ParseTransactionHandler : IRequestHandler<ParseTransactionRequest, 
             return Result.Fail(ParserErrors.DuplicateKeyIds);
         }
 
+        if (publicKeys.Any(p => p.KeyUsage == PrismKeyUsage.MasterKey && p.Curve != PrismParameters.Secp256k1CurveName))
+        {
+            return Result.Fail(ParserErrors.MasterKeyMustBeSecp256k1);
+        }
+
         return Result.Ok(publicKeys);
     }
 
     private static Result<PrismPublicKey> ParsePublicKeyInternal(PublicKey publicKey)
     {
-        // TODO suuport Ed25519 and X25519
+        string curve;
+        byte[] keyData;
+
         if (publicKey.KeyDataCase == PublicKey.KeyDataOneofCase.EcKeyData)
         {
-            Ensure.That(publicKey.EcKeyData.Curve.Equals(PrismParameters.Secp256k1CurveName));
-            // Debug.Assert(publicKey.EcKeyData.Curve.Equals(PrismParameters.Ed25519CurveName));
-        }
-
-        else
-        {
-            Ensure.That(publicKey.CompressedEcKeyData.Curve.Equals(PrismParameters.Secp256k1CurveName));
-            // Debug.Assert(publicKey.CompressedEcKeyData.Curve.Equals(PrismParameters.Ed25519CurveName));
-        }
-
-        byte[] x;
-        byte[] y;
-        if (publicKey.CompressedEcKeyData is not null)
-        {
-            var decompressedResult = PrismPublicKey.Decompress(publicKey.CompressedEcKeyData.Data.ToByteArray(), publicKey.CompressedEcKeyData.Curve);
-            if (decompressedResult.IsFailed)
+            curve = publicKey.EcKeyData.Curve;
+            if (curve == PrismParameters.Secp256k1CurveName)
             {
-                return decompressedResult.ToResult();
+                return ParseSecp256k1Key(publicKey);
             }
-
-            x = decompressedResult.Value.Item1;
-            y = decompressedResult.Value.Item2;
-        }
-        else if (!publicKey.EcKeyData.X.IsEmpty && !publicKey.EcKeyData.Y.IsEmpty)
-        {
-            x = PrismEncoding.ByteStringToByteArray(publicKey.EcKeyData.X);
-            y = PrismEncoding.ByteStringToByteArray(publicKey.EcKeyData.Y);
-            if (x.Length != 32 || y.Length != 32)
+            else if (curve == PrismParameters.Ed25519CurveName || curve == PrismParameters.X25519CurveName)
             {
-                // In the beginning of PRISM there are a lot of invalid publicKeys with length of 31, 32 and 33 bytes
-                // I theoretically could reconstruct some of those keys, but I'll flag them as invalid to make it simpler and
-                // not be compatible into the early days of prism
-                return Result.Fail(ParserErrors.PublicKeysNotFoundOrInvalid);
+                if (publicKey.EcKeyData.X.IsEmpty)
+                {
+                    return Result.Fail(ParserErrors.PublicKeysNotFoundOrInvalid);
+                }
+
+                keyData = publicKey.EcKeyData.X.ToByteArray();
+            }
+            else
+            {
+                return Result.Fail($"Unsupported curve: {curve}");
             }
         }
+        else if (publicKey.KeyDataCase == PublicKey.KeyDataOneofCase.CompressedEcKeyData)
+        {
+            curve = publicKey.CompressedEcKeyData.Curve;
+            if (curve == PrismParameters.Secp256k1CurveName)
+            {
+                return ParseCompressedSecp256k1Key(publicKey);
+            }
+            else if (curve == PrismParameters.Ed25519CurveName || curve == PrismParameters.X25519CurveName)
+            {
+                keyData = publicKey.CompressedEcKeyData.Data.ToByteArray();
+            }
+            else
+            {
+                return Result.Fail($"Unsupported curve: {curve}");
+            }
+        }
         else
+        {
+            return Result.Fail(ParserErrors.PublicKeysNotFoundOrInvalid);
+        }
+
+        // Validate key data for ED25519 and X25519
+        if (keyData.Length != 32)
         {
             return Result.Fail(ParserErrors.PublicKeysNotFoundOrInvalid);
         }
@@ -472,11 +491,62 @@ public class ParseTransactionHandler : IRequestHandler<ParseTransactionRequest, 
         return Result.Ok(new PrismPublicKey(
             keyUsage: Enum.Parse<PrismKeyUsage>(publicKey.Usage.ToString()),
             keyId: publicKey.Id,
-            keyX: x,
-            keyY: y,
-            curve: publicKey.EcKeyData is not null ? publicKey.EcKeyData.Curve : publicKey.CompressedEcKeyData!.Curve
+            keyX: keyData,
+            keyY: null,
+            curve: curve
         ));
     }
+
+    private static Result<PrismPublicKey> ParseSecp256k1Key(PublicKey publicKey)
+    {
+        if (publicKey.EcKeyData.X.IsEmpty || publicKey.EcKeyData.Y.IsEmpty)
+        {
+            return Result.Fail(ParserErrors.PublicKeysNotFoundOrInvalid);
+        }
+
+        var x = publicKey.EcKeyData.X.ToByteArray();
+        var y = publicKey.EcKeyData.Y.ToByteArray();
+
+        if (x.Length != 32 || y.Length != 32)
+        {
+            return Result.Fail(ParserErrors.PublicKeysNotFoundOrInvalid);
+        }
+
+        return CreatePrismPublicKey(publicKey, x, y, PrismParameters.Secp256k1CurveName);
+    }
+
+    private static Result<PrismPublicKey> ParseCompressedSecp256k1Key(PublicKey publicKey)
+    {
+        var decompressedResult = PrismPublicKey.Decompress(publicKey.CompressedEcKeyData.Data.ToByteArray(), PrismParameters.Secp256k1CurveName);
+        if (decompressedResult.IsFailed)
+        {
+            return decompressedResult.ToResult();
+        }
+
+        return CreatePrismPublicKey(publicKey, decompressedResult.Value.Item1, decompressedResult.Value.Item2, PrismParameters.Secp256k1CurveName);
+    }
+
+    private static Result<PrismPublicKey> CreatePrismPublicKey(PublicKey publicKey, byte[] x, byte[] y, string curve)
+    {
+        if (publicKey.Id.Length > PrismParameters.MaxIdSize)
+        {
+            return Result.Fail(ParserErrors.MaximumKeyIdSize);
+        }
+
+        if (publicKey.Usage == KeyUsage.UnknownKey)
+        {
+            return Result.Fail("The UnknownKey is not a valid key usage.");
+        }
+
+        return Result.Ok(new PrismPublicKey(
+            keyUsage: Enum.Parse<PrismKeyUsage>(publicKey.Usage.ToString()),
+            keyId: publicKey.Id,
+            keyX: x,
+            keyY: y,
+            curve: curve
+        ));
+    }
+
 
     private Result<List<PrismService>> ParseService(CreateDIDOperation.Types.DIDCreationData didData)
     {
@@ -516,12 +586,25 @@ public class ParseTransactionHandler : IRequestHandler<ParseTransactionRequest, 
         if (string.IsNullOrWhiteSpace(type) || !type.Trim().Equals(type) || type.Length > PrismParameters.MaxTypeSize)
         {
             return Result.Fail($"{ParserErrors.ServiceTypeInvalid}: {type}");
-            ;
         }
 
-        if (!PrismParameters.ExpectedServiceTypes.Contains(type))
+        if (type.StartsWith("[") && type.EndsWith("]"))
         {
-            logger.LogWarning($"{ParserErrors.UnexpectedServiceType}: {type}");
+            var listTypes = type.Substring(1, type.Length - 2).Split(",");
+            foreach (var listType in listTypes)
+            {
+                if (!PrismParameters.ExpectedServiceTypes.Contains(listType))
+                {
+                    logger.LogWarning($"{ParserErrors.UnexpectedServiceType}: {type}");
+                }
+            }
+        }
+        else
+        {
+            if (!PrismParameters.ExpectedServiceTypes.Contains(type))
+            {
+                logger.LogWarning($"{ParserErrors.UnexpectedServiceType}: {type}");
+            }
         }
 
         if (string.IsNullOrWhiteSpace(id) || id.Length > PrismParameters.MaxIdSize)

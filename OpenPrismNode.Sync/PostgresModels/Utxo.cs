@@ -1,5 +1,7 @@
 ﻿namespace OpenPrismNode.Sync.PostgresModels;
 
+using Core.Models;
+
 // ReSharper disable InconsistentNaming
 #pragma warning disable CS8618
 

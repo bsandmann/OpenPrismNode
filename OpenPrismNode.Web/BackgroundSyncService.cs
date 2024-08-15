@@ -60,7 +60,7 @@ public class BackgroundSyncService : BackgroundService
 
             _logger.LogInformation($"Sync running for {_appSettings.PrismNetwork.Name}");
 
-            var syncResult = await SyncService.RunSync(mediator, _logger, _appSettings.PrismNetwork.Name, isInitialStartup);
+            var syncResult = await SyncService.RunSync(mediator, _logger, _appSettings.PrismNetwork.Name,_appSettings.PrismNetwork.StartAtEpochNumber, isInitialStartup);
             if (syncResult.IsFailed)
             {
                 _logger.LogCritical($"Sync failed for {_appSettings.PrismNetwork.Name}: {syncResult.Errors.SingleOrDefault()}");

@@ -25,7 +25,8 @@ public class GetMostRecentBlockHandler : IRequestHandler<GetMostRecentBlockReque
         {
             return Result.Fail("No blocks found in the database.");
         }
-
+        mostRecentBlock.TimeUtc = DateTime.SpecifyKind(mostRecentBlock.TimeUtc, DateTimeKind.Utc);
+        mostRecentBlock.LastParsedOnUtc = mostRecentBlock.LastParsedOnUtc is not null ? DateTime.SpecifyKind(mostRecentBlock.LastParsedOnUtc!.Value, DateTimeKind.Utc) : null;
         return Result.Ok(mostRecentBlock);
     }
 }

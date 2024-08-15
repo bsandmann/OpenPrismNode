@@ -8,6 +8,9 @@ using OpenPrismNode.Sync.PostgresModels;
 
 namespace OpenPrismNode.Sync.Commands.GetPaymentDataFromTransaction;
 
+using Core.Models;
+using Utxo = PostgresModels.Utxo;
+
 public class GetPaymentDataFromTransactionHandler : IRequestHandler<GetPaymentDataFromTransactionRequest, Result<Payment>>
 {
     private readonly string _connectionString;
@@ -49,7 +52,7 @@ public class GetPaymentDataFromTransactionHandler : IRequestHandler<GetPaymentDa
             Value = t.value,
             WalletAddress = new WalletAddress
             {
-                StakeAddress = t.stake_address,
+                StakeAddressString = t.stake_address,
                 WalletAddressString = t.address
             }
         }).ToList();

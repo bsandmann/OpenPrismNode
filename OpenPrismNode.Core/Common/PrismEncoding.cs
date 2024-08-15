@@ -69,11 +69,17 @@ public static class PrismEncoding
         switch (s.Length % 4) // Pad with trailing '='s
         {
             case 0: break; // No pad chars in this case
-            case 2: s += "=="; break; // Two pad chars
-            case 3: s += "="; break; // One pad char
-            default: throw new Exception(
-                "Illegal base64url string!");
+            case 2:
+                s += "==";
+                break; // Two pad chars
+            case 3:
+                s += "=";
+                break; // One pad char
+            default:
+                throw new Exception(
+                    "Illegal base64url string!");
         }
+
         return Convert.FromBase64String(s); // Standard base64 decoder
     }
 
@@ -100,16 +106,20 @@ public static class PrismEncoding
 
         return Result.Fail("invalid form");
     }
-    
-    public static string PublicKeyPairByteArraysToHex(byte[] x, byte[] y)
+
+    public static string PublicKeyPairByteArraysToHex(byte[] x, byte[]? y)
     {
         var sb = new StringBuilder();
         sb.Append("04");
         sb.Append(ByteArrayToHex(x));
-        sb.Append(ByteArrayToHex(y));
+        if (y is not null)
+        {
+            sb.Append(ByteArrayToHex(y));
+        }
+
         return sb.ToString();
     }
-    
+
     public static byte[] Base64UrlDecode(string input)
     {
         string s = input.Replace('-', '+').Replace('_', '/');

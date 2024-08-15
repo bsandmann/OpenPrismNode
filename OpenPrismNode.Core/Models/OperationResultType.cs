@@ -1,11 +1,9 @@
-﻿namespace OpenPrismNode.Sync.Models;
+﻿namespace OpenPrismNode.Core.Models;
 
 public enum OperationResultType
 {
     CreateDid,
     UpdateDid,
-    IssueCredentialBatch,
-    RevokeCredentials,
     ProtocolVersionUpdate,
     DeactivateDid
 }

@@ -1,6 +1,9 @@
 namespace OpenPrismNode.Sync.Commands.ProcessTransaction;
 
 using Core;
+using Core.Commands.CreateAddresses;
+using Core.Commands.CreateTransaction;
+using Core.Models;
 using DecodeTransaction;
 using FluentResults;
 using GetMetadataFromTransaction;
@@ -9,6 +12,7 @@ using MediatR;
 using Microsoft.Extensions.Logging;
 using Models;
 using ParseTransaction;
+using PostgresModels;
 
 public class ProcessTransactionHandler : IRequestHandler<ProcessTransactionRequest, Result>
 {
@@ -58,15 +62,16 @@ public class ProcessTransactionHandler : IRequestHandler<ProcessTransactionReque
                         _logger.LogError($"Failed while reading payment data of transaction # {request.Transaction.block_index} in block # {request.Block.block_no}: {paymentdata.Errors.First().Message}");
                     }
 
-                    //
-                    // var combinedWalletAddresses = new List<WalletAddress>();
-                    // combinedWalletAddresses.AddRange(paymentdata.Value.Incoming.Select(p => p.WalletAddress));
-                    // combinedWalletAddresses.AddRange(paymentdata.Value.Outgoing.Select(p => p.WalletAddress));
-                    // var addressCreationResult = await _mediator.Send(new CreateWalletAddressesRequest(combinedWalletAddresses.Select(q => new PrismWalletAddressModel()
-                    // {
-                    //     StakeAddress = q.StakeAddress,
-                    //     WalletAddressString = q.WalletAddressString
-                    // }).ToList()));
+                    var combinedWalletAddresses = new List<WalletAddress>();
+                    combinedWalletAddresses.AddRange(paymentdata.Value.Incoming.Select(p => p.WalletAddress));
+                    combinedWalletAddresses.AddRange(paymentdata.Value.Outgoing.Select(p => p.WalletAddress));
+
+                    var addressCreationResult = await _mediator.Send(new CreateAddressesRequest(combinedWalletAddresses), cancellationToken);
+                    if (addressCreationResult.IsFailed)
+                    {
+                        _logger.LogError($"Failed while creating wallet addresses for transaction # {request.Transaction.block_index} in block # {request.Block.block_no}: {addressCreationResult.Errors.First().Message}");
+                    }
+
                     var operationSequenceIndex = 0;
                     foreach (var operation in decodeResult.Value)
                     {
@@ -74,45 +79,65 @@ public class ProcessTransactionHandler : IRequestHandler<ProcessTransactionReque
                         var parsingResult = await _mediator.Send(new ParseTransactionRequest(operation, operationSequenceIndex, resolveMode), cancellationToken);
                         if (parsingResult.IsSuccess)
                         {
+                            var utxos = paymentdata.Value.Incoming
+                                .Select(p => new UtxoWrapper
+                                {
+                                    Index = p.Index,
+                                    Value = (int)p.Value,
+                                    IsOutgoing = false,
+                                    WalletAddress = new WalletAddress
+                                    {
+                                        StakeAddressString = p.WalletAddress.StakeAddressString,
+                                        WalletAddressString = p.WalletAddress.WalletAddressString
+                                    }
+                                })
+                                .Concat(paymentdata.Value.Outgoing.Select(p => new UtxoWrapper
+                                {
+                                    Index = p.Index,
+                                    Value = (int)p.Value,
+                                    IsOutgoing = true,
+                                    WalletAddress = new WalletAddress
+                                    {
+                                        StakeAddressString = p.WalletAddress.StakeAddressString,
+                                        WalletAddressString = p.WalletAddress.WalletAddressString
+                                    }
+                                }))
+                                .ToList();
+
+                            
+                            //TODO remove
+                            // if (parsingResult.Value.OperationResultType == OperationResultType.CreateDid
+                            //     && parsingResult.Value.AsCreateDid().didDocument.PrismServices.Any())
+                            // {
+                            //     throw new Exception($"Found service on {request.Block.block_no}");
+                            // }
+
+                            if (parsingResult.Value.OperationResultType == OperationResultType.CreateDid
+                                && parsingResult.Value.AsCreateDid().didDocument.PublicKeys.Any() &&
+                                parsingResult.Value.AsCreateDid().didDocument.PublicKeys.Any(p => p.Curve != PrismParameters.Secp256k1CurveName))
+                            {
+                                throw new Exception($"Found other crypt alg on {request.Block.block_no}");
+                            }
+
                             try
                             {
                                 _logger.LogInformation($"Parsing successful for transaction # {request.Transaction.block_index} in block # {request.Block.block_no}");
-                                // var transactionRequest = new CreateTransactionRequest(
-                                //     transactionHash: Hash.CreateFrom(blockTransaction.hash),
-                                //     transactionBlock: Hash.CreateFrom(selectedBlock.hash),
-                                //     transactionFee: long.Parse(blockTransaction.fee.ToString()),
-                                //     transactionSize: blockTransaction.size,
-                                //     transactionIndex: (uint)blockTransaction.block_index,
-                                //     key: key,
-                                //     parsingResult: parsingResult.Value,
-                                //     incomingUtxos: paymentdata.Value.Incoming.Select(p => new PrismUtxoModel()
-                                //     {
-                                //         Index = (uint)p.Index,
-                                //         Value = p.Value,
-                                //         PrismWalletAddress = new PrismWalletAddressModel()
-                                //         {
-                                //             StakeAddress = p.WalletAddress.StakeAddress,
-                                //             WalletAddressString = p.WalletAddress.WalletAddressString
-                                //         }
-                                //     }).ToList(),
-                                //     outgoingUtxos: paymentdata.Value.Outgoing.Select(p => new PrismUtxoModel()
-                                //     {
-                                //         Index = (uint)p.Index,
-                                //         Value = p.Value,
-                                //         PrismWalletAddress = new PrismWalletAddressModel()
-                                //         {
-                                //             StakeAddress = p.WalletAddress.StakeAddress,
-                                //             WalletAddressString = p.WalletAddress.WalletAddressString
-                                //         }
-                                //     }).ToList()
-                                // );
-                                // var transactionResult = await _mediator.Send(transactionRequest);
-                                // if (transactionResult.IsFailed)
-                                // {
-                                //     _logger.LogError("Failed while writing transaction {TransactionId}: {Error}", blockTransaction.id, transactionResult.Errors.First().Message);
-                                //     var transactionWritingErrorMessage = transactionResult.Errors.Single().Message;
-                                //     continue;
-                                // }
+                                var transactionRequest = new CreateTransactionRequest(
+                                    transactionHash: Hash.CreateFrom(request.Transaction.hash),
+                                    blockHash: Hash.CreateFrom(request.Block.hash),
+                                    blockHeight: request.Block.block_no,
+                                    transactionFee: (int)request.Transaction.fee,
+                                    transactionSize: request.Transaction.size,
+                                    transactionIndex: request.Transaction.block_index,
+                                    parsingResult: parsingResult.Value,
+                                    utxos: utxos
+                                );
+                                var transactionResult = await _mediator.Send(transactionRequest, cancellationToken);
+                                if (transactionResult.IsFailed)
+                                {
+                                    _logger.LogError($"Failed while writing transaction #{transactionRequest.TransactionIndex} on block {transactionRequest.BlockHeight}: {transactionResult.Errors.First().Message}");
+                                    continue;
+                                }
                             }
                             catch (Exception e)
                             {
@@ -123,7 +148,15 @@ public class ProcessTransactionHandler : IRequestHandler<ProcessTransactionReque
                         else
                         {
                             var transactionWritingErrorMessage = parsingResult.Errors.Single().Message;
-                            _logger.LogWarning($"Parsing error for transaction withd id '{request.Transaction.id}' in block-no '{request.Block.block_no}': {transactionWritingErrorMessage}");
+                            if (transactionWritingErrorMessage == ParserErrors.UnsupportedOperation)
+                            {
+                                _logger.LogInformation($"Unsupported operation in block-no '{request.Block.block_no}'");
+                            }
+                            else
+                            {
+                                _logger.LogWarning($"Parsing error for transaction withd id '{request.Transaction.id}' in block-no '{request.Block.block_no}': {transactionWritingErrorMessage}");
+                            }
+
                             continue;
                         }
 
@@ -205,7 +238,8 @@ public class ProcessTransactionHandler : IRequestHandler<ProcessTransactionReque
                     _logger.LogInformation($"Successfully processed block {request.Block.block_no}");
                 }
             }
-            catch (Exception e)
+            catch
+                (Exception e)
             {
                 _logger.LogError("Failed while parsing transaction {TransactionId}: {Error}", request.Transaction.id, e.Message);
             }

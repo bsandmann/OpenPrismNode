@@ -8,7 +8,7 @@ public abstract class BaseOperationEntity
     /// Identifier
     /// Hash of the Prism-operation
     /// </summary>
-    [Column(TypeName = "binary(32)")]
+    [Column(TypeName = "bytea")]
     public byte[] OperationHash { get; set; } = null!;
 
     /// <summary>
@@ -26,5 +26,10 @@ public abstract class BaseOperationEntity
     /// Reference of the connected Transaction
     /// </summary>
     // ReSharper disable once UnusedAutoPropertyAccessor.Global
+    [Column(TypeName = "bytea")]
     public byte[] TransactionHash { get; set; } = null!;
+    
+    public int BlockHeight { get; set; }
+    
+    public int BlockHashPrefix { get; set; }
 }

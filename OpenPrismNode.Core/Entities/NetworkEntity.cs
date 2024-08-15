@@ -1,5 +1,6 @@
 ﻿namespace OpenPrismNode.Core.Entities;
 
+using System.ComponentModel.DataAnnotations.Schema;
 using OpenPrismNode.Core.Models;
 
 public class NetworkEntity
@@ -12,6 +13,7 @@ public class NetworkEntity
     /// <summary>
     /// Last synced Block
     /// </summary>
+    [Column(TypeName = "timestamp without time zone")]
     public DateTime? LastSynced { get; set; }
 
     /// <summary>

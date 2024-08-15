@@ -1,5 +1,7 @@
 namespace OpenPrismNode.Sync.Models;
 
+using FluentResults;
+
 public static class ParserErrors
 {
     public const string InvalidDeserializationResult = "Invalid deserialization result";
@@ -7,6 +9,7 @@ public static class ParserErrors
     public const string UnsupportedPrismBlockVersion = "Unsupported Prism-Block-Version";
     public const string ParsingFailedInvalidForm = "Parsing failed. Invalid form";
     public const string UnknownOperation = "Unknown operation";
+    public const string UnsupportedOperation = "Unsupported operation";
     public const string InvalidState = "Invalid state";
     public const string DataOfDidCreationCannotBeConfirmedDueToMissingKey = "Data of DID-Creation cannot be confirmed due to missing key";
     public const string UnableToVerifySignature = "Unable to verify signature";
@@ -37,4 +40,5 @@ public static class ParserErrors
     public const string KeyAlreadyRemoved = "The key was already removed from the DID";
     public const string KeyAlreadyRemovedInPreviousAction = "The key was already removed from in a previous action";
     public const string UpdateOperationMasterKey = "After the update operation at least one valid master key must exist. The last master key cannot be removed";
+    public const string MasterKeyMustBeSecp256k1 = "The master key must be a secp256k1" ;
 }
