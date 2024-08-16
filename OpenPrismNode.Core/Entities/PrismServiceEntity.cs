@@ -21,7 +21,7 @@ public class PrismServiceEntity
     /// Service type eg. LinkedDomains
     /// </summary>
     [MaxLength(100)]
-    public string? Type { get; set; }
+    public string Type { get; set; }
 
     public string? UriString { get; set; }
 
@@ -30,29 +30,30 @@ public class PrismServiceEntity
     [Column(TypeName = "jsonb")] public string? ListOfUrisJson { get; set; }
 
 
-    // /// <summary>
-    // /// When a remove service-action is performed this flag gets set
-    // /// </summary>
-    // public bool Removed { get; set; }
-    //
-    // /// <summary>
-    // /// When an update occures this flag is set
-    // /// </summary>
-    // public bool Updated { get; set; }
+    /// <summary>
+    /// When a remove service-action is performed this flag gets set
+    /// </summary>
+    public bool Removed { get; set; }
+    
+    /// <summary>
+    /// When an update occures this flag is set
+    /// </summary>
+    public bool Updated { get; set; }
 
     /// <summary>
     /// For an update operation it is important to get the order of the different update-operation of the keys
     /// </summary>
-    // public int? UpdateOperationOrder { get; set; }
-
-    // /// <summary>
-    // /// References to the linked operation which added this key
-    // /// </summary>
-    // // ReSharper disable once UnusedAutoPropertyAccessor.Global
-    // public UpdateDidEntity? PrismUpdateDidEntity { get; set; }
+    [Column(TypeName = "smallint")]
+    public int? UpdateOperationOrder { get; set; }
 
     /// <summary>
-    /// References to the linked operation which created this key
+    /// References to the linked operation which added this service
+    /// </summary>
+    [Column(TypeName = "bytea")]
+    public byte[] UpdateDidEntityOperationHash { get; set; }
+
+    /// <summary>
+    /// References to the linked operation which created this service
     /// </summary>
     [Column(TypeName = "bytea")]
     public byte[] CreateDidEntityOperationHash { get; set; }

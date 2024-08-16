@@ -1,7 +1,5 @@
 ﻿namespace OpenPrismNode.Core.Models;
 
-using Entities;
-
 public class UtxoWrapper
 {
     public int Index { get; set; }

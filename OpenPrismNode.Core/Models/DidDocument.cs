@@ -20,5 +20,5 @@ public sealed record DidDocument
     public string DidIdentifier { get; }
     public List<PrismPublicKey> PublicKeys { get; }
     public List<PrismService> PrismServices { get; }
-    public List<string> Contexts { get; }
+    public List<string> Contexts { get; set; }
 }

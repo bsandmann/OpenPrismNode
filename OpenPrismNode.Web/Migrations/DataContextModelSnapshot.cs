@@ -17,7 +17,7 @@ namespace OpenPrismNode.Web.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "8.0.7")
+                .HasAnnotation("ProductVersion", "8.0.8")
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
@@ -84,7 +84,8 @@ namespace OpenPrismNode.Web.Migrations
 
                     b.Property<string>("SigningKeyId")
                         .IsRequired()
-                        .HasColumnType("text");
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
 
                     b.Property<byte[]>("TransactionHash")
                         .IsRequired()
@@ -95,6 +96,47 @@ namespace OpenPrismNode.Web.Migrations
                     b.HasIndex("TransactionHash", "BlockHeight", "BlockHashPrefix");
 
                     b.ToTable("CreateDidEntities");
+                });
+
+            modelBuilder.Entity("OpenPrismNode.Core.Entities.DeactivateDidEntity", b =>
+                {
+                    b.Property<byte[]>("OperationHash")
+                        .HasColumnType("bytea");
+
+                    b.Property<int>("BlockHashPrefix")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("BlockHeight")
+                        .HasColumnType("integer");
+
+                    b.Property<byte[]>("Did")
+                        .IsRequired()
+                        .HasColumnType("bytea");
+
+                    b.Property<int>("OperationSequenceNumber")
+                        .HasColumnType("integer");
+
+                    b.Property<byte[]>("PreviousOperationHash")
+                        .IsRequired()
+                        .HasColumnType("bytea");
+
+                    b.Property<string>("SigningKeyId")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
+
+                    b.Property<byte[]>("TransactionHash")
+                        .IsRequired()
+                        .HasColumnType("bytea");
+
+                    b.HasKey("OperationHash");
+
+                    b.HasIndex("Did")
+                        .IsUnique();
+
+                    b.HasIndex("TransactionHash", "BlockHeight", "BlockHashPrefix");
+
+                    b.ToTable("DeactivateDidEntities");
                 });
 
             modelBuilder.Entity("OpenPrismNode.Core.Entities.EpochEntity", b =>
@@ -125,6 +167,36 @@ namespace OpenPrismNode.Web.Migrations
                     b.ToTable("PrismNetworkEntities");
                 });
 
+            modelBuilder.Entity("OpenPrismNode.Core.Entities.PatchedContextEntity", b =>
+                {
+                    b.Property<int>("PatchedContextEntityId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("PatchedContextEntityId"));
+
+                    b.Property<string>("ContextListJson")
+                        .IsRequired()
+                        .HasColumnType("jsonb");
+
+                    b.Property<byte[]>("UpdateDidEntityOperationHash")
+                        .IsRequired()
+                        .HasColumnType("bytea");
+
+                    b.Property<short?>("UpdateOperationOrder")
+                        .HasColumnType("smallint");
+
+                    b.HasKey("PatchedContextEntityId");
+
+                    b.HasIndex("ContextListJson");
+
+                    NpgsqlIndexBuilderExtensions.HasMethod(b.HasIndex("ContextListJson"), "gin");
+
+                    b.HasIndex("UpdateDidEntityOperationHash");
+
+                    b.ToTable("PatchedContextEntity");
+                });
+
             modelBuilder.Entity("OpenPrismNode.Core.Entities.PrismPublicKeyEntity", b =>
                 {
                     b.Property<int>("PrismPublicKeyEntityId")
@@ -134,7 +206,6 @@ namespace OpenPrismNode.Web.Migrations
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("PrismPublicKeyEntityId"));
 
                     b.Property<byte[]>("CreateDidEntityOperationHash")
-                        .IsRequired()
                         .HasColumnType("bytea");
 
                     b.Property<string>("Curve")
@@ -154,11 +225,47 @@ namespace OpenPrismNode.Web.Migrations
                         .IsRequired()
                         .HasColumnType("bytea");
 
+                    b.Property<byte[]>("UpdateDidEntityOperationHash")
+                        .HasColumnType("bytea");
+
+                    b.Property<short?>("UpdateOperationOrder")
+                        .HasColumnType("smallint");
+
                     b.HasKey("PrismPublicKeyEntityId");
 
                     b.HasIndex("CreateDidEntityOperationHash");
 
+                    b.HasIndex("UpdateDidEntityOperationHash");
+
                     b.ToTable("PrismPublicKeyEntities");
+                });
+
+            modelBuilder.Entity("OpenPrismNode.Core.Entities.PrismPublicKeyRemoveEntity", b =>
+                {
+                    b.Property<int>("PrismPublicKeyRemoveEntityId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("PrismPublicKeyRemoveEntityId"));
+
+                    b.Property<string>("KeyId")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
+
+                    b.Property<byte[]>("UpdateDidOperationHash")
+                        .IsRequired()
+                        .HasColumnType("bytea")
+                        .HasColumnName("UpdateDidEntityOperationHash");
+
+                    b.Property<short>("UpdateOperationOrder")
+                        .HasColumnType("smallint");
+
+                    b.HasKey("PrismPublicKeyRemoveEntityId");
+
+                    b.HasIndex("UpdateDidOperationHash");
+
+                    b.ToTable("PrismPublicKeyRemoveEntity");
                 });
 
             modelBuilder.Entity("OpenPrismNode.Core.Entities.PrismServiceEntity", b =>
@@ -179,14 +286,28 @@ namespace OpenPrismNode.Web.Migrations
                     b.Property<string>("ListOfUrisJson")
                         .HasColumnType("jsonb");
 
+                    b.Property<bool>("Removed")
+                        .HasColumnType("boolean");
+
                     b.Property<string>("ServiceId")
                         .IsRequired()
                         .HasMaxLength(50)
                         .HasColumnType("character varying(50)");
 
                     b.Property<string>("Type")
+                        .IsRequired()
                         .HasMaxLength(100)
                         .HasColumnType("character varying(100)");
+
+                    b.Property<byte[]>("UpdateDidEntityOperationHash")
+                        .IsRequired()
+                        .HasColumnType("bytea");
+
+                    b.Property<short?>("UpdateOperationOrder")
+                        .HasColumnType("smallint");
+
+                    b.Property<bool>("Updated")
+                        .HasColumnType("boolean");
 
                     b.Property<string>("UriString")
                         .HasColumnType("text");
@@ -194,6 +315,8 @@ namespace OpenPrismNode.Web.Migrations
                     b.HasKey("PrismServiceEntityId");
 
                     b.HasIndex("CreateDidEntityOperationHash");
+
+                    b.HasIndex("UpdateDidEntityOperationHash");
 
                     b.ToTable("PrismServiceEntities");
                 });
@@ -237,6 +360,46 @@ namespace OpenPrismNode.Web.Migrations
                     b.HasIndex("BlockHeight", "BlockHashPrefix");
 
                     b.ToTable("TransactionEntities");
+                });
+
+            modelBuilder.Entity("OpenPrismNode.Core.Entities.UpdateDidEntity", b =>
+                {
+                    b.Property<byte[]>("OperationHash")
+                        .HasColumnType("bytea");
+
+                    b.Property<int>("BlockHashPrefix")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("BlockHeight")
+                        .HasColumnType("integer");
+
+                    b.Property<byte[]>("Did")
+                        .IsRequired()
+                        .HasColumnType("bytea");
+
+                    b.Property<int>("OperationSequenceNumber")
+                        .HasColumnType("integer");
+
+                    b.Property<byte[]>("PreviousOperationHash")
+                        .IsRequired()
+                        .HasColumnType("bytea");
+
+                    b.Property<string>("SigningKeyId")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
+
+                    b.Property<byte[]>("TransactionHash")
+                        .IsRequired()
+                        .HasColumnType("bytea");
+
+                    b.HasKey("OperationHash");
+
+                    b.HasIndex("Did");
+
+                    b.HasIndex("TransactionHash", "BlockHeight", "BlockHashPrefix");
+
+                    b.ToTable("UpdateDidEntities");
                 });
 
             modelBuilder.Entity("OpenPrismNode.Core.Entities.UtxoEntity", b =>
@@ -324,6 +487,25 @@ namespace OpenPrismNode.Web.Migrations
                     b.Navigation("TransactionEntity");
                 });
 
+            modelBuilder.Entity("OpenPrismNode.Core.Entities.DeactivateDidEntity", b =>
+                {
+                    b.HasOne("OpenPrismNode.Core.Entities.CreateDidEntity", "CreateDidEntity")
+                        .WithOne("DidDeactivation")
+                        .HasForeignKey("OpenPrismNode.Core.Entities.DeactivateDidEntity", "Did")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("OpenPrismNode.Core.Entities.TransactionEntity", "TransactionEntity")
+                        .WithMany("DeactivateDidEntities")
+                        .HasForeignKey("TransactionHash", "BlockHeight", "BlockHashPrefix")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("CreateDidEntity");
+
+                    b.Navigation("TransactionEntity");
+                });
+
             modelBuilder.Entity("OpenPrismNode.Core.Entities.EpochEntity", b =>
                 {
                     b.HasOne("OpenPrismNode.Core.Entities.NetworkEntity", "NetworkEntity")
@@ -335,13 +517,39 @@ namespace OpenPrismNode.Web.Migrations
                     b.Navigation("NetworkEntity");
                 });
 
+            modelBuilder.Entity("OpenPrismNode.Core.Entities.PatchedContextEntity", b =>
+                {
+                    b.HasOne("OpenPrismNode.Core.Entities.UpdateDidEntity", "UpdateDidEntity")
+                        .WithMany("PatchedContexts")
+                        .HasForeignKey("UpdateDidEntityOperationHash")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("UpdateDidEntity");
+                });
+
             modelBuilder.Entity("OpenPrismNode.Core.Entities.PrismPublicKeyEntity", b =>
                 {
                     b.HasOne("OpenPrismNode.Core.Entities.CreateDidEntity", null)
                         .WithMany("PrismPublicKeys")
                         .HasForeignKey("CreateDidEntityOperationHash")
+                        .OnDelete(DeleteBehavior.Cascade);
+
+                    b.HasOne("OpenPrismNode.Core.Entities.UpdateDidEntity", null)
+                        .WithMany("PrismPublicKeysToAdd")
+                        .HasForeignKey("UpdateDidEntityOperationHash")
+                        .OnDelete(DeleteBehavior.Cascade);
+                });
+
+            modelBuilder.Entity("OpenPrismNode.Core.Entities.PrismPublicKeyRemoveEntity", b =>
+                {
+                    b.HasOne("OpenPrismNode.Core.Entities.UpdateDidEntity", "UpdateDidEntity")
+                        .WithMany("PrismPublicKeysToRemove")
+                        .HasForeignKey("UpdateDidOperationHash")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.Navigation("UpdateDidEntity");
                 });
 
             modelBuilder.Entity("OpenPrismNode.Core.Entities.PrismServiceEntity", b =>
@@ -349,6 +557,12 @@ namespace OpenPrismNode.Web.Migrations
                     b.HasOne("OpenPrismNode.Core.Entities.CreateDidEntity", null)
                         .WithMany("PrismServices")
                         .HasForeignKey("CreateDidEntityOperationHash")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("OpenPrismNode.Core.Entities.UpdateDidEntity", null)
+                        .WithMany("PrismServices")
+                        .HasForeignKey("UpdateDidEntityOperationHash")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });
@@ -362,6 +576,25 @@ namespace OpenPrismNode.Web.Migrations
                         .IsRequired();
 
                     b.Navigation("BlockEntity");
+                });
+
+            modelBuilder.Entity("OpenPrismNode.Core.Entities.UpdateDidEntity", b =>
+                {
+                    b.HasOne("OpenPrismNode.Core.Entities.CreateDidEntity", "CreateDidEntity")
+                        .WithMany("DidUpdates")
+                        .HasForeignKey("Did")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("OpenPrismNode.Core.Entities.TransactionEntity", "TransactionEntity")
+                        .WithMany("UpdateDidEntities")
+                        .HasForeignKey("TransactionHash", "BlockHeight", "BlockHashPrefix")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("CreateDidEntity");
+
+                    b.Navigation("TransactionEntity");
                 });
 
             modelBuilder.Entity("OpenPrismNode.Core.Entities.UtxoEntity", b =>
@@ -398,6 +631,10 @@ namespace OpenPrismNode.Web.Migrations
 
             modelBuilder.Entity("OpenPrismNode.Core.Entities.CreateDidEntity", b =>
                 {
+                    b.Navigation("DidDeactivation");
+
+                    b.Navigation("DidUpdates");
+
                     b.Navigation("PrismPublicKeys");
 
                     b.Navigation("PrismServices");
@@ -422,7 +659,22 @@ namespace OpenPrismNode.Web.Migrations
                 {
                     b.Navigation("CreateDidEntities");
 
+                    b.Navigation("DeactivateDidEntities");
+
+                    b.Navigation("UpdateDidEntities");
+
                     b.Navigation("Utxos");
+                });
+
+            modelBuilder.Entity("OpenPrismNode.Core.Entities.UpdateDidEntity", b =>
+                {
+                    b.Navigation("PatchedContexts");
+
+                    b.Navigation("PrismPublicKeysToAdd");
+
+                    b.Navigation("PrismPublicKeysToRemove");
+
+                    b.Navigation("PrismServices");
                 });
 
             modelBuilder.Entity("OpenPrismNode.Core.Entities.WalletAddressEntity", b =>

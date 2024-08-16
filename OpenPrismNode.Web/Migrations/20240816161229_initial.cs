@@ -7,7 +7,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace OpenPrismNode.Web.Migrations
 {
     /// <inheritdoc />
-    public partial class initial3 : Migration
+    public partial class initial : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -123,7 +123,7 @@ namespace OpenPrismNode.Web.Migrations
                 {
                     OperationHash = table.Column<byte[]>(type: "bytea", nullable: false),
                     Did = table.Column<byte[]>(type: "bytea", nullable: false),
-                    SigningKeyId = table.Column<string>(type: "text", nullable: false),
+                    SigningKeyId = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: false),
                     OperationSequenceNumber = table.Column<int>(type: "integer", nullable: false),
                     TransactionHash = table.Column<byte[]>(type: "bytea", nullable: false),
                     BlockHeight = table.Column<int>(type: "integer", nullable: false),
@@ -179,6 +179,87 @@ namespace OpenPrismNode.Web.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "DeactivateDidEntities",
+                columns: table => new
+                {
+                    OperationHash = table.Column<byte[]>(type: "bytea", nullable: false),
+                    PreviousOperationHash = table.Column<byte[]>(type: "bytea", nullable: false),
+                    SigningKeyId = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: false),
+                    Did = table.Column<byte[]>(type: "bytea", nullable: false),
+                    OperationSequenceNumber = table.Column<int>(type: "integer", nullable: false),
+                    TransactionHash = table.Column<byte[]>(type: "bytea", nullable: false),
+                    BlockHeight = table.Column<int>(type: "integer", nullable: false),
+                    BlockHashPrefix = table.Column<int>(type: "integer", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_DeactivateDidEntities", x => x.OperationHash);
+                    table.ForeignKey(
+                        name: "FK_DeactivateDidEntities_CreateDidEntities_Did",
+                        column: x => x.Did,
+                        principalTable: "CreateDidEntities",
+                        principalColumn: "OperationHash",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_DeactivateDidEntities_TransactionEntities_TransactionHash_B~",
+                        columns: x => new { x.TransactionHash, x.BlockHeight, x.BlockHashPrefix },
+                        principalTable: "TransactionEntities",
+                        principalColumns: new[] { "TransactionHash", "BlockHeight", "BlockHashPrefix" },
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "UpdateDidEntities",
+                columns: table => new
+                {
+                    OperationHash = table.Column<byte[]>(type: "bytea", nullable: false),
+                    PreviousOperationHash = table.Column<byte[]>(type: "bytea", nullable: false),
+                    SigningKeyId = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: false),
+                    Did = table.Column<byte[]>(type: "bytea", nullable: false),
+                    OperationSequenceNumber = table.Column<int>(type: "integer", nullable: false),
+                    TransactionHash = table.Column<byte[]>(type: "bytea", nullable: false),
+                    BlockHeight = table.Column<int>(type: "integer", nullable: false),
+                    BlockHashPrefix = table.Column<int>(type: "integer", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_UpdateDidEntities", x => x.OperationHash);
+                    table.ForeignKey(
+                        name: "FK_UpdateDidEntities_CreateDidEntities_Did",
+                        column: x => x.Did,
+                        principalTable: "CreateDidEntities",
+                        principalColumn: "OperationHash",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_UpdateDidEntities_TransactionEntities_TransactionHash_Block~",
+                        columns: x => new { x.TransactionHash, x.BlockHeight, x.BlockHashPrefix },
+                        principalTable: "TransactionEntities",
+                        principalColumns: new[] { "TransactionHash", "BlockHeight", "BlockHashPrefix" },
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "PatchedContextEntity",
+                columns: table => new
+                {
+                    PatchedContextEntityId = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    ContextListJson = table.Column<string>(type: "jsonb", nullable: false),
+                    UpdateOperationOrder = table.Column<short>(type: "smallint", nullable: true),
+                    UpdateDidEntityOperationHash = table.Column<byte[]>(type: "bytea", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_PatchedContextEntity", x => x.PatchedContextEntityId);
+                    table.ForeignKey(
+                        name: "FK_PatchedContextEntity_UpdateDidEntities_UpdateDidEntityOpera~",
+                        column: x => x.UpdateDidEntityOperationHash,
+                        principalTable: "UpdateDidEntities",
+                        principalColumn: "OperationHash",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "PrismPublicKeyEntities",
                 columns: table => new
                 {
@@ -188,7 +269,9 @@ namespace OpenPrismNode.Web.Migrations
                     KeyId = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: false),
                     PrismKeyUsage = table.Column<int>(type: "integer", nullable: false),
                     Curve = table.Column<string>(type: "character varying(12)", maxLength: 12, nullable: false),
-                    CreateDidEntityOperationHash = table.Column<byte[]>(type: "bytea", nullable: false)
+                    UpdateOperationOrder = table.Column<short>(type: "smallint", nullable: true),
+                    CreateDidEntityOperationHash = table.Column<byte[]>(type: "bytea", nullable: true),
+                    UpdateDidEntityOperationHash = table.Column<byte[]>(type: "bytea", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -197,6 +280,33 @@ namespace OpenPrismNode.Web.Migrations
                         name: "FK_PrismPublicKeyEntities_CreateDidEntities_CreateDidEntityOpe~",
                         column: x => x.CreateDidEntityOperationHash,
                         principalTable: "CreateDidEntities",
+                        principalColumn: "OperationHash",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_PrismPublicKeyEntities_UpdateDidEntities_UpdateDidEntityOpe~",
+                        column: x => x.UpdateDidEntityOperationHash,
+                        principalTable: "UpdateDidEntities",
+                        principalColumn: "OperationHash",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "PrismPublicKeyRemoveEntity",
+                columns: table => new
+                {
+                    PrismPublicKeyRemoveEntityId = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    KeyId = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: false),
+                    UpdateOperationOrder = table.Column<short>(type: "smallint", nullable: false),
+                    UpdateDidEntityOperationHash = table.Column<byte[]>(type: "bytea", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_PrismPublicKeyRemoveEntity", x => x.PrismPublicKeyRemoveEntityId);
+                    table.ForeignKey(
+                        name: "FK_PrismPublicKeyRemoveEntity_UpdateDidEntities_UpdateDidEntit~",
+                        column: x => x.UpdateDidEntityOperationHash,
+                        principalTable: "UpdateDidEntities",
                         principalColumn: "OperationHash",
                         onDelete: ReferentialAction.Cascade);
                 });
@@ -208,10 +318,14 @@ namespace OpenPrismNode.Web.Migrations
                     PrismServiceEntityId = table.Column<int>(type: "integer", nullable: false)
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
                     ServiceId = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: false),
-                    Type = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: true),
+                    Type = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
                     UriString = table.Column<string>(type: "text", nullable: true),
                     JsonData = table.Column<string>(type: "jsonb", nullable: true),
                     ListOfUrisJson = table.Column<string>(type: "jsonb", nullable: true),
+                    Removed = table.Column<bool>(type: "boolean", nullable: false),
+                    Updated = table.Column<bool>(type: "boolean", nullable: false),
+                    UpdateOperationOrder = table.Column<short>(type: "smallint", nullable: true),
+                    UpdateDidEntityOperationHash = table.Column<byte[]>(type: "bytea", nullable: false),
                     CreateDidEntityOperationHash = table.Column<byte[]>(type: "bytea", nullable: false)
                 },
                 constraints: table =>
@@ -221,6 +335,12 @@ namespace OpenPrismNode.Web.Migrations
                         name: "FK_PrismServiceEntities_CreateDidEntities_CreateDidEntityOpera~",
                         column: x => x.CreateDidEntityOperationHash,
                         principalTable: "CreateDidEntities",
+                        principalColumn: "OperationHash",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_PrismServiceEntities_UpdateDidEntities_UpdateDidEntityOpera~",
+                        column: x => x.UpdateDidEntityOperationHash,
+                        principalTable: "UpdateDidEntities",
                         principalColumn: "OperationHash",
                         onDelete: ReferentialAction.Cascade);
                 });
@@ -241,9 +361,31 @@ namespace OpenPrismNode.Web.Migrations
                 columns: new[] { "TransactionHash", "BlockHeight", "BlockHashPrefix" });
 
             migrationBuilder.CreateIndex(
+                name: "IX_DeactivateDidEntities_Did",
+                table: "DeactivateDidEntities",
+                column: "Did",
+                unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_DeactivateDidEntities_TransactionHash_BlockHeight_BlockHash~",
+                table: "DeactivateDidEntities",
+                columns: new[] { "TransactionHash", "BlockHeight", "BlockHashPrefix" });
+
+            migrationBuilder.CreateIndex(
                 name: "IX_EpochEntities_NetworkType",
                 table: "EpochEntities",
                 column: "NetworkType");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_PatchedContextEntity_ContextListJson",
+                table: "PatchedContextEntity",
+                column: "ContextListJson")
+                .Annotation("Npgsql:IndexMethod", "gin");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_PatchedContextEntity_UpdateDidEntityOperationHash",
+                table: "PatchedContextEntity",
+                column: "UpdateDidEntityOperationHash");
 
             migrationBuilder.CreateIndex(
                 name: "IX_PrismPublicKeyEntities_CreateDidEntityOperationHash",
@@ -251,9 +393,24 @@ namespace OpenPrismNode.Web.Migrations
                 column: "CreateDidEntityOperationHash");
 
             migrationBuilder.CreateIndex(
+                name: "IX_PrismPublicKeyEntities_UpdateDidEntityOperationHash",
+                table: "PrismPublicKeyEntities",
+                column: "UpdateDidEntityOperationHash");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_PrismPublicKeyRemoveEntity_UpdateDidEntityOperationHash",
+                table: "PrismPublicKeyRemoveEntity",
+                column: "UpdateDidEntityOperationHash");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_PrismServiceEntities_CreateDidEntityOperationHash",
                 table: "PrismServiceEntities",
                 column: "CreateDidEntityOperationHash");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_PrismServiceEntities_UpdateDidEntityOperationHash",
+                table: "PrismServiceEntities",
+                column: "UpdateDidEntityOperationHash");
 
             migrationBuilder.CreateIndex(
                 name: "IX_TransactionEntities_BlockHeight_BlockHashPrefix",
@@ -265,6 +422,16 @@ namespace OpenPrismNode.Web.Migrations
                 table: "TransactionEntities",
                 column: "TransactionHash",
                 unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_UpdateDidEntities_Did",
+                table: "UpdateDidEntities",
+                column: "Did");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_UpdateDidEntities_TransactionHash_BlockHeight_BlockHashPref~",
+                table: "UpdateDidEntities",
+                columns: new[] { "TransactionHash", "BlockHeight", "BlockHashPrefix" });
 
             migrationBuilder.CreateIndex(
                 name: "IX_UtxoEntities_StakeAddress",
@@ -287,7 +454,16 @@ namespace OpenPrismNode.Web.Migrations
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropTable(
+                name: "DeactivateDidEntities");
+
+            migrationBuilder.DropTable(
+                name: "PatchedContextEntity");
+
+            migrationBuilder.DropTable(
                 name: "PrismPublicKeyEntities");
+
+            migrationBuilder.DropTable(
+                name: "PrismPublicKeyRemoveEntity");
 
             migrationBuilder.DropTable(
                 name: "PrismServiceEntities");
@@ -296,13 +472,16 @@ namespace OpenPrismNode.Web.Migrations
                 name: "UtxoEntities");
 
             migrationBuilder.DropTable(
-                name: "CreateDidEntities");
+                name: "UpdateDidEntities");
 
             migrationBuilder.DropTable(
                 name: "StakeAddressEntities");
 
             migrationBuilder.DropTable(
                 name: "WalletAddressEntities");
+
+            migrationBuilder.DropTable(
+                name: "CreateDidEntities");
 
             migrationBuilder.DropTable(
                 name: "TransactionEntities");

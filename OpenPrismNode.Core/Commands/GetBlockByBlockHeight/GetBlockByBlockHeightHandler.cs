@@ -1,7 +1,6 @@
 namespace OpenPrismNode.Core.Commands.GetBlockByBlockHeight;
 
 using FluentResults;
-using GetMostRecentBlock;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using OpenPrismNode.Core.Entities;

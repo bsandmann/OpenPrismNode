@@ -5,7 +5,6 @@ using FluentResults;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
-using Models;
 using OpenPrismNode.Core;
 using OpenPrismNode.Core.Common;
 using OpenPrismNode.Core.Entities;
@@ -13,7 +12,7 @@ using OpenPrismNode.Core.Entities;
 /// <summary>
 /// Handler a write a CreateDid-PRISM-Operation in the node database
 /// </summary>
-public class CreateTransactionCreateDidHandler : IRequestHandler<CreateTransactionCreateDidRequest, Result<TransactionModel?>>
+public class CreateTransactionCreateDidHandler : IRequestHandler<CreateTransactionCreateDidRequest, Result>
 {
     private readonly DataContext _context;
     private readonly ILogger<CreateTransactionCreateDidHandler> _logger;
@@ -30,7 +29,7 @@ public class CreateTransactionCreateDidHandler : IRequestHandler<CreateTransacti
     }
 
     /// <inheritdoc />
-    public async Task<Result<TransactionModel?>> Handle(CreateTransactionCreateDidRequest request, CancellationToken cancellationToken)
+    public async Task<Result> Handle(CreateTransactionCreateDidRequest request, CancellationToken cancellationToken)
     {
         try
         {
@@ -46,7 +45,7 @@ public class CreateTransactionCreateDidHandler : IRequestHandler<CreateTransacti
                     _logger.LogWarning($"CreateDid-Operation for {request.Did} already exists in the database. This is a problem with the integrety of the ledger. TransactionHash: {request.TransactionHash.Value} Block: {request.BlockHeight}");
                     return Result.Ok();
                 }
-                
+
                 var prefix = BlockEntity.CalculateBlockHashPrefix(request.BlockHash.Value);
                 var trans = new TransactionEntity()
                 {
@@ -98,68 +97,43 @@ public class CreateTransactionCreateDidHandler : IRequestHandler<CreateTransacti
             }
             else
             {
-                // var prismCreateDidEntity =
-                //     new PrismCreateDidEntity()
-                //     {
-                //         TransactionHash = request.TransactionHash.Value,
-                //         OperationHash = request.OperationHash.Value,
-                //         OperationSequenceNumber = request.OperationSequenceNumber,
-                //         Did = PrismEncoding.HexToByteArray(request.Did),
-                //         SigningKeyId = request.SigningKeyId,
-                //         PrismPublicKeys = request.PublicKeyModels.Select(p => new PrismPublicKeyEntity()
-                //         {
-                //             KeyId = p.KeyId,
-                //             PublicKey = PrismEncoding.HexToByteArray(p.PublicKey),
-                //             PrismKeyUsage = p.KeyUsage,
-                //             Curve = p.Curve
-                //         }).ToList(),
-                //         PrismServices = request.ServiceModels.Select(p => new PrismServiceEntity()
-                //         {
-                //             ServiceId = p.ServiceId,
-                //             Type = p.Type,
-                //             ServiceEndpoints = p.SerivceEndpoints,
-                //             Removed = false,
-                //             Updated = false,
-                //         }).ToList()
-                //     };
-                //
-                // await _context.PrismCreateDidEntities.AddAsync(prismCreateDidEntity, cancellationToken);
-                // await _context.SaveChangesAsync(cancellationToken);
+                var prefix = BlockEntity.CalculateBlockHashPrefix(request.BlockHash.Value);
+                var createDidEntity =
+                    new CreateDidEntity()
+                    {
+                        OperationHash = request.OperationHash.Value!,
+                        OperationSequenceNumber = request.OperationSequenceNumber,
+                        Did = PrismEncoding.HexToByteArray(request.Did),
+                        SigningKeyId = request.SigningKeyId,
+                        TransactionHash = request.TransactionHash.Value,
+                        BlockHeight = request.BlockHeight,
+                        BlockHashPrefix = prefix!.Value,
+                        PrismPublicKeys = request.PrismPublicKeys.Select(p => new PrismPublicKeyEntity()
+                        {
+                            KeyId = p.KeyId,
+                            PublicKey = p.LongByteArray,
+                            PrismKeyUsage = p.KeyUsage,
+                            Curve = p.Curve
+                        }).ToList(),
+                        PrismServices = request.PrismServices.Select(p => new PrismServiceEntity()
+                        {
+                            ServiceId = p.ServiceId,
+                            Type = p.Type,
+                            Uri = p.ServiceEndpoints.Uri,
+                            ListOfUris = p.ServiceEndpoints.ListOfUris,
+                            JsonData = p.ServiceEndpoints.Json is not null ? JsonSerializer.Serialize(p.ServiceEndpoints.Json) : null
+                        }).ToList()
+                    };
+
+                await _context.CreateDidEntities.AddAsync(createDidEntity, cancellationToken);
+                await _context.SaveChangesAsync(cancellationToken);
             }
 
-            return Result.Ok(new TransactionModel(
-                transactionHash: request.TransactionHash,
-                blockHash: request.BlockHash,
-                fees: request.Fees,
-                size: request.Size,
-                index: request.Index
-                // createDidOperations: new List<PrismCreateDidModel>()
-                // {
-                //     new PrismCreateDidModel(
-                //         operationHash: request.OperationHash,
-                //         operationSequenceNumber: request.OperationSequenceNumber,
-                //         did: request.Did,
-                //         signingKeyId: request.SigningKeyId,
-                //         publicKeys: request.PublicKeyModels,
-                //         services: request.ServiceModels),
-                // },
-                // updateDidOperations: new List<PrismUpdateDidModel>(),
-                // deactivateDidOperations: new List<PrismDeactivateDidModel>(),
-                // issueCredentialBatchOperations: new List<PrismIssueCredentialBatchModel>(),
-                // revokeCredentialsOperations: new List<PrismRevokeCredentialsModel>(),
-                // protocolVersionUpdateOperations: new List<PrismProtocolVersionUpdateModel>(),
-                // incomingUtxos: request.IncomingUtxos,
-                // outgoingUtxos: request.OutgoingUtxos
-            ));
+            return Result.Ok();
         }
-        // catch ( UniqueConstraintException)
-        // {
-        //     return Result.Fail($"Invalid CreateDid-Operation: Unique constraint for DID: {request.Did}");
-        // }
         catch (Exception e)
         {
-            // return Result.Fail($"Invalid operation when saving a CreateDid-Operation: blockHash : '{request.PrismBlockHash.AsHex()}'. Message: {e.Message} Inner: {e.InnerException?.Message}");
-            return Result.Fail("");
+            return Result.Fail($"Invalid operation when saving a CreateDid-Operation: blockHeight : '{request.BlockHeight}'. Message: {e.Message} Inner: {e.InnerException?.Message}");
         }
     }
 }

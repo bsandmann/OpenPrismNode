@@ -3,7 +3,6 @@ namespace OpenPrismNode.Core;
 using Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
-using Models;
 
 public class DataContext : DbContext
 {
@@ -24,8 +23,11 @@ public class DataContext : DbContext
     public DbSet<StakeAddressEntity> StakeAddressEntities { get; set; }
     public DbSet<WalletAddressEntity> WalletAddressEntities { get; set; }
     public DbSet<CreateDidEntity> CreateDidEntities { get; set; }
+    public DbSet<UpdateDidEntity> UpdateDidEntities { get; set; }
     public DbSet<PrismPublicKeyEntity> PrismPublicKeyEntities { get; set; }
     public DbSet<PrismServiceEntity> PrismServiceEntities { get; set; }
+    public List<PatchedContextEntity> PatchedContexts { get; set; }
+    public DbSet<DeactivateDidEntity> DeactivateDidEntities { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -37,8 +39,13 @@ public class DataContext : DbContext
             .HasKey(t => new { t.TransactionHash, t.BlockHeight, t.BlockHashPrefix });
         modelBuilder.Entity<UtxoEntity>().HasKey(p => p.UtxoEntityId);
         modelBuilder.Entity<CreateDidEntity>().HasKey(p => p.OperationHash);
+        modelBuilder.Entity<UpdateDidEntity>().HasKey(p => p.OperationHash);
         modelBuilder.Entity<PrismPublicKeyEntity>().HasKey(p => p.PrismPublicKeyEntityId);
         modelBuilder.Entity<PrismServiceEntity>().HasKey(p => p.PrismServiceEntityId);
+        modelBuilder.Entity<PrismPublicKeyEntity>().HasKey(p => p.PrismPublicKeyEntityId);
+        modelBuilder.Entity<PrismPublicKeyRemoveEntity>().HasKey(p => p.PrismPublicKeyRemoveEntityId);
+        modelBuilder.Entity<PatchedContextEntity>().HasKey(p => p.PatchedContextEntityId);
+        modelBuilder.Entity<DeactivateDidEntity>().HasKey(p => p.OperationHash);
 
         modelBuilder.Entity<EpochEntity>()
             .HasOne(p => p.NetworkEntity)
@@ -125,6 +132,68 @@ public class DataContext : DbContext
             .WithOne()  // No navigation property back to CreateDidEntity
             .HasForeignKey(p =>  p.CreateDidEntityOperationHash)
             .OnDelete(DeleteBehavior.Cascade);
+        
+        modelBuilder.Entity<UpdateDidEntity>()
+            .HasOne(u => u.TransactionEntity)
+            .WithMany(s => s.UpdateDidEntities)
+            .HasForeignKey(e => new { e.TransactionHash, e.BlockHeight, e.BlockHashPrefix })
+            .OnDelete(DeleteBehavior.Cascade);
+        
+        modelBuilder.Entity<UpdateDidEntity>()
+            .HasOne(u => u.CreateDidEntity)
+            .WithMany(c => c.DidUpdates)
+            .HasForeignKey(u => u.Did)
+            .OnDelete(DeleteBehavior.Restrict);
+        
+        modelBuilder.Entity<UpdateDidEntity>()
+            .HasIndex(u => u.Did);
+        
+        modelBuilder.Entity<PrismPublicKeyEntity>()
+            .HasOne<UpdateDidEntity>()
+            .WithMany(u => u.PrismPublicKeysToAdd)
+            .HasForeignKey(p => p.UpdateDidEntityOperationHash)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<PrismServiceEntity>()
+            .HasOne<UpdateDidEntity>()
+            .WithMany(u => u.PrismServices)
+            .HasForeignKey(p => p.UpdateDidEntityOperationHash)
+            .OnDelete(DeleteBehavior.Cascade);
+        
+        modelBuilder.Entity<PrismPublicKeyRemoveEntity>()
+            .HasOne(p => p.UpdateDidEntity)
+            .WithMany(u => u.PrismPublicKeysToRemove)
+            .HasForeignKey(p => p.UpdateDidOperationHash)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<PrismPublicKeyRemoveEntity>()
+            .Property(p => p.UpdateDidOperationHash)
+            .HasColumnName("UpdateDidEntityOperationHash");
+        
+        modelBuilder.Entity<PatchedContextEntity>()
+            .HasOne(p => p.UpdateDidEntity)
+            .WithMany(u => u.PatchedContexts)
+            .HasForeignKey(p => p.UpdateDidEntityOperationHash)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<PatchedContextEntity>()
+            .HasIndex(p => p.ContextListJson)
+            .HasMethod("gin");
+        
+        modelBuilder.Entity<DeactivateDidEntity>()
+            .HasOne(d => d.CreateDidEntity)
+            .WithOne(c => c.DidDeactivation)
+            .HasForeignKey<DeactivateDidEntity>(d => d.Did)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        modelBuilder.Entity<DeactivateDidEntity>()
+            .HasOne(d => d.TransactionEntity)
+            .WithMany(t => t.DeactivateDidEntities)
+            .HasForeignKey(d => new { d.TransactionHash, d.BlockHeight, d.BlockHashPrefix })
+            .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<DeactivateDidEntity>()
+            .HasIndex(d => d.Did);
         
     }
 }

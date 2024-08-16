@@ -68,7 +68,7 @@ public class CreateBlockHandler : IRequestHandler<CreateBlockRequest, Result<Blo
         }
         else
         {
-            // if the blockheigth already exists we have to determine if the block is a fork or just the same block
+            // if the blockheight already exists we have to determine if the block is a fork or just the same block
             // which was already parsed and readded by mistake.
             throw new NotImplementedException();
         }

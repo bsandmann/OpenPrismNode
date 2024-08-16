@@ -26,11 +26,7 @@
         </Protobuf>
     </ItemGroup>
 
-    <ItemGroup>
-      <Reference Include="FluentResults">
-        <HintPath>..\..\..\.nuget\packages\fluentresults\3.15.2\lib\netstandard2.1\FluentResults.dll</HintPath>
-      </Reference>
-    </ItemGroup>
+  
 
 
 </Project>

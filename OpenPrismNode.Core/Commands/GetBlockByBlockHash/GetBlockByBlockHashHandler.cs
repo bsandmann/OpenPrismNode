@@ -1,11 +1,9 @@
+namespace OpenPrismNode.Core.Commands.GetBlockByBlockHash;
+
+using FluentResults;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
-using FluentResults;
 using OpenPrismNode.Core.Entities;
-
-namespace OpenPrismNode.Core.Queries;
-
-using Commands.GetBlockByBlockHash;
 
 public class GetBlockByBlockHashHandler : IRequestHandler<GetBlockByBlockHashRequest, Result<BlockEntity>>
 {

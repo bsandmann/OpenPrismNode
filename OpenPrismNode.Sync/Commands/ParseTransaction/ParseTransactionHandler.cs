@@ -83,13 +83,6 @@ public class ParseTransactionHandler : IRequestHandler<ParseTransactionRequest, 
             return serviceParseResult.ToResult();
         }
 
-        var contexts = didData.Context.ToList();
-        if (!contexts.Any())
-        {
-            _logger.LogWarning("No context found in the createDid operation. At least one context should be required");
-            // return Result.Fail("No context found in the createDid operation. At least one context is required.");
-        }
-
         var signature = PrismEncoding.ByteStringToByteArray(signedAtalaOperation.Signature);
         var signedWith = signedAtalaOperation.SignedWith;
         // case sensitive
@@ -113,7 +106,7 @@ public class ParseTransactionHandler : IRequestHandler<ParseTransactionRequest, 
 
         // TODO: Chekc if the DID already exists in the database. See spec
 
-        var didDocument = new DidDocument(didIdentifier, publicKeyParseResult.Value, serviceParseResult.Value, contexts);
+        var didDocument = new DidDocument(didIdentifier, publicKeyParseResult.Value, serviceParseResult.Value, new List<string>());
         var operationResultWrapper = new OperationResultWrapper(OperationResultType.CreateDid, index, didDocument, signedWith);
         return Result.Ok(operationResultWrapper);
     }

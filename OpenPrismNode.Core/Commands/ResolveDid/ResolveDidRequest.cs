@@ -2,8 +2,6 @@
 
 using FluentResults;
 using MediatR;
-using Models;
-using ResolveDidResponse = ResolveDid.ResolveDidResponse;
 
 public class ResolveDidRequest : IRequest<Result<ResolveDid.ResolveDidResponse>>
 {

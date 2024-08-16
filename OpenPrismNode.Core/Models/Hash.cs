@@ -1,7 +1,6 @@
 namespace OpenPrismNode.Core.Models;
 
 using System.Diagnostics;
-using System.Text.Json.Serialization;
 using Crypto;
 
 // [JsonConverter(typeof(HashJsonConverter))]

@@ -1,6 +1,5 @@
 ﻿namespace OpenPrismNode.Core.Entities;
 
-using System.ComponentModel.DataAnnotations.Schema;
 using OpenPrismNode.Core.Models;
 
 public class EpochEntity

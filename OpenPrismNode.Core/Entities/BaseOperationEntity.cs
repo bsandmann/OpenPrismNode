@@ -25,7 +25,6 @@ public abstract class BaseOperationEntity
     /// <summary>
     /// Reference of the connected Transaction
     /// </summary>
-    // ReSharper disable once UnusedAutoPropertyAccessor.Global
     [Column(TypeName = "bytea")]
     public byte[] TransactionHash { get; set; } = null!;
     

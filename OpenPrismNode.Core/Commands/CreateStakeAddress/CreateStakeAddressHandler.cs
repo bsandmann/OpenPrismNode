@@ -5,9 +5,7 @@ using OpenPrismNode.Core.Entities;
 
 namespace OpenPrismNode.Core.Commands.CreateStakeAddress;
 
-using CreateWalletAddress;
 using Microsoft.Extensions.Logging;
-using Npgsql;
 using Services;
 
 public class CreateStakeAddressHandler : IRequestHandler<CreateStakeAddressRequest, Result>

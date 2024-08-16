@@ -1,7 +1,6 @@
 ﻿#pragma warning disable CS8618
 namespace OpenPrismNode.Core.Entities;
 
-using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 /// <summary>

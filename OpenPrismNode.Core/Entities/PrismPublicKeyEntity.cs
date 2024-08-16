@@ -36,17 +36,22 @@ public class PrismPublicKeyEntity
     /// </summary>
     [MaxLength(12)]
     public string Curve { get; set; }
+   
+    /// <summary>
+    /// References to the linked operation which added this key
+    /// </summary>
+    [Column(TypeName = "smallint")]
+    public int? UpdateOperationOrder { get; set; }
 
     /// <summary>
     /// References to the linked operation which created this key
     /// </summary>
     [Column(TypeName = "bytea")]
-    public byte[] CreateDidEntityOperationHash { get; set; }
+    public byte[]? CreateDidEntityOperationHash { get; set; }
     
-    //
-    // /// <summary>
-    // /// References to the linked operation which added this key
-    // /// </summary>
-    // // ReSharper disable once UnusedAutoPropertyAccessor.Global
-    // public UpdateDidEntity? PrismUpdateDidEntity { get; set; }
+    /// <summary>
+    /// References to the linked operation which updated this key
+    /// </summary>
+    [Column(TypeName = "bytea")]
+    public byte[]? UpdateDidEntityOperationHash { get; set; }
 }

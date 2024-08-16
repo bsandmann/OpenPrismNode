@@ -1,5 +1,6 @@
 ﻿namespace OpenPrismNode.Core.Entities;
 #pragma warning disable CS8618
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 /// <summary>
@@ -16,6 +17,7 @@ public class CreateDidEntity : BaseOperationEntity
     /// <summary>
     /// The signing Key used in the CreateDid Operation
     /// </summary>
+    [MaxLength(50)]
     public string SigningKeyId { get; set; }
 
     /// <summary>
@@ -27,14 +29,14 @@ public class CreateDidEntity : BaseOperationEntity
     /// Table of the services which have been created in the operation
     /// </summary>
     public List<PrismServiceEntity> PrismServices { get; set; }
-    //
-    // /// <summary>
-    // /// Reference to all updates
-    // /// </summary>
-    // public List<UpdateDidEntity> DidUpdates { get; set; }
-    //
-    // /// <summary>
-    // /// Reference to possible Deactivation
-    // /// </summary>
-    // public DeactivateDidEntity? DidDeactivation { get; set; }
+    
+    /// <summary>
+    /// Reference to all updates
+    /// </summary>
+    public List<UpdateDidEntity> DidUpdates { get; set; }
+    
+    /// <summary>
+    /// Reference to possible Deactivation
+    /// </summary>
+    public DeactivateDidEntity? DidDeactivation { get; set; }
 }

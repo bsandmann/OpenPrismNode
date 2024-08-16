@@ -6,7 +6,6 @@ using OpenPrismNode.Core.Entities;
 namespace OpenPrismNode.Core.Commands.CreateWalletAddress;
 
 using Microsoft.Extensions.Logging;
-using Npgsql;
 using Services;
 
 public class CreateWalletAddressHandler : IRequestHandler<CreateWalletAddressRequest, Result>

@@ -1,4 +1,4 @@
-﻿namespace OpenPrismNode.Core.Commands.CreateTransactionCreateDid;
+﻿namespace OpenPrismNode.Core.Commands.CreateTransactionUpdateDid;
 
 using FluentResults;
 using MediatR;
@@ -8,61 +8,60 @@ using OpenPrismNode.Core.Models;
 /// <summary>
 /// Request
 /// </summary>
-public class CreateTransactionCreateDidRequest : TransactionBaseRequest, IRequest<Result>
+public class CreateTransactionUpdateDidRequest : TransactionBaseRequest, IRequest<Result<TransactionModel>>
 {
     /// <summary>
     /// Request Constructor
     /// </summary>
     /// <param name="transactionHash"></param>
-    /// <param name="blockHash"></param>
     /// <param name="blockHeight"></param>
     /// <param name="fees"></param>
     /// <param name="size"></param>
     /// <param name="index"></param>
     /// <param name="operationHash"></param>
+    /// <param name="previousOperationHash"></param>
     /// <param name="did"></param>
     /// <param name="signingKeyId"></param>
+    /// <param name="updateDidActions"></param>
     /// <param name="operationSequenceNumber"></param>
+    /// <param name="blockHash"></param>
     /// <param name="utxos"></param>
-    /// <param name="prismPublicKeys"></param>
-    /// <param name="prismServices"></param>
-    public CreateTransactionCreateDidRequest(Hash transactionHash, Hash blockHash, int blockHeight, int fees, int size, int index, Hash operationHash, string did, string signingKeyId,
-        int operationSequenceNumber, List<UtxoWrapper> utxos, List<PrismPublicKey> prismPublicKeys, List<PrismService> prismServices)
+    public CreateTransactionUpdateDidRequest(Hash transactionHash, Hash blockHash, int blockHeight,int fees, int size, int index, Hash operationHash, Hash previousOperationHash, string did, string signingKeyId, List<UpdateDidActionResult> updateDidActions, int operationSequenceNumber, List<UtxoWrapper> utxos)
         : base(transactionHash, blockHash, blockHeight, fees, size, index, utxos)
     {
         OperationHash = operationHash;
-        Did = did;
+        PreviousOperationHash = previousOperationHash;
         SigningKeyId = signingKeyId;
+        UpdateDidActions = updateDidActions;
         OperationSequenceNumber = operationSequenceNumber;
-        PrismPublicKeys = prismPublicKeys;
-        PrismServices = prismServices;
+        Did = did;
     }
 
     /// <summary>
-    /// List of the public keys, their signingKeyId and their usage
+    /// List of the update-actions which should be applied. These could be addKey-action and removeKey-actions both mixed
     /// </summary>
-    public List<PrismPublicKey> PrismPublicKeys { get; }
-
-    /// <summary>
-    /// List of the Services
-    /// </summary>
-    public List<PrismService> PrismServices { get; }
-
-    ///  /// <summary>
-    /// Hash of the Prism-operation
-    /// </summary>
-    public Hash OperationHash { get; }
-
+    public List<UpdateDidActionResult> UpdateDidActions { get; }
+    
     /// <summary>
     /// In case multiple PRISM-Operations are in one transaction, this number defines the position in the transaction
     /// eg. a DidCreateOperation may have 0 and the following IssueCredentialBatchOperation has 1.
     /// </summary>
-    public int OperationSequenceNumber { get; set; }
+    public int OperationSequenceNumber { get; }
 
     /// <summary>
-    /// The Did created
+    /// The Did which gets the updates keys
     /// </summary>
     public string Did { get; }
+
+    ///  /// <summary>
+    /// Hash of this PRISM-operation
+    /// </summary>
+    public Hash OperationHash { get; }
+    
+    ///  /// <summary>
+    ///  Hash of the previous PRISM-operation
+    /// </summary>
+    public Hash PreviousOperationHash { get; }
 
     /// <summary>
     /// The signing Key used in the CreateDid Operation

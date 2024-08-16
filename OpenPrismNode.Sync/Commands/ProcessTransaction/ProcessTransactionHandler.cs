@@ -104,14 +104,6 @@ public class ProcessTransactionHandler : IRequestHandler<ProcessTransactionReque
                                 }))
                                 .ToList();
 
-                            
-                            //TODO remove
-                            // if (parsingResult.Value.OperationResultType == OperationResultType.CreateDid
-                            //     && parsingResult.Value.AsCreateDid().didDocument.PrismServices.Any())
-                            // {
-                            //     throw new Exception($"Found service on {request.Block.block_no}");
-                            // }
-
                             if (parsingResult.Value.OperationResultType == OperationResultType.CreateDid
                                 && parsingResult.Value.AsCreateDid().didDocument.PublicKeys.Any() &&
                                 parsingResult.Value.AsCreateDid().didDocument.PublicKeys.Any(p => p.Curve != PrismParameters.Secp256k1CurveName))
@@ -172,6 +164,10 @@ public class ProcessTransactionHandler : IRequestHandler<ProcessTransactionReque
                         else if (parsingResult.Value.OperationResultType == OperationResultType.DeactivateDid)
                         {
                             didIdentifier = parsingResult.Value.AsDeactivateDid().deactivatedDid;
+                        }
+                        else if (parsingResult.Value.OperationResultType == OperationResultType.ProtocolVersionUpdate)
+                        {
+                            throw new Exception($"Encoutered ProtocolVersionUpdate on BlockNumber: {request.Block.block_no}");
                         }
 
                         if (didIdentifier is not null)

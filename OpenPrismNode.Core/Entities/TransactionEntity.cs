@@ -1,6 +1,5 @@
 ﻿namespace OpenPrismNode.Core.Entities;
 
-using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 /// <summary>
@@ -47,17 +46,17 @@ public class TransactionEntity
     /// Optional CreateDid Operation
     /// </summary>
     public ICollection<CreateDidEntity> CreateDidEntities { get; set; }
-    //
-    // /// <summary>
-    // /// Optional UpdateDid Operation
-    // /// </summary>
-    // public List<UpdateDidEntity> UpdateDidEntities { get; set; }
-    //
-    // /// <summary>
-    // /// Optional DeactivateDid Operation
-    // /// </summary>
-    // public List<DeactivateDidEntity> DeactivateDidEntities { get; set; }
-    //
+    
+    /// <summary>
+    /// Optional UpdateDid Operation
+    /// </summary>
+    public ICollection<UpdateDidEntity> UpdateDidEntities { get; set; }
+    
+    /// <summary>
+    /// Optional DeactivateDid Operation
+    /// </summary>
+    public ICollection<DeactivateDidEntity> DeactivateDidEntities { get; set; }
+    
     // /// <summary>
     // /// Optional ProtocolVersionUpdate Operation
     // /// </summary>
