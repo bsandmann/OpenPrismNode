@@ -3,6 +3,7 @@
 using Entities;
 using FluentResults;
 using MediatR;
+using Microsoft.EntityFrameworkCore;
 using OpenPrismNode.Core;
 using OpenPrismNode.Core.Common;
 
@@ -29,7 +30,7 @@ public class CreateTransactionDeactivateDidHandler : IRequestHandler<CreateTrans
         {
             _context.ChangeTracker.Clear();
             _context.ChangeTracker.AutoDetectChangesEnabled = false;
-            var hasExistingTransaction = _context.TransactionEntities.Any(p => p.TransactionHash == request.TransactionHash.Value);
+            var hasExistingTransaction = await _context.TransactionEntities.AnyAsync(p => p.TransactionHash == request.TransactionHash.Value, cancellationToken: cancellationToken);
             var prefix = BlockEntity.CalculateBlockHashPrefix(request.BlockHash.Value);
             if (!hasExistingTransaction)
             {

@@ -9,12 +9,10 @@ using CreateWalletAddress;
 
 public class CreateAddressesHandler : IRequestHandler<CreateAddressesRequest, Result<List<WalletAddressEntity>>>
 {
-    private readonly DataContext _context;
     private readonly IMediator _mediator;
 
-    public CreateAddressesHandler(DataContext context, IMediator mediator)
+    public CreateAddressesHandler(IMediator mediator)
     {
-        _context = context;
         _mediator = mediator;
     }
 

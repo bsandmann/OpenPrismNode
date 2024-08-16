@@ -40,7 +40,7 @@ public class CreateWalletAddressHandler : IRequestHandler<CreateWalletAddressReq
                         WalletAddress = request.WalletAddress
                     };
 
-                    await _context.WalletAddressEntities.AddAsync(dbWalletAddress);
+                    await _context.WalletAddressEntities.AddAsync(dbWalletAddress, cancellationToken);
                     await _context.SaveChangesAsync(cancellationToken);
                 }
 

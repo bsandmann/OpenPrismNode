@@ -17,6 +17,7 @@ public class GetMostRecentBlockHandler : IRequestHandler<GetMostRecentBlockReque
     public async Task<Result<BlockEntity>> Handle(GetMostRecentBlockRequest request, CancellationToken cancellationToken)
     {
         var mostRecentBlock = await _context.BlockEntities
+            .Include(p => p.EpochEntity)
             .Where(b => b.IsFork == false && b.EpochEntity.NetworkType == request.NetworkType)
             .OrderByDescending(b => b.BlockHeight)
             .FirstOrDefaultAsync(cancellationToken);
@@ -25,6 +26,7 @@ public class GetMostRecentBlockHandler : IRequestHandler<GetMostRecentBlockReque
         {
             return Result.Fail("No blocks found in the database.");
         }
+
         mostRecentBlock.TimeUtc = DateTime.SpecifyKind(mostRecentBlock.TimeUtc, DateTimeKind.Utc);
         mostRecentBlock.LastParsedOnUtc = mostRecentBlock.LastParsedOnUtc is not null ? DateTime.SpecifyKind(mostRecentBlock.LastParsedOnUtc!.Value, DateTimeKind.Utc) : null;
         return Result.Ok(mostRecentBlock);
