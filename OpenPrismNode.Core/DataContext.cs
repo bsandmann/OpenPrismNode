@@ -195,5 +195,29 @@ public class DataContext : DbContext
         modelBuilder.Entity<DeactivateDidEntity>()
             .HasIndex(d => d.Did);
         
+        modelBuilder.Entity<BlockEntity>()
+            .HasIndex(b => b.EpochNumber);
+
+        modelBuilder.Entity<TransactionEntity>()
+            .HasIndex(t => new { t.BlockHeight, t.BlockHashPrefix });
+
+        modelBuilder.Entity<UtxoEntity>()
+            .HasIndex(u => u.StakeAddress);
+
+        modelBuilder.Entity<UtxoEntity>()
+            .HasIndex(u => u.WalletAddress);
+
+        modelBuilder.Entity<CreateDidEntity>()
+            .HasIndex(c => new { c.TransactionHash, c.BlockHeight, c.BlockHashPrefix });
+
+        modelBuilder.Entity<UpdateDidEntity>()
+            .HasIndex(u => new { u.TransactionHash, u.BlockHeight, u.BlockHashPrefix });
+
+        modelBuilder.Entity<PrismPublicKeyEntity>()
+            .HasIndex(p => p.CreateDidEntityOperationHash);
+
+        modelBuilder.Entity<PrismPublicKeyEntity>()
+            .HasIndex(p => p.UpdateDidEntityOperationHash);
+        
     }
 }

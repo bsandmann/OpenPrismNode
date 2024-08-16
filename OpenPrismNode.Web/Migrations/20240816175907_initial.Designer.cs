@@ -12,7 +12,7 @@ using OpenPrismNode.Core;
 namespace OpenPrismNode.Web.Migrations
 {
     [DbContext(typeof(DataContext))]
-    [Migration("20240816161229_initial")]
+    [Migration("20240816175907_initial")]
     partial class initial
     {
         /// <inheritdoc />

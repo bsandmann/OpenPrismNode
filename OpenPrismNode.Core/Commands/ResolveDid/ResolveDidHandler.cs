@@ -285,7 +285,6 @@ public class ResolveDidHandler : IRequestHandler<ResolveDidRequest, Result<Resol
                             // should never happen
                             return Result.Fail("Fatal error. The key which should be removed does not exist");
                         }
-                      
                     }
                     else if (addServiceAction is not null)
                     {
@@ -360,9 +359,9 @@ public class ResolveDidHandler : IRequestHandler<ResolveDidRequest, Result<Resol
         // lastly we have to apply the deactivateDid operation
         if (createDidResult.DeactivateDid is not null)
         {
-           resolved.PublicKeys.Clear();
-           resolved.PrismServices.Clear();
-           resolved.Contexts.Clear();
+            resolved.PublicKeys.Clear();
+            resolved.PrismServices.Clear();
+            resolved.Contexts.Clear();
         }
 
         var resolveDidResponse = new ResolveDidResponse(resolved, Hash.CreateFrom(lastOperationHash));
