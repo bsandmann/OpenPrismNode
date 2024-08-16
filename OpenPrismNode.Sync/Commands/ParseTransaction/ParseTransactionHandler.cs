@@ -586,7 +586,7 @@ public class ParseTransactionHandler : IRequestHandler<ParseTransactionRequest, 
             var listTypes = type.Substring(1, type.Length - 2).Split(",");
             foreach (var listType in listTypes)
             {
-                if (!PrismParameters.ExpectedServiceTypes.Contains(listType))
+                if (!PrismParameters.ExpectedServiceTypes.Contains(listType.Replace("\"", string.Empty)))
                 {
                     logger.LogWarning($"{ParserErrors.UnexpectedServiceType}: {type}");
                 }
