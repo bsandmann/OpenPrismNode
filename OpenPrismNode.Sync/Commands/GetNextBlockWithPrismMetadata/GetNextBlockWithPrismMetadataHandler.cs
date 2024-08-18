@@ -1,83 +1,190 @@
 using Dapper;
 using FluentResults;
+using LazyCache;
 using MediatR;
 using Microsoft.Extensions.Logging;
 using OpenPrismNode.Sync.Services;
 
-public class GetNextBlockWithPrismMetadataHandlerX : IRequestHandler<GetNextBlockWithPrismMetadataRequest, Result<GetNextBlockWithPrismMetadataResponse>>
+public class GetNextBlockWithPrismMetadataHandler : IRequestHandler<GetNextBlockWithPrismMetadataRequest, Result<GetNextBlockWithPrismMetadataResponse>>
 {
     private readonly INpgsqlConnectionFactory _connectionFactory;
-    private readonly ILogger<GetNextBlockWithPrismMetadataHandlerX> _logger;
+    private readonly ILogger<GetNextBlockWithPrismMetadataHandler> _logger;
+    private readonly IAppCache _cache;
 
-    public GetNextBlockWithPrismMetadataHandlerX(INpgsqlConnectionFactory connectionFactory, ILogger<GetNextBlockWithPrismMetadataHandlerX> logger)
+    public GetNextBlockWithPrismMetadataHandler(INpgsqlConnectionFactory connectionFactory, ILogger<GetNextBlockWithPrismMetadataHandler> logger, IAppCache cache)
     {
         _connectionFactory = connectionFactory;
         _logger = logger;
+        _cache = cache;
     }
 
     public async Task<Result<GetNextBlockWithPrismMetadataResponse>> Handle(GetNextBlockWithPrismMetadataRequest request, CancellationToken cancellationToken)
     {
-        await using var connection = _connectionFactory.CreateConnection();
-
-        // Finding the next block with PRISM metadata is split into two alternative approaches:
-        // Finding the inital block can be quite slow, if the first PRISM transaction is years away from the genesis block.
-        // So in this case we see if we can find any PRISM transactions first, and then find the block for this transaction (assuming that the PRISM transactions are in order)
-        if (request.StartBlockHeight == 1)
+        var lowestBlockInCache = _cache.TryGetValue("LowestBlock", out BlockMetadataInfo lowestBlock);
+        if (!lowestBlockInCache)
         {
-            _logger.LogInformation($"Checking for block with PRISM-metadata starting from the genesis block");
-            // Step 1: Fetch relevant transaction IDs
-            const string metadataQuery = @"
-            SELECT tx_id
-            FROM public.tx_metadata
-            WHERE key = @MetadataKey
-            ORDER BY id ASC
-            LIMIT 1"; // Adjust this limit based on your typical data
-
-            var txIds = await connection.QueryAsync<long>(metadataQuery, new { request.MetadataKey });
-
-            if (!txIds.Any())
+            // Fill it with all entries using batching
+            var cachingResult = await PopulateCache(request.MetadataKey);
+            if (cachingResult.IsFailed)
             {
+                return cachingResult.ToResult();
+            }
+
+            if (cachingResult.Value is null)
+            {
+                // No PRISM metadata found at all
                 return Result.Ok(new GetNextBlockWithPrismMetadataResponse());
             }
 
-            // Step 2: Get the block information for these transactions
+            lowestBlock = cachingResult.Value;
+        }
+
+        if (request.StartBlockHeight <= lowestBlock.BlockNumber)
+        {
+            return Result.Ok(new GetNextBlockWithPrismMetadataResponse
+            {
+                BlockHeight = lowestBlock.BlockNumber,
+                EpochNumber = lowestBlock.EpochNumber
+            });
+        }
+
+        var highestBlockInCache = _cache.TryGetValue("HighestBlock", out BlockMetadataInfo highestBlock);
+        if (!highestBlockInCache)
+        {
+            var cachingResult = await PopulateCache(request.MetadataKey);
+            if (cachingResult.IsFailed)
+            {
+                return cachingResult.ToResult();
+            }
+
+            if (cachingResult.Value is null)
+            {
+                // No PRISM metadata found at all
+                return Result.Ok(new GetNextBlockWithPrismMetadataResponse());
+            }
+
+            highestBlockInCache = _cache.TryGetValue("HighestBlock", out BlockMetadataInfo secondTryHighestBlock);
+            if (!highestBlockInCache)
+            {
+                return Result.Fail("Highest block not found in cache. Caching error");
+            }
+
+            highestBlock = secondTryHighestBlock;
+        }
+
+        if (request.StartBlockHeight > highestBlock.BlockNumber)
+        {
+            // The sync up to the newest block until the non-fast-sync operation kicks in
+            return await SearchForNextPrismTransactionInBatches(request.StartBlockHeight, request.MetadataKey, request.MaxBlockHeight);
+        }
+        else
+        {
+            // The default case for the initial sync process
+            var cacheResult = _cache.TryGetValue("AllBlocks", out List<BlockMetadataInfo> listOfBlocks);
+            if (!cacheResult)
+            {
+                return Result.Fail("Cache error");
+            }
+
+            var nextBlock = listOfBlocks.FirstOrDefault(p => p.BlockNumber >= request.StartBlockHeight);
+            if (nextBlock != null)
+            {
+                return Result.Ok(new GetNextBlockWithPrismMetadataResponse
+                {
+                    BlockHeight = nextBlock.BlockNumber,
+                    EpochNumber = nextBlock.EpochNumber
+                });
+            }
+            else
+            {
+                return Result.Fail("Should not happen");
+            }
+        }
+
+
+        return Result.Fail("");
+    }
+
+    private async Task<Result<BlockMetadataInfo?>> PopulateCache(int metadataKey)
+    {
+        await using var connection = _connectionFactory.CreateConnection();
+        _logger.LogInformation($"Checking for block with PRISM-metadata starting from the genesis block");
+
+        const int batchSize = 5000;
+        long lastId = 0;
+        var allResults = new List<BlockMetadataInfo>();
+
+        while (true)
+        {
+            // Step 1: Fetch relevant transaction IDs in batches
+            const string metadataQuery = @"
+            SELECT id, tx_id
+            FROM public.tx_metadata
+            WHERE key = @MetadataKey AND id > @LastId
+            ORDER BY id ASC
+            LIMIT @BatchSize";
+
+            var txBatch = await connection.QueryAsync<(long Id, long TxId)>(metadataQuery, 
+                new { MetadataKey = metadataKey, LastId = lastId, BatchSize = batchSize });
+
+            if (!txBatch.Any())
+            {
+                break; // No more data to process
+            }
+
+            var txIds = txBatch.Select(t => t.TxId).ToArray();
+            lastId = txBatch.Last().Id;
+
+            // Step 2: Get all the blocks matching these metadata-transactions
             const string blockQuery = @"
             SELECT b.block_no, b.epoch_no
             FROM public.tx t
             JOIN public.block b ON t.block_id = b.id
-            WHERE t.id = ANY(@TxIds) AND b.block_no > @StartBlockHeight
-            ORDER BY b.block_no ASC
-            LIMIT 1";
+            WHERE t.id = ANY(@TxIds)
+            ORDER BY b.block_no ASC";
 
-            var result = await connection.QueryFirstOrDefaultAsync<(int? BlockNumber, int? EpochNumber)>(
+            var results = await connection.QueryAsync<(int BlockNumber, int EpochNumber)>(
                 blockQuery,
-                new { TxIds = txIds.ToArray(), request.StartBlockHeight }
+                new { TxIds = txIds }
             );
 
-            if (result.BlockNumber.HasValue)
-            {
-                _logger.LogInformation($"Found frist PRISM block at {result.BlockNumber.Value}");
-                return Result.Ok(new GetNextBlockWithPrismMetadataResponse
-                {
-                    BlockHeight = result.BlockNumber.Value,
-                    EpochNumber = result.EpochNumber.Value
-                });
-            }
-
-            return Result.Ok(new GetNextBlockWithPrismMetadataResponse());
+            allResults.AddRange(results.Select(p => new BlockMetadataInfo 
+            { 
+                BlockNumber = p.BlockNumber, 
+                EpochNumber = p.EpochNumber 
+            }));
         }
-        else
-        {
-            // In case we already have a starting block, we can use different approach, we just looing ahead for the next blocks.
-            // This isn't very fast, but more reliable than the first approach for a chain which structure ins unknown.
-            // The first approach might theorectically fail or an continious approach, if we suddently have millions of PRISM transactions on chain.
-            const int batchSize = 1_000;
-            int currentBlockHeight = request.StartBlockHeight;
 
-            while (true)
-            {
-                _logger.LogInformation($"Checking for block with PRISM-metadata between {currentBlockHeight} and {currentBlockHeight + batchSize}");
-                const string commandText = @"
+        if (!allResults.Any())
+        {
+            return Result.Ok();
+        }
+
+        var orderedResults = allResults.OrderBy(p => p.BlockNumber).ToList();
+
+        _cache.Add("LowestBlock", orderedResults.First());
+        _cache.Add("HighestBlock", orderedResults.Last());
+        _cache.Add("AllBlocks", orderedResults);
+
+        return Result.Ok(orderedResults.First()!);
+    }
+
+    public class BlockMetadataInfo
+    {
+        public int BlockNumber { get; set; }
+        public int EpochNumber { get; set; }
+    }
+
+    private async Task<Result<GetNextBlockWithPrismMetadataResponse>> SearchForNextPrismTransactionInBatches(int startBlockHeight, int metadataKey, int maxBlockHeight)
+    {
+        await using var connection = _connectionFactory.CreateConnection();
+        const int batchSize = 1_000;
+        int currentBlockHeight = startBlockHeight;
+
+        while (true)
+        {
+            _logger.LogInformation($"Checking for block with PRISM-metadata between {currentBlockHeight} and {currentBlockHeight + batchSize}");
+            const string commandText = @"
                  SELECT b.block_no, b.epoch_no
                  FROM public.block b
                  WHERE b.block_no > @StartBlockHeight
@@ -91,31 +198,46 @@ public class GetNextBlockWithPrismMetadataHandlerX : IRequestHandler<GetNextBloc
                  ORDER BY b.block_no ASC
                  LIMIT 1";
 
-                var parameters = new
-                {
-                    StartBlockHeight = currentBlockHeight,
-                    EndBlockHeight = currentBlockHeight + batchSize,
-                    request.MetadataKey
-                };
+            var parameters = new
+            {
+                StartBlockHeight = currentBlockHeight,
+                EndBlockHeight = currentBlockHeight + batchSize,
+                metadataKey
+            };
 
-                var result = await connection.QueryFirstOrDefaultAsync<(int? BlockNumber, int? EpochNumber)>(commandText, parameters);
+            var result = await connection.QueryFirstOrDefaultAsync<(int? BlockNumber, int? EpochNumber, int? TransactionId)>(commandText, parameters);
 
-                if (result.BlockNumber.HasValue)
+            if (result.BlockNumber.HasValue)
+            {
+                _logger.LogInformation($"Found next PRISM block at {result.BlockNumber.Value}");
+
+                var cacheResult = _cache.TryGetValue("AllBlock", out List<BlockMetadataInfo> listOfBlocks);
+                if (!cacheResult)
                 {
-                    _logger.LogInformation($"Found next PRISM block at {result.BlockNumber.Value}");
-                    return Result.Ok(new GetNextBlockWithPrismMetadataResponse
+                    return Result.Fail("Cache error");
+                }
+
+                listOfBlocks.Add(new BlockMetadataInfo()
+                {
+                    BlockNumber = result.BlockNumber.Value,
+                    EpochNumber = result.EpochNumber.Value,
+                });
+
+                _cache.Add("HighestBlock", listOfBlocks.Last());
+                _cache.Add<List<BlockMetadataInfo>>("AllBlocks", listOfBlocks);
+                return Result.Ok(
+                    new GetNextBlockWithPrismMetadataResponse
                     {
                         BlockHeight = result.BlockNumber.Value,
                         EpochNumber = result.EpochNumber.Value
                     });
-                }
+            }
 
-                currentBlockHeight += batchSize;
+            currentBlockHeight += batchSize;
 
-                if (currentBlockHeight > request.MaxBlockHeight)
-                {
-                    return Result.Ok(new GetNextBlockWithPrismMetadataResponse());
-                }
+            if (currentBlockHeight > maxBlockHeight)
+            {
+                return Result.Ok(new GetNextBlockWithPrismMetadataResponse());
             }
         }
     }

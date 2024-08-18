@@ -47,40 +47,40 @@ public class BackgroundSyncService : BackgroundService
         _logger.LogInformation($"Postgres (dbSync) tip for {_appSettings.PrismNetwork.Name}: {postgresSqlTip.Value.block_no} in epoch {postgresSqlTip.Value.epoch_no}");
 
         //TODO renable loop
-        // while (!stoppingToken.IsCancellationRequested)
-        // {
-        try
+        while (!stoppingToken.IsCancellationRequested)
         {
-            // await Task.Delay(_appSettings.DelayBetweenSyncsInMs, stoppingToken);
-
-            if (_cts.Token.IsCancellationRequested)
+            try
             {
-                // continue;
+                await Task.Delay(_appSettings.DelayBetweenSyncsInMs, stoppingToken);
+
+                if (_cts.Token.IsCancellationRequested)
+                {
+                    continue;
+                }
+
+                _logger.LogInformation($"Sync running for {_appSettings.PrismNetwork.Name}");
+
+                var syncResult = await SyncService.RunSync(mediator, _logger, _appSettings.PrismNetwork.Name, _appSettings.PrismNetwork.StartAtEpochNumber, isInitialStartup);
+                if (syncResult.IsFailed)
+                {
+                    _logger.LogCritical($"Sync failed for {_appSettings.PrismNetwork.Name}: {syncResult.Errors.SingleOrDefault()}");
+                }
+                else
+                {
+                    isInitialStartup = false;
+                    _logger.LogInformation($"Sync succussfully completed for {_appSettings.PrismNetwork.Name}");
+                }
             }
-
-            _logger.LogInformation($"Sync running for {_appSettings.PrismNetwork.Name}");
-
-            var syncResult = await SyncService.RunSync(mediator, _logger, _appSettings.PrismNetwork.Name,_appSettings.PrismNetwork.StartAtEpochNumber, isInitialStartup);
-            if (syncResult.IsFailed)
+            catch (OperationCanceledException)
             {
-                _logger.LogCritical($"Sync failed for {_appSettings.PrismNetwork.Name}: {syncResult.Errors.SingleOrDefault()}");
+                _logger.LogInformation($"Sync operation was cancelled for {_appSettings.PrismNetwork.Name}");
+                break;
             }
-            else
+            catch (Exception ex)
             {
-                isInitialStartup = false;
-                _logger.LogInformation($"Sync succussfully completed for {_appSettings.PrismNetwork.Name}");
+                _logger.LogCritical($"An error occurred during the sync process for {_appSettings.PrismNetwork.Name}: {ex.Message}");
             }
         }
-        catch (OperationCanceledException)
-        {
-            _logger.LogInformation($"Sync operation was cancelled for {_appSettings.PrismNetwork.Name}");
-            // break;
-        }
-        catch (Exception ex)
-        {
-            _logger.LogCritical($"An error occurred during the sync process for {_appSettings.PrismNetwork.Name}: {ex.Message}");
-        }
-        // }
     }
 
     /// <summary>
