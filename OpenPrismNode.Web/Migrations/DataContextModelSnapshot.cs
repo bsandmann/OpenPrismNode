@@ -277,7 +277,6 @@ namespace OpenPrismNode.Web.Migrations
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("PrismServiceEntityId"));
 
                     b.Property<byte[]>("CreateDidEntityOperationHash")
-                        .IsRequired()
                         .HasColumnType("bytea");
 
                     b.Property<string>("JsonData")
@@ -295,12 +294,10 @@ namespace OpenPrismNode.Web.Migrations
                         .HasColumnType("character varying(50)");
 
                     b.Property<string>("Type")
-                        .IsRequired()
                         .HasMaxLength(100)
                         .HasColumnType("character varying(100)");
 
                     b.Property<byte[]>("UpdateDidEntityOperationHash")
-                        .IsRequired()
                         .HasColumnType("bytea");
 
                     b.Property<short?>("UpdateOperationOrder")
@@ -557,14 +554,12 @@ namespace OpenPrismNode.Web.Migrations
                     b.HasOne("OpenPrismNode.Core.Entities.CreateDidEntity", null)
                         .WithMany("PrismServices")
                         .HasForeignKey("CreateDidEntityOperationHash")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .OnDelete(DeleteBehavior.Cascade);
 
                     b.HasOne("OpenPrismNode.Core.Entities.UpdateDidEntity", null)
                         .WithMany("PrismServices")
                         .HasForeignKey("UpdateDidEntityOperationHash")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .OnDelete(DeleteBehavior.Cascade);
                 });
 
             modelBuilder.Entity("OpenPrismNode.Core.Entities.TransactionEntity", b =>

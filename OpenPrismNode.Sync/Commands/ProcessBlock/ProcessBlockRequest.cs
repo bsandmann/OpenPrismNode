@@ -1,9 +1,10 @@
 ﻿using FluentResults;
 using MediatR;
 using OpenPrismNode.Core.Models;
-using OpenPrismNode.Sync.PostgresModels;
 
 namespace OpenPrismNode.Sync.Commands.ProcessBlock;
+
+using Core.DbSyncModels;
 
 public class ProcessBlockRequest : IRequest<Result<ProcessBlockResponse>>
 {

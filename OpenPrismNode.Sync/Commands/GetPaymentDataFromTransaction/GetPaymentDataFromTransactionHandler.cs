@@ -4,12 +4,12 @@ using MediatR;
 using Microsoft.Extensions.Options;
 using Npgsql;
 using OpenPrismNode.Core.Common;
-using OpenPrismNode.Sync.PostgresModels;
 
 namespace OpenPrismNode.Sync.Commands.GetPaymentDataFromTransaction;
 
+using Core.DbSyncModels;
 using Core.Models;
-using Utxo = PostgresModels.Utxo;
+using Utxo = Core.DbSyncModels.Utxo;
 
 public class GetPaymentDataFromTransactionHandler : IRequestHandler<GetPaymentDataFromTransactionRequest, Result<Payment>>
 {

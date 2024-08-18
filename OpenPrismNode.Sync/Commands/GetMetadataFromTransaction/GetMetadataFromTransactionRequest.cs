@@ -1,8 +1,9 @@
 ﻿namespace OpenPrismNode.Sync.Commands.GetMetadataFromTransaction;
 
+using Core.DbSyncModels;
 using FluentResults;
 using MediatR;
-using OpenPrismNode.Sync.PostgresModels;
+
 // using global::Grpc.Core;
 
 public class GetMetadataFromTransactionRequest : IRequest<Result<Metadata>>

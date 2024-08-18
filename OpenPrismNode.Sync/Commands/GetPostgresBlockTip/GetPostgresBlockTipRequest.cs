@@ -1,8 +1,8 @@
 ﻿namespace OpenPrismNode.Sync.Commands.GetPostgresBlockTip;
 
+using Core.DbSyncModels;
 using FluentResults;
 using MediatR;
-using PostgresModels;
 
 public class GetPostgresBlockTipRequest : IRequest<Result<Block>>
 {

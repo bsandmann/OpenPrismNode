@@ -1,4 +1,4 @@
-﻿namespace OpenPrismNode.Sync.PostgresModels;
+﻿namespace OpenPrismNode.Core.DbSyncModels;
 
 public class Payment
 {

@@ -1,10 +1,10 @@
 ﻿namespace OpenPrismNode.Sync.Commands.GetTransactionsWithPrismMetadataForBlockId;
 
+using Core.DbSyncModels;
 using Dapper;
 using FluentResults;
 using MediatR;
 using OpenPrismNode.Core;
-using OpenPrismNode.Sync.PostgresModels;
 using OpenPrismNode.Sync.Services;
 
 public class GetTransactionsWithPrismMetadataForBlockIdHandler : IRequestHandler<GetTransactionsWithPrismMetadataForBlockIdRequest, Result<List<Transaction>>>

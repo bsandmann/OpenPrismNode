@@ -1,9 +1,9 @@
 ﻿namespace OpenPrismNode.Sync.Commands.GetPostgresBlockByBlockNo;
 
+using Core.DbSyncModels;
 using Dapper;
 using FluentResults;
 using MediatR;
-using OpenPrismNode.Sync.PostgresModels;
 using Services;
 
 public class GetPostgresBlockByBlockNoHandler : IRequestHandler<GetPostgresBlockByBlockNoRequest, Result<Block>>
@@ -20,8 +20,7 @@ public class GetPostgresBlockByBlockNoHandler : IRequestHandler<GetPostgresBlock
     {
         await using (var connection = _connectionFactory.CreateConnection())
         {
-            // TODO optimize query to get only what is needed.
-            string commandText = $"SELECT * FROM public.block WHERE block_no = {request.BlockNo};";
+            string commandText = $"  SELECT id, hash, epoch_no, block_no, time, tx_count FROM public.block WHERE block_no = {request.BlockNo};";
             var block = await connection.QueryFirstOrDefaultAsync<Block>(commandText);
             if (block is null)
             {

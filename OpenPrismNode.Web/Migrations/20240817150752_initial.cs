@@ -318,15 +318,15 @@ namespace OpenPrismNode.Web.Migrations
                     PrismServiceEntityId = table.Column<int>(type: "integer", nullable: false)
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
                     ServiceId = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: false),
-                    Type = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
+                    Type = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: true),
                     UriString = table.Column<string>(type: "text", nullable: true),
                     JsonData = table.Column<string>(type: "jsonb", nullable: true),
                     ListOfUrisJson = table.Column<string>(type: "jsonb", nullable: true),
                     Removed = table.Column<bool>(type: "boolean", nullable: false),
                     Updated = table.Column<bool>(type: "boolean", nullable: false),
                     UpdateOperationOrder = table.Column<short>(type: "smallint", nullable: true),
-                    UpdateDidEntityOperationHash = table.Column<byte[]>(type: "bytea", nullable: false),
-                    CreateDidEntityOperationHash = table.Column<byte[]>(type: "bytea", nullable: false)
+                    UpdateDidEntityOperationHash = table.Column<byte[]>(type: "bytea", nullable: true),
+                    CreateDidEntityOperationHash = table.Column<byte[]>(type: "bytea", nullable: true)
                 },
                 constraints: table =>
                 {

@@ -1,8 +1,8 @@
 ﻿namespace OpenPrismNode.Sync.Commands.GetPaymentDataFromTransaction;
 
+using Core.DbSyncModels;
 using FluentResults;
 using MediatR;
-using OpenPrismNode.Sync.PostgresModels;
 
 public class GetPaymentDataFromTransactionRequest : IRequest<Result<Payment>>
 {

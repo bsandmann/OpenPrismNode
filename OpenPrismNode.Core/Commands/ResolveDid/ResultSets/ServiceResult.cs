@@ -10,7 +10,7 @@ public class ServiceResult
     /// <summary>
     /// Service type eg. LinkedDomains
     /// </summary>
-    public string Type { get; set; }
+    public string? Type { get; set; }
 
     public Uri? Uri { get; set; }
 

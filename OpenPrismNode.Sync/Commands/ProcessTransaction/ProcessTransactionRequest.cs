@@ -1,8 +1,8 @@
 namespace OpenPrismNode.Sync.Commands.ProcessTransaction;
 
+using Core.DbSyncModels;
 using FluentResults;
 using MediatR;
-using PostgresModels;
 
 public record ProcessTransactionRequest : IRequest<Result>
 {

@@ -267,6 +267,7 @@ public class ParseTransactionHandler : IRequestHandler<ParseTransactionRequest, 
             }
             else if (action.ActionCase == UpdateDIDAction.ActionOneofCase.PatchContext)
             {
+                throw new NotImplementedException("PatchContext is not implemented yet");
                 if (action.PatchContext.Context.Any())
                 {
                     // Replace all
@@ -309,6 +310,8 @@ public class ParseTransactionHandler : IRequestHandler<ParseTransactionRequest, 
 
     private async Task<Result<OperationResultWrapper>> ParseProtocolVersionUpdateOperation(SignedAtalaOperation signedAtalaOperation, int index, ResolveMode resolveMode)
     {
+        throw new NotImplementedException("ProtocolVersionUpdate is not implemented yet");
+        
         var update = signedAtalaOperation.Operation.ProtocolVersionUpdate;
         var signature = PrismEncoding.ByteStringToByteArray(signedAtalaOperation.Signature);
         var signedWith = signedAtalaOperation.SignedWith;

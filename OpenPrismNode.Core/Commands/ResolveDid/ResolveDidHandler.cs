@@ -318,9 +318,9 @@ public class ResolveDidHandler : IRequestHandler<ResolveDidRequest, Result<Resol
                         serviceToUpdate.Type = updateServiceAction.Type;
                         serviceToUpdate.ServiceEndpoints = new ServiceEndpoints()
                         {
-                            Uri = addServiceAction.Uri,
-                            ListOfUris = addServiceAction.ListOfUris,
-                            Json = addServiceAction.JsonData is not null ? JsonSerializer.Deserialize<Dictionary<string, object>>(addServiceAction.JsonData) : null
+                            Uri = updateServiceAction.Uri,
+                            ListOfUris = updateServiceAction.ListOfUris,
+                            Json = updateServiceAction.JsonData is not null ? JsonSerializer.Deserialize<Dictionary<string, object>>(updateServiceAction.JsonData) : null
                         };
                     }
                     else if (removeServiceAction is not null)

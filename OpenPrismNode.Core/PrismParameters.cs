@@ -15,13 +15,26 @@ public class PrismParameters
     public const string ServiceTypeCredentialRegistry = "CredentialRegistry";
     public const string ServiceTypeOID4VCI = "OID4VCI";
     public const string ServiceTypeOID4VP = "OID4VP";
-    public static readonly List<string> ExpectedServiceTypes = new List<string> { JsonLdLinkedDomains, JsonLdDidCommMessaging, ServiceTypeCredentialRegistry, ServiceTypeOID4VCI, ServiceTypeOID4VP };
+    public static readonly List<string> ExpectedServiceTypes = new List<string> { ServiceTypeLinkedDomains, ServiceTypeDIDCommMessaging, ServiceTypeCredentialRegistry, ServiceTypeOID4VCI, ServiceTypeOID4VP };
     public const string Secp256k1CurveName = "secp256k1";
     public const string Ed25519CurveName = "Ed25519";
     public const string X25519CurveName = "X25519";
+    //TODO move to appsettings, since we might be configurig this in the future for different networks E.g. preview
     public const int MetadataKey = 21325;
     public const string JsonLdDefaultContext = "https://www.w3.org/ns/did/v1";
     public const string JsonLdJsonWebKey2020 = "https://w3id.org/security/suites/jws-2020/v1";
     public const string JsonLdDidCommMessaging = "https://didcomm.org/messaging/contexts/v2";
     public const string JsonLdLinkedDomains = "https://identity.foundation/.well-known/did-configuration/v1";
+    
+    /// <summary>
+    /// The number of blocks that the current database tip must be behind the network tip before the node will start fast syncing through batching
+    /// TODO move to appsettings
+    /// </summary>
+    public const int FastSyncBlockDistanceRequirement = 150;
+    
+    /// <summary>
+    /// The number of blocks to batch together when fast syncing
+    /// TODO move to appsettings
+    /// </summary>
+    public const int FastSyncBlockBatchSize = 2000;
 }

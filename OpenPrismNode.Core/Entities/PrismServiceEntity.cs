@@ -19,9 +19,10 @@ public class PrismServiceEntity
 
     /// <summary>
     /// Service type eg. LinkedDomains
+    /// Note, can be null, if the service gets removed
     /// </summary>
     [MaxLength(100)]
-    public string Type { get; set; }
+    public string? Type { get; set; }
 
     public string? UriString { get; set; }
 
@@ -50,13 +51,13 @@ public class PrismServiceEntity
     /// References to the linked operation which added this service
     /// </summary>
     [Column(TypeName = "bytea")]
-    public byte[] UpdateDidEntityOperationHash { get; set; }
+    public byte[]? UpdateDidEntityOperationHash { get; set; }
 
     /// <summary>
     /// References to the linked operation which created this service
     /// </summary>
     [Column(TypeName = "bytea")]
-    public byte[] CreateDidEntityOperationHash { get; set; }
+    public byte[]? CreateDidEntityOperationHash { get; set; }
     
     [NotMapped]
     public Uri? Uri

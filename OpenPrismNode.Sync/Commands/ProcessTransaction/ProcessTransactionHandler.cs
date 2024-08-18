@@ -12,7 +12,6 @@ using MediatR;
 using Microsoft.Extensions.Logging;
 using Models;
 using ParseTransaction;
-using PostgresModels;
 
 public class ProcessTransactionHandler : IRequestHandler<ProcessTransactionRequest, Result>
 {
@@ -104,13 +103,6 @@ public class ProcessTransactionHandler : IRequestHandler<ProcessTransactionReque
                                 }))
                                 .ToList();
 
-                            if (parsingResult.Value.OperationResultType == OperationResultType.CreateDid
-                                && parsingResult.Value.AsCreateDid().didDocument.PublicKeys.Any() &&
-                                parsingResult.Value.AsCreateDid().didDocument.PublicKeys.Any(p => p.Curve != PrismParameters.Secp256k1CurveName))
-                            {
-                                throw new Exception($"Found other crypt alg on {request.Block.block_no}");
-                            }
-
                             try
                             {
                                 _logger.LogInformation($"Parsing successful for transaction # {request.Transaction.block_index} in block # {request.Block.block_no}");
@@ -142,11 +134,11 @@ public class ProcessTransactionHandler : IRequestHandler<ProcessTransactionReque
                             var transactionWritingErrorMessage = parsingResult.Errors.Single().Message;
                             if (transactionWritingErrorMessage == ParserErrors.UnsupportedOperation)
                             {
-                                _logger.LogInformation($"Unsupported operation in block-no '{request.Block.block_no}'");
+                                _logger.LogInformation($"Unsupported operation in block # '{request.Block.block_no}'");
                             }
                             else
                             {
-                                _logger.LogWarning($"Parsing error for transaction withd id '{request.Transaction.id}' in block-no '{request.Block.block_no}': {transactionWritingErrorMessage}");
+                                _logger.LogWarning($"Parsing error for transaction withd id '{request.Transaction.id}' in block # '{request.Block.block_no}': {transactionWritingErrorMessage}");
                             }
 
                             continue;
@@ -237,7 +229,7 @@ public class ProcessTransactionHandler : IRequestHandler<ProcessTransactionReque
             catch
                 (Exception e)
             {
-                _logger.LogError("Failed while parsing transaction {TransactionId}: {Error}", request.Transaction.id, e.Message);
+                _logger.LogError($"Failed while parsing transaction {request.Transaction.id} in Block #: {request.Block.block_no}: {e.Message}");
             }
         }
 

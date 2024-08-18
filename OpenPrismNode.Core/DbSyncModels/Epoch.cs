@@ -1,4 +1,4 @@
-﻿namespace OpenPrismNode.Sync.PostgresModels;
+﻿namespace OpenPrismNode.Core.DbSyncModels;
 
 /// <summary>
 /// epoch-Entity of the postgres table

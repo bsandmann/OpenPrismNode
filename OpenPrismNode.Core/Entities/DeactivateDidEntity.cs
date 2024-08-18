@@ -22,7 +22,7 @@ public class DeactivateDidEntity : BaseOperationEntity
     /// </summary>
     public CreateDidEntity CreateDidEntity { get; set; }
 
-    // <summary>
+    /// <summary>
     /// The Did created
     /// </summary>
     [Column(TypeName = "bytea")]

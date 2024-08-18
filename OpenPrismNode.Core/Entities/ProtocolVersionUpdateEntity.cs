@@ -13,7 +13,7 @@ public class ProtocolVersionUpdateEntity : BaseOperationEntity
     /// <summary>
     /// Cardano block number that tells since which block the update is enforced
     /// </summary>
-    public long EffectiveSinceBlock { get; set; }
+    public int EffectiveSinceBlock { get; set; }
 
     /// <summary>
     /// new minor version to be announced, if this value changes, the node can opt to not update. All events _published_ by this node would be also

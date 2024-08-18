@@ -2,9 +2,9 @@
 
 using System.Threading;
 using System.Threading.Tasks;
+using Core.DbSyncModels;
 using FluentResults;
 using MediatR;
-using PostgresModels;
 using Dapper;
 using Services;
 

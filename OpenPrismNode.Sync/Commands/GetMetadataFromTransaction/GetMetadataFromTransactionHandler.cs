@@ -1,10 +1,11 @@
 ﻿using Dapper;
 using FluentResults;
 using MediatR;
-using OpenPrismNode.Sync.PostgresModels;
 using OpenPrismNode.Sync.Services;
 
 namespace OpenPrismNode.Sync.Commands.GetMetadataFromTransaction;
+
+using Core.DbSyncModels;
 
 public class GetMetadataFromTransactionHandler : IRequestHandler<GetMetadataFromTransactionRequest, Result<Metadata>>
 {
