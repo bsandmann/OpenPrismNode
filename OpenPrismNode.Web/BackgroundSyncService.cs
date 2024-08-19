@@ -46,7 +46,6 @@ public class BackgroundSyncService : BackgroundService
 
         _logger.LogInformation($"Postgres (dbSync) tip for {_appSettings.PrismNetwork.Name}: {postgresSqlTip.Value.block_no} in epoch {postgresSqlTip.Value.epoch_no}");
 
-        //TODO renable loop
         while (!stoppingToken.IsCancellationRequested)
         {
             try
@@ -95,7 +94,7 @@ public class BackgroundSyncService : BackgroundService
     /// <summary>
     /// Restart the automatic sync service
     /// </summary>
-    public async Task RestartServiceAsync()
+    public void RestartService()
     {
         _cts = new CancellationTokenSource();
         _logger.LogInformation($"The automatic sync service has been restarted");

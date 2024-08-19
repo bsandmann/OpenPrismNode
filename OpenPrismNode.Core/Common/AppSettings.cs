@@ -24,4 +24,9 @@ public class AppSettings
     /// </summary>
     public PrismNetwork PrismNetwork { get; set; }
     
+    /// <summary>
+    /// API Key to access the interface to controll the sync-process
+    /// </summary>
+    public string AuthorizationKey { get; set; }
+    
 }
