@@ -3,6 +3,8 @@ using FluentResults;
 using LazyCache;
 using MediatR;
 using Microsoft.Extensions.Logging;
+using OpenPrismNode.Core.Common;
+using OpenPrismNode.Core.Models;
 using OpenPrismNode.Sync.Services;
 
 public class GetNextBlockWithPrismMetadataHandler : IRequestHandler<GetNextBlockWithPrismMetadataRequest, Result<GetNextBlockWithPrismMetadataResponse>>
@@ -20,11 +22,11 @@ public class GetNextBlockWithPrismMetadataHandler : IRequestHandler<GetNextBlock
 
     public async Task<Result<GetNextBlockWithPrismMetadataResponse>> Handle(GetNextBlockWithPrismMetadataRequest request, CancellationToken cancellationToken)
     {
-        var lowestBlockInCache = _cache.TryGetValue("LowestBlock", out BlockMetadataInfo lowestBlock);
+        var lowestBlockInCache = _cache.TryGetValue(string.Concat(CacheKeys.PrismMetadata_LowestBlock, request.NetworkType.ToString()), out BlockMetadataInfo lowestBlock);
         if (!lowestBlockInCache)
         {
             // Fill it with all entries using batching
-            var cachingResult = await PopulateCache(request.MetadataKey);
+            var cachingResult = await PopulateCache(request.MetadataKey, request.NetworkType);
             if (cachingResult.IsFailed)
             {
                 return cachingResult.ToResult();
@@ -48,10 +50,10 @@ public class GetNextBlockWithPrismMetadataHandler : IRequestHandler<GetNextBlock
             });
         }
 
-        var highestBlockInCache = _cache.TryGetValue("HighestBlock", out BlockMetadataInfo highestBlock);
+        var highestBlockInCache = _cache.TryGetValue(string.Concat(CacheKeys.PrismMetadata_HighestKnownBlock, request.NetworkType.ToString()), out BlockMetadataInfo highestBlock);
         if (!highestBlockInCache)
         {
-            var cachingResult = await PopulateCache(request.MetadataKey);
+            var cachingResult = await PopulateCache(request.MetadataKey, request.NetworkType);
             if (cachingResult.IsFailed)
             {
                 return cachingResult.ToResult();
@@ -63,7 +65,7 @@ public class GetNextBlockWithPrismMetadataHandler : IRequestHandler<GetNextBlock
                 return Result.Ok(new GetNextBlockWithPrismMetadataResponse());
             }
 
-            highestBlockInCache = _cache.TryGetValue("HighestBlock", out BlockMetadataInfo secondTryHighestBlock);
+            highestBlockInCache = _cache.TryGetValue(string.Concat(CacheKeys.PrismMetadata_HighestKnownBlock, request.NetworkType.ToString()), out BlockMetadataInfo secondTryHighestBlock);
             if (!highestBlockInCache)
             {
                 return Result.Fail("Highest block not found in cache. Caching error");
@@ -75,12 +77,12 @@ public class GetNextBlockWithPrismMetadataHandler : IRequestHandler<GetNextBlock
         if (request.StartBlockHeight > highestBlock.BlockNumber)
         {
             // The sync up to the newest block until the non-fast-sync operation kicks in
-            return await SearchForNextPrismTransactionInBatches(request.StartBlockHeight, request.MetadataKey, request.MaxBlockHeight);
+            return await SearchForNextPrismTransactionInBatches(request.StartBlockHeight, request.MetadataKey, request.MaxBlockHeight, request.NetworkType);
         }
         else
         {
             // The default case for the initial sync process
-            var cacheResult = _cache.TryGetValue("AllBlocks", out List<BlockMetadataInfo> listOfBlocks);
+            var cacheResult = _cache.TryGetValue(string.Concat(CacheKeys.PrismMetadata_AllBlocks, request.NetworkType.ToString()), out List<BlockMetadataInfo> listOfBlocks);
             if (!cacheResult)
             {
                 return Result.Fail("Cache error");
@@ -100,15 +102,12 @@ public class GetNextBlockWithPrismMetadataHandler : IRequestHandler<GetNextBlock
                 return Result.Fail("Should not happen");
             }
         }
-
-
-        return Result.Fail("");
     }
 
-    private async Task<Result<BlockMetadataInfo?>> PopulateCache(int metadataKey)
+    private async Task<Result<BlockMetadataInfo?>> PopulateCache(int metadataKey, LedgerType networkType)
     {
         await using var connection = _connectionFactory.CreateConnection();
-        _logger.LogInformation($"Checking for block with PRISM-metadata starting from the genesis block");
+        _logger.LogInformation($"Checking for block with PRISM-metadata...");
 
         const int batchSize = 5000;
         long lastId = 0;
@@ -124,7 +123,7 @@ public class GetNextBlockWithPrismMetadataHandler : IRequestHandler<GetNextBlock
             ORDER BY id ASC
             LIMIT @BatchSize";
 
-            var txBatch = await connection.QueryAsync<(long Id, long TxId)>(metadataQuery, 
+            var txBatch = await connection.QueryAsync<(long Id, long TxId)>(metadataQuery,
                 new { MetadataKey = metadataKey, LastId = lastId, BatchSize = batchSize });
 
             if (!txBatch.Any())
@@ -148,10 +147,10 @@ public class GetNextBlockWithPrismMetadataHandler : IRequestHandler<GetNextBlock
                 new { TxIds = txIds }
             );
 
-            allResults.AddRange(results.Select(p => new BlockMetadataInfo 
-            { 
-                BlockNumber = p.BlockNumber, 
-                EpochNumber = p.EpochNumber 
+            allResults.AddRange(results.Select(p => new BlockMetadataInfo
+            {
+                BlockNumber = p.BlockNumber,
+                EpochNumber = p.EpochNumber
             }));
         }
 
@@ -162,9 +161,9 @@ public class GetNextBlockWithPrismMetadataHandler : IRequestHandler<GetNextBlock
 
         var orderedResults = allResults.OrderBy(p => p.BlockNumber).ToList();
 
-        _cache.Add("LowestBlock", orderedResults.First());
-        _cache.Add("HighestBlock", orderedResults.Last());
-        _cache.Add("AllBlocks", orderedResults);
+        _cache.Add(string.Concat(CacheKeys.PrismMetadata_LowestBlock, networkType.ToString()), orderedResults.First());
+        _cache.Add(string.Concat(CacheKeys.PrismMetadata_HighestKnownBlock, networkType.ToString()), orderedResults.Last());
+        _cache.Add(string.Concat(CacheKeys.PrismMetadata_AllBlocks, networkType.ToString()), orderedResults);
 
         return Result.Ok(orderedResults.First()!);
     }
@@ -175,7 +174,7 @@ public class GetNextBlockWithPrismMetadataHandler : IRequestHandler<GetNextBlock
         public int EpochNumber { get; set; }
     }
 
-    private async Task<Result<GetNextBlockWithPrismMetadataResponse>> SearchForNextPrismTransactionInBatches(int startBlockHeight, int metadataKey, int maxBlockHeight)
+    private async Task<Result<GetNextBlockWithPrismMetadataResponse>> SearchForNextPrismTransactionInBatches(int startBlockHeight, int metadataKey, int maxBlockHeight, LedgerType networkType)
     {
         await using var connection = _connectionFactory.CreateConnection();
         const int batchSize = 1_000;
@@ -211,7 +210,7 @@ public class GetNextBlockWithPrismMetadataHandler : IRequestHandler<GetNextBlock
             {
                 _logger.LogInformation($"Found next PRISM block at {result.BlockNumber.Value}");
 
-                var cacheResult = _cache.TryGetValue("AllBlock", out List<BlockMetadataInfo> listOfBlocks);
+                var cacheResult = _cache.TryGetValue(string.Concat(CacheKeys.PrismMetadata_AllBlocks, networkType.ToString()), out List<BlockMetadataInfo> listOfBlocks);
                 if (!cacheResult)
                 {
                     return Result.Fail("Cache error");
@@ -223,8 +222,8 @@ public class GetNextBlockWithPrismMetadataHandler : IRequestHandler<GetNextBlock
                     EpochNumber = result.EpochNumber.Value,
                 });
 
-                _cache.Add("HighestBlock", listOfBlocks.Last());
-                _cache.Add<List<BlockMetadataInfo>>("AllBlocks", listOfBlocks);
+                _cache.Add(string.Concat(CacheKeys.PrismMetadata_HighestKnownBlock, networkType.ToString()), listOfBlocks.Last());
+                _cache.Add<List<BlockMetadataInfo>>(string.Concat(CacheKeys.PrismMetadata_AllBlocks, networkType.ToString()), listOfBlocks);
                 return Result.Ok(
                     new GetNextBlockWithPrismMetadataResponse
                     {

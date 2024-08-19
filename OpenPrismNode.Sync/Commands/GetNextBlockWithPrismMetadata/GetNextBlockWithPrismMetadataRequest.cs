@@ -1,13 +1,15 @@
 using FluentResults;
 using MediatR;
+using OpenPrismNode.Core.Models;
 
 public class GetNextBlockWithPrismMetadataRequest : IRequest<Result<GetNextBlockWithPrismMetadataResponse>>
 {
-    public GetNextBlockWithPrismMetadataRequest(int startBlockHeight, int metadataKey, int maxBlockHeight)
+    public GetNextBlockWithPrismMetadataRequest(int startBlockHeight, int metadataKey, int maxBlockHeight, LedgerType networkType)
     {
         StartBlockHeight = startBlockHeight;
         MetadataKey = metadataKey;
         MaxBlockHeight = maxBlockHeight;
+        NetworkType = networkType;
     }
 
     /// <summary>
@@ -24,4 +26,10 @@ public class GetNextBlockWithPrismMetadataRequest : IRequest<Result<GetNextBlock
     /// The maximum block height to search up to
     /// </summary>
     public int MaxBlockHeight { get; }
+   
+    /// <summary>
+    /// Network 
+    /// </summary>
+    public LedgerType NetworkType { get; }
+    
 }

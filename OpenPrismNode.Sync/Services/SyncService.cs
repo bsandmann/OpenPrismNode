@@ -123,7 +123,7 @@ public static class SyncService
                 // Fast Sync-Path
                 // We are at least 150 blocks behind (THe requirement is set in the PrismParameters)
                 // We find the next block with the PRISM metadata
-                var getNextBlockWithPrismMetadataResult = await mediator.Send(new GetNextBlockWithPrismMetadataRequest(i, PrismParameters.MetadataKey, postgresBlockTipResult.Value.block_no));
+                var getNextBlockWithPrismMetadataResult = await mediator.Send(new GetNextBlockWithPrismMetadataRequest(i, PrismParameters.MetadataKey, postgresBlockTipResult.Value.block_no, ledgerType));
                 if (getNextBlockWithPrismMetadataResult.IsFailed)
                 {
                     return Result.Fail(getNextBlockWithPrismMetadataResult.Errors.First().Message);
