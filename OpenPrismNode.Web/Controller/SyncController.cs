@@ -29,7 +29,7 @@ public class SyncController : ControllerBase
     /// </summary>
     /// <returns></returns>
     [HttpPost("api/sync/serviceStop")]
-    public ActionResult StopSyncService()
+    public async Task<ActionResult> StopSyncService()
     {
         var hasAuthorization = _httpContextAccessor.HttpContext!.Request.Headers.TryGetValue("authorization", out StringValues authorization);
         if (!hasAuthorization || authorization.FirstOrDefault() == null || string.IsNullOrWhiteSpace(authorization) || !authorization.First()!.Equals(_appSettings.AuthorizationKey, StringComparison.InvariantCultureIgnoreCase))
@@ -37,7 +37,7 @@ public class SyncController : ControllerBase
             return StatusCode(401);
         }
 
-        _backgroundSyncService.StopService();
+        await _backgroundSyncService.StopService();
         _logger.LogInformation($"The automatic sync service is stopped");
         return Ok();
     }
@@ -47,7 +47,7 @@ public class SyncController : ControllerBase
     /// </summary>
     /// <returns></returns>
     [HttpPost("api/sync/serviceRestart")]
-    public ActionResult RestartSyncService()
+    public async Task<ActionResult> RestartSyncService()
     {
         var hasAuthorization = _httpContextAccessor.HttpContext!.Request.Headers.TryGetValue("authorization", out StringValues authorization);
         if (!hasAuthorization || authorization.FirstOrDefault() == null || string.IsNullOrWhiteSpace(authorization) || !authorization.First()!.Equals(_appSettings.AuthorizationKey, StringComparison.InvariantCultureIgnoreCase))
@@ -55,7 +55,7 @@ public class SyncController : ControllerBase
             return StatusCode(401);
         }
 
-        _backgroundSyncService.RestartService();
+        await _backgroundSyncService.RestartServiceAsync();
         _logger.LogInformation($"The automatic sync service has been restarted");
         return Ok();
     }

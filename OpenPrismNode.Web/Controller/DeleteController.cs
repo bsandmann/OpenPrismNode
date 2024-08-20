@@ -34,7 +34,7 @@ public class DeleteController : ControllerBase
     /// Any automatic syncing or the execution of other tasks is diabled in the meantime
     /// </summary>
     /// <returns></returns>
-    [HttpDelete("api/delete")]
+    [HttpDelete("api/delete/ledger")]
     public async Task<ActionResult> Delete([FromQuery] string network)
     {
         var hasAuthorization = _httpContextAccessor.HttpContext!.Request.Headers.TryGetValue("authorization", out StringValues authorization);
@@ -48,11 +48,11 @@ public class DeleteController : ControllerBase
             return BadRequest("The network must be provided, e.g 'preprod' or 'mainnet'");
         }
 
-        _backgroundSyncService.StopService();
+        await _backgroundSyncService.StopAsync(CancellationToken.None);
         _logger.LogInformation($"The automatic sync service is stopped. Restart the service after the deletion is completed if needed");
         _logger.LogInformation($"Deleting {network} ledger...");
 
-        var isParseable = Enum.TryParse<LedgerType>(network, ignoreCase: true, out var ledgerType);
+        var isParseable = Enum.TryParse<LedgerType>("cardano" + network, ignoreCase: true, out var ledgerType);
         if (!isParseable)
         {
             return BadRequest("The valid network identifier must be provided: 'preprod','mainnet', or 'inmemory'");

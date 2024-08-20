@@ -55,7 +55,8 @@ builder.Services.AddScoped<BackgroundSyncService>();
 builder.Services.AddSingleton<IWalletAddressCache>(new WalletAddressCache(appSettings!.WalletCacheSize));
 builder.Services.AddSingleton<IStakeAddressCache>(new StakeAddressCache(appSettings.WalletCacheSize));
 builder.Services.AddLazyCache();
-builder.Services.AddHostedService<BackgroundSyncService>();
+builder.Services.AddSingleton<BackgroundSyncService>();
+builder.Services.AddHostedService(provider => provider.GetRequiredService<BackgroundSyncService>());
 builder.Services.AddMediatR(cfg => cfg.RegisterServicesFromAssemblies(AppDomain.CurrentDomain.GetAssemblies()));
 builder.Services.AddDbContext<DataContext>(options =>
     options.UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking)
