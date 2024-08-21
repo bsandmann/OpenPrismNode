@@ -61,7 +61,7 @@ builder.Services.AddMediatR(cfg => cfg.RegisterServicesFromAssemblies(AppDomain.
 builder.Services.AddDbContext<DataContext>(options =>
     options.UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking)
         .EnableSensitiveDataLogging(true)
-        .UseNpgsql(appSettings!.PrismNetwork.PrismPostgresConnectionString)
+        .UseNpgsql(appSettings!.PrismLedger.PrismPostgresConnectionString)
         .UseNpgsql(p =>
         {
             p.MigrationsAssembly("OpenPrismNode.Web");

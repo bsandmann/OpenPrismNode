@@ -7,12 +7,12 @@ using OpenPrismNode.Core.Models;
 
 public class GetBlockByBlockHeightRequest : IRequest<Result<BlockEntity>>
 {
-    public GetBlockByBlockHeightRequest(LedgerType networkType, int blockHeight)
+    public GetBlockByBlockHeightRequest(LedgerType ledger, int blockHeight)
     {
-        NetworkType = networkType;
+        Ledger = ledger;
         BlockHeight = blockHeight;
     }
 
-    public LedgerType NetworkType { get; }
+    public LedgerType Ledger { get; }
     public int BlockHeight { get; }
 }

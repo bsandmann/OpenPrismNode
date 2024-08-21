@@ -19,7 +19,7 @@ public class PrismParameters
     public const string Secp256k1CurveName = "secp256k1";
     public const string Ed25519CurveName = "Ed25519";
     public const string X25519CurveName = "X25519";
-    //TODO move to appsettings, since we might be configurig this in the future for different networks E.g. preview
+    // TODO move to appsettings, since we might be configurig this in the future for different networks E.g. preview
     public const int MetadataKey = 21325;
     public const string JsonLdDefaultContext = "https://www.w3.org/ns/did/v1";
     public const string JsonLdJsonWebKey2020 = "https://w3id.org/security/suites/jws-2020/v1";

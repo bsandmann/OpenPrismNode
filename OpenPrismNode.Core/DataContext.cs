@@ -15,7 +15,7 @@ public class DataContext : DbContext
     }
 
     // DbSet property
-    public DbSet<NetworkEntity> PrismNetworkEntities { get; set; }
+    public DbSet<LedgerEntity> LedgerEntities { get; set; }
     public DbSet<EpochEntity> EpochEntities { get; set; }
     public DbSet<BlockEntity> BlockEntities { get; set; }
     public DbSet<TransactionEntity> TransactionEntities { get; set; }
@@ -31,7 +31,7 @@ public class DataContext : DbContext
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
-        modelBuilder.Entity<NetworkEntity>().HasKey(p => p.NetworkType);
+        modelBuilder.Entity<LedgerEntity>().HasKey(p => p.Ledger);
         modelBuilder.Entity<EpochEntity>().HasKey(p => p.EpochNumber);
         modelBuilder.Entity<BlockEntity>()
             .HasKey(b => new { b.BlockHeight, b.BlockHashPrefix });
@@ -48,9 +48,9 @@ public class DataContext : DbContext
         modelBuilder.Entity<DeactivateDidEntity>().HasKey(p => p.OperationHash);
 
         modelBuilder.Entity<EpochEntity>()
-            .HasOne(p => p.NetworkEntity)
+            .HasOne(p => p.LedgerEntity)
             .WithMany(b => b.Epochs)
-            .HasForeignKey(p => p.NetworkType)
+            .HasForeignKey(p => p.Ledger)
             .OnDelete(DeleteBehavior.Cascade);
 
         modelBuilder.Entity<EpochEntity>()

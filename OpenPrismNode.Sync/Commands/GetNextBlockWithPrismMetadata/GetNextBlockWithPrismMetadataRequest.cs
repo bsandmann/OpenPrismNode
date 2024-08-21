@@ -4,12 +4,12 @@ using OpenPrismNode.Core.Models;
 
 public class GetNextBlockWithPrismMetadataRequest : IRequest<Result<GetNextBlockWithPrismMetadataResponse>>
 {
-    public GetNextBlockWithPrismMetadataRequest(int startBlockHeight, int metadataKey, int maxBlockHeight, LedgerType networkType)
+    public GetNextBlockWithPrismMetadataRequest(int startBlockHeight, int metadataKey, int maxBlockHeight, LedgerType ledger)
     {
         StartBlockHeight = startBlockHeight;
         MetadataKey = metadataKey;
         MaxBlockHeight = maxBlockHeight;
-        NetworkType = networkType;
+        Ledger = ledger;
     }
 
     /// <summary>
@@ -30,6 +30,6 @@ public class GetNextBlockWithPrismMetadataRequest : IRequest<Result<GetNextBlock
     /// <summary>
     /// Network 
     /// </summary>
-    public LedgerType NetworkType { get; }
+    public LedgerType Ledger { get; }
     
 }

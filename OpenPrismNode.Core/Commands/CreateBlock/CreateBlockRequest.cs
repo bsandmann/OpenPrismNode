@@ -23,7 +23,7 @@ public class CreateBlockRequest : IRequest<Result<BlockEntity>>
     /// <param name="txCount"></param>
     public CreateBlockRequest(LedgerType ledgerType, Hash blockHash, Hash? previousBlockHash, int blockHeight, int? previousBlockHeight, int epochNumber, DateTime timeUtc, int txCount, bool isFork = false)
     {
-        NetworkType = ledgerType;
+        ledger = ledgerType;
         BlockHeight = blockHeight;
         BlockHash = blockHash;
         PreviousBlockHeight = previousBlockHeight;
@@ -47,7 +47,7 @@ public class CreateBlockRequest : IRequest<Result<BlockEntity>>
     /// <summary>
     /// Ledger (testnet, preprod, mainnet)
     /// </summary>
-    public LedgerType NetworkType { get; }
+    public LedgerType ledger { get; }
 
     /// <summary>
     /// Height of the block (blocknumber)

@@ -7,14 +7,14 @@ using OpenPrismNode.Core.Models;
 
 public class GetBlockByBlockHashRequest : IRequest<Result<BlockEntity>>
 {
-    public GetBlockByBlockHashRequest(int blockHeight, int? blockHashPrefix, LedgerType networkType)
+    public GetBlockByBlockHashRequest(int blockHeight, int? blockHashPrefix, LedgerType ledger)
     {
         BlockHeight = blockHeight;
         BlockHashPrefix = blockHashPrefix;
-        NetworkType = networkType;
+        Ledger = ledger;
     }
 
-    public LedgerType NetworkType { get; }
+    public LedgerType Ledger { get; }
     public int BlockHeight { get; }
     public int? BlockHashPrefix { get; }
 }

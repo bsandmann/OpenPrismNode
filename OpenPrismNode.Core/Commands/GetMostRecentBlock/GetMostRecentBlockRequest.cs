@@ -7,10 +7,10 @@ using OpenPrismNode.Core.Entities;
 
 public class GetMostRecentBlockRequest : IRequest<Result<BlockEntity>>
 {
-    public GetMostRecentBlockRequest(LedgerType networkType)
+    public GetMostRecentBlockRequest(LedgerType ledger)
     {
-        NetworkType = networkType;
+        Ledger = ledger;
     }
 
-    public LedgerType NetworkType { get; }
+    public LedgerType Ledger { get; }
 }

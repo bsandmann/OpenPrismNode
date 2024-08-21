@@ -22,7 +22,7 @@ public class AppSettings
     /// <summary>
     /// Configuration of all supported PRISM-networks for which data is in the postgres-db
     /// </summary>
-    public PrismNetwork PrismNetwork { get; set; }
+    public PrismLedger PrismLedger { get; set; }
     
     /// <summary>
     /// API Key to access the interface to controll the sync-process

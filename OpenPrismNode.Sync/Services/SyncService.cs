@@ -9,7 +9,7 @@ using Core;
 using Core.Commands.CreateBlock;
 using Core.Commands.CreateBlocksAsBatch;
 using Core.Commands.CreateEpoch;
-using Core.Commands.CreateNetwork;
+using Core.Commands.CreateLedger;
 using Core.Commands.GetBlockByBlockHeight;
 using Core.Commands.GetEpoch;
 using Core.Commands.GetMostRecentBlock;
@@ -21,20 +21,20 @@ using Microsoft.Extensions.Logging;
 
 public static class SyncService
 {
-    public static async Task<Result> RunSync(IMediator mediator, ILogger logger, string networkName, int startAtEpochNumber = 0, bool isInitialStartup = false)
+    public static async Task<Result> RunSync(IMediator mediator, ILogger logger, string ledger, int startAtEpochNumber = 0, bool isInitialStartup = false)
     {
         LedgerType ledgerType;
-        if (networkName.Equals("mainnet", StringComparison.InvariantCultureIgnoreCase))
+        if (ledger.Equals("mainnet", StringComparison.InvariantCultureIgnoreCase))
         {
             ledgerType = LedgerType.CardanoMainnet;
         }
-        else if (networkName.Equals("preprod", StringComparison.InvariantCultureIgnoreCase))
+        else if (ledger.Equals("preprod", StringComparison.InvariantCultureIgnoreCase))
         {
             ledgerType = LedgerType.CardanoPreprod;
         }
         else
         {
-            return Result.Fail("Unknown network");
+            return Result.Fail("Unknown ledger");
         }
 
         var postgresBlockTipResult = await mediator.Send(new GetPostgresBlockTipRequest());
@@ -49,8 +49,8 @@ public static class SyncService
             if (existingStartingEpoch.IsFailed)
             {
                 // This indicates that we have not yet created the starting epoch
-                var networkResult = await mediator.Send(new CreateNetworkRequest(ledgerType));
-                if (networkResult.IsFailed)
+                var ledgerResult = await mediator.Send(new CreateLedgerRequest(ledgerType));
+                if (ledgerResult.IsFailed)
                 {
                     return Result.Fail($"Cannot create network {ledgerType}. Database connection error?");
                 }

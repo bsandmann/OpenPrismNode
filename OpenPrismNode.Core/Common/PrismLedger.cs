@@ -1,6 +1,6 @@
 ﻿namespace OpenPrismNode.Core.Common;
 
-public class PrismNetwork
+public class PrismLedger
 {
     /// <summary>
     /// Name of the PRISM network for syncing

@@ -17,7 +17,7 @@ public class GetPaymentDataFromTransactionHandler : IRequestHandler<GetPaymentDa
 
     public GetPaymentDataFromTransactionHandler(IOptions<AppSettings> appSetting)
     {
-        _connectionString = appSetting.Value.PrismNetwork.DbSyncPostgresConnectionString;
+        _connectionString = appSetting.Value.PrismLedger.DbSyncPostgresConnectionString;
     }
 
     public async Task<Result<Payment>> Handle(GetPaymentDataFromTransactionRequest request, CancellationToken cancellationToken)

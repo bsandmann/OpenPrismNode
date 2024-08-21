@@ -23,12 +23,12 @@ public class CreateEpochHandler : IRequestHandler<CreateEpochRequest, Result<Epo
     {
         _context.ChangeTracker.Clear();
         _context.ChangeTracker.AutoDetectChangesEnabled = false;
-        var existingEpoch = await _context.EpochEntities.FirstOrDefaultAsync(p => p.EpochNumber == request.EpochNumber && p.NetworkType == request.NetworkType, cancellationToken: cancellationToken);
+        var existingEpoch = await _context.EpochEntities.FirstOrDefaultAsync(p => p.EpochNumber == request.EpochNumber && p.Ledger == request.Ledger, cancellationToken: cancellationToken);
         if (existingEpoch is null)
         {
             var epochEntity = new EpochEntity()
             {
-                NetworkType = request.NetworkType,
+                Ledger = request.Ledger,
                 EpochNumber = request.EpochNumber,
             };
 

@@ -24,7 +24,7 @@ namespace OpenPrismNode.Core.Commands.CreateBlocksAsBatch
             // Check if the highest block in the database is exactly one less than the first block we're adding
             var highestExistingBlock = await _context.BlockEntities
                 .Include(p => p.EpochEntity)
-                .Where(b => b.IsFork == false && b.EpochEntity.NetworkType == request.NetworkType)
+                .Where(b => b.IsFork == false && b.EpochEntity.Ledger == request.ledger)
                 .OrderByDescending(b => b.BlockHeight)
                 .FirstOrDefaultAsync(cancellationToken);
 
@@ -60,9 +60,9 @@ namespace OpenPrismNode.Core.Commands.CreateBlocksAsBatch
 
             await _context.BlockEntities.AddRangeAsync(newBlocks, cancellationToken);
 
-            // Update network LastSynced time
-            await _context.PrismNetworkEntities
-                .Where(n => n.NetworkType == request.NetworkType)
+            // Update ledger LastSynced time
+            await _context.LedgerEntities
+                .Where(n => n.Ledger == request.ledger)
                 .ExecuteUpdateAsync(s => s.SetProperty(n => n.LastSynced, dateTimeNow), cancellationToken);
 
             await _context.SaveChangesAsync(cancellationToken);

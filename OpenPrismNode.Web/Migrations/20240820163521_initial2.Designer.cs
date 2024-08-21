@@ -12,8 +12,8 @@ using OpenPrismNode.Core;
 namespace OpenPrismNode.Web.Migrations
 {
     [DbContext(typeof(DataContext))]
-    [Migration("20240817150752_initial")]
-    partial class initial
+    [Migration("20240820163521_initial2")]
+    partial class initial2
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -147,27 +147,27 @@ namespace OpenPrismNode.Web.Migrations
                     b.Property<int>("EpochNumber")
                         .HasColumnType("integer");
 
-                    b.Property<int>("NetworkType")
+                    b.Property<int>("Ledger")
                         .HasColumnType("integer");
 
                     b.HasKey("EpochNumber");
 
-                    b.HasIndex("NetworkType");
+                    b.HasIndex("Ledger");
 
                     b.ToTable("EpochEntities");
                 });
 
-            modelBuilder.Entity("OpenPrismNode.Core.Entities.NetworkEntity", b =>
+            modelBuilder.Entity("OpenPrismNode.Core.Entities.LedgerEntity", b =>
                 {
-                    b.Property<int>("NetworkType")
+                    b.Property<int>("Ledger")
                         .HasColumnType("integer");
 
                     b.Property<DateTime?>("LastSynced")
                         .HasColumnType("timestamp without time zone");
 
-                    b.HasKey("NetworkType");
+                    b.HasKey("Ledger");
 
-                    b.ToTable("PrismNetworkEntities");
+                    b.ToTable("LedgerEntities");
                 });
 
             modelBuilder.Entity("OpenPrismNode.Core.Entities.PatchedContextEntity", b =>
@@ -508,13 +508,13 @@ namespace OpenPrismNode.Web.Migrations
 
             modelBuilder.Entity("OpenPrismNode.Core.Entities.EpochEntity", b =>
                 {
-                    b.HasOne("OpenPrismNode.Core.Entities.NetworkEntity", "NetworkEntity")
+                    b.HasOne("OpenPrismNode.Core.Entities.LedgerEntity", "LedgerEntity")
                         .WithMany("Epochs")
-                        .HasForeignKey("NetworkType")
+                        .HasForeignKey("Ledger")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.Navigation("NetworkEntity");
+                    b.Navigation("LedgerEntity");
                 });
 
             modelBuilder.Entity("OpenPrismNode.Core.Entities.PatchedContextEntity", b =>
@@ -643,7 +643,7 @@ namespace OpenPrismNode.Web.Migrations
                     b.Navigation("BlockEntities");
                 });
 
-            modelBuilder.Entity("OpenPrismNode.Core.Entities.NetworkEntity", b =>
+            modelBuilder.Entity("OpenPrismNode.Core.Entities.LedgerEntity", b =>
                 {
                     b.Navigation("Epochs");
                 });

@@ -13,13 +13,13 @@ public class GetEpochRequest : IRequest<Result<EpochEntity>>
     /// <summary>
     /// Constructor
     /// </summary>
-    public GetEpochRequest(LedgerType networkType, int epochNumber)
+    public GetEpochRequest(LedgerType ledger, int epochNumber)
     {
         EpochNumber = epochNumber;
-        NetworkType = networkType;
+        Ledger = ledger;
     }
     
     public int EpochNumber { get; }
     
-    public LedgerType NetworkType { get; }
+    public LedgerType Ledger { get; }
 }

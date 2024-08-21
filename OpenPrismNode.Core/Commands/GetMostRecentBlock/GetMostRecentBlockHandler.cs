@@ -18,7 +18,7 @@ public class GetMostRecentBlockHandler : IRequestHandler<GetMostRecentBlockReque
     {
         var mostRecentBlock = await _context.BlockEntities
             .Include(p => p.EpochEntity)
-            .Where(b => b.IsFork == false && b.EpochEntity.NetworkType == request.NetworkType)
+            .Where(b => b.IsFork == false && b.EpochEntity.Ledger == request.Ledger)
             .OrderByDescending(b => b.BlockHeight)
             .FirstOrDefaultAsync(cancellationToken);
 

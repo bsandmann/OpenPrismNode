@@ -1,6 +1,5 @@
 using FluentResults;
 using MediatR;
-using OpenPrismNode.Core.Entities;
 using OpenPrismNode.Core.Models;
 
 namespace OpenPrismNode.Core.Commands.CreateBlocksAsBatch;
@@ -11,10 +10,10 @@ public class CreateBlocksAsBatchRequest : IRequest<Result<Hash>>
 {
     public CreateBlocksAsBatchRequest(LedgerType ledgerType, List<Block> blocks)
     {
-        NetworkType = ledgerType;
+        ledger = ledgerType;
         Blocks = blocks;
     }
 
-    public LedgerType NetworkType { get; }
+    public LedgerType ledger { get; }
     public List<Block> Blocks { get; }
 }

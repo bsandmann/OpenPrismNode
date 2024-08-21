@@ -19,10 +19,10 @@ public class EpochEntity
     /// <summary>
     /// Reference to the network
     /// </summary>
-    public NetworkEntity NetworkEntity { get; set; }  // don't add a default value here!
+    public LedgerEntity LedgerEntity { get; set; }  // don't add a default value here!
     
     /// <summary>
-    /// FK of the Network
+    /// FK of the ledger
     /// </summary>
-    public LedgerType NetworkType { get; set; }
+    public LedgerType Ledger { get; set; }
 }

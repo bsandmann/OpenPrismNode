@@ -7,21 +7,21 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace OpenPrismNode.Web.Migrations
 {
     /// <inheritdoc />
-    public partial class initial : Migration
+    public partial class initial2 : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.CreateTable(
-                name: "PrismNetworkEntities",
+                name: "LedgerEntities",
                 columns: table => new
                 {
-                    NetworkType = table.Column<int>(type: "integer", nullable: false),
+                    Ledger = table.Column<int>(type: "integer", nullable: false),
                     LastSynced = table.Column<DateTime>(type: "timestamp without time zone", nullable: true)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_PrismNetworkEntities", x => x.NetworkType);
+                    table.PrimaryKey("PK_LedgerEntities", x => x.Ledger);
                 });
 
             migrationBuilder.CreateTable(
@@ -51,16 +51,16 @@ namespace OpenPrismNode.Web.Migrations
                 columns: table => new
                 {
                     EpochNumber = table.Column<int>(type: "integer", nullable: false),
-                    NetworkType = table.Column<int>(type: "integer", nullable: false)
+                    Ledger = table.Column<int>(type: "integer", nullable: false)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_EpochEntities", x => x.EpochNumber);
                     table.ForeignKey(
-                        name: "FK_EpochEntities_PrismNetworkEntities_NetworkType",
-                        column: x => x.NetworkType,
-                        principalTable: "PrismNetworkEntities",
-                        principalColumn: "NetworkType",
+                        name: "FK_EpochEntities_LedgerEntities_Ledger",
+                        column: x => x.Ledger,
+                        principalTable: "LedgerEntities",
+                        principalColumn: "Ledger",
                         onDelete: ReferentialAction.Cascade);
                 });
 
@@ -372,9 +372,9 @@ namespace OpenPrismNode.Web.Migrations
                 columns: new[] { "TransactionHash", "BlockHeight", "BlockHashPrefix" });
 
             migrationBuilder.CreateIndex(
-                name: "IX_EpochEntities_NetworkType",
+                name: "IX_EpochEntities_Ledger",
                 table: "EpochEntities",
-                column: "NetworkType");
+                column: "Ledger");
 
             migrationBuilder.CreateIndex(
                 name: "IX_PatchedContextEntity_ContextListJson",
@@ -493,7 +493,7 @@ namespace OpenPrismNode.Web.Migrations
                 name: "EpochEntities");
 
             migrationBuilder.DropTable(
-                name: "PrismNetworkEntities");
+                name: "LedgerEntities");
         }
     }
 }

@@ -3,12 +3,12 @@
 using System.ComponentModel.DataAnnotations.Schema;
 using OpenPrismNode.Core.Models;
 
-public class NetworkEntity
+public class LedgerEntity
 {
     /// <summary>
     /// Configured network (InMemory, prerpod, mainnet)
     /// </summary>
-    public required LedgerType NetworkType { get; set; }
+    public required LedgerType Ledger { get; set; }
     
     /// <summary>
     /// Last synced Block

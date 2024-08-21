@@ -19,7 +19,7 @@ public class GetBlockByBlockHashHandler : IRequestHandler<GetBlockByBlockHashReq
         var block = await _context.BlockEntities
             .Where(b => b.BlockHeight == request.BlockHeight
                         && b.BlockHashPrefix == request.BlockHashPrefix
-                        && b.EpochEntity.NetworkType == request.NetworkType)
+                        && b.EpochEntity.Ledger == request.Ledger)
             .Select(b => new BlockEntity
             {
                 BlockHeight = b.BlockHeight,
@@ -39,7 +39,7 @@ public class GetBlockByBlockHashHandler : IRequestHandler<GetBlockByBlockHashReq
 
         if (block == null)
         {
-            return Result.Fail($"No block found with height {request.BlockHeight} and hash prefix {request.BlockHashPrefix} in the {request.NetworkType} network.");
+            return Result.Fail($"No block found with height {request.BlockHeight} and hash prefix {request.BlockHashPrefix} in the {request.Ledger} network.");
         }
 
         block.TimeUtc = DateTime.SpecifyKind(block.TimeUtc, DateTimeKind.Utc);

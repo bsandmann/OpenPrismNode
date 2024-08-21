@@ -1,11 +1,9 @@
 namespace OpenPrismNode.Core.Commands.DeleteLedger;
 
-using CreateNetwork;
 using FluentResults;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using OpenPrismNode.Core;
-using OpenPrismNode.Core.Entities;
 
 public class DeleteLedgerHandler : IRequestHandler<DeleteLedgerRequest, Result>
 {
@@ -26,20 +24,20 @@ public class DeleteLedgerHandler : IRequestHandler<DeleteLedgerRequest, Result>
         _context.ChangeTracker.AutoDetectChangesEnabled = false;
         try
         {
-            var existingNetwork = await _context.PrismNetworkEntities.FirstOrDefaultAsync(p => p.NetworkType == request.LedgerType, cancellationToken: cancellationToken);
-            if (existingNetwork is null)
+            var existingLedger = await _context.LedgerEntities.FirstOrDefaultAsync(p => p.Ledger == request.LedgerType, cancellationToken: cancellationToken);
+            if (existingLedger is null)
             {
-                return Result.Fail("The network does not exist");
+                return Result.Fail("The ledger does not exist");
             }
 
-            _context.Remove(existingNetwork);
+            _context.Remove(existingLedger);
             await _context.SaveChangesAsync(cancellationToken);
 
             return Result.Ok();
         }
         catch (Exception ex)
         {
-            return Result.Fail(ex.Message);
+            throw new Exception("Error deleting ledger", ex);
         }
     }
 }

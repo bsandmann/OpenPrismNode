@@ -54,9 +54,9 @@ public class CreateBlockHandler : IRequestHandler<CreateBlockRequest, Result<Blo
 
             await _context.AddAsync(blockEntity, cancellationToken);
 
-            // Update network LastSynced time
-            await _context.PrismNetworkEntities
-                .Where(n => n.NetworkType == request.NetworkType)
+            // Update ledger LastSynced time
+            await _context.LedgerEntities
+                .Where(n => n.Ledger == request.ledger)
                 .ExecuteUpdateAsync(s => s.SetProperty(n => n.LastSynced, dateTimeNow), cancellationToken);
 
             await _context.SaveChangesAsync(cancellationToken);

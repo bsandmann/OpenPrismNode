@@ -1,12 +1,12 @@
-﻿namespace OpenPrismNode.Core.Commands.CreateNetwork;
+﻿namespace OpenPrismNode.Core.Commands.CreateLedger;
 
 using FluentResults;
 using MediatR;
 using OpenPrismNode.Core.Models;
 
-public class CreateNetworkRequest : IRequest<Result>
+public class CreateLedgerRequest : IRequest<Result>
 {
-    public CreateNetworkRequest(LedgerType ledgerType)
+    public CreateLedgerRequest(LedgerType ledgerType)
     {
         LedgerType = ledgerType;
     }
