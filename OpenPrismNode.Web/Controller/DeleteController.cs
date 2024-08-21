@@ -1,6 +1,7 @@
 ﻿namespace OpenPrismNode.Web.Controller;
 
 using Core.Commands.DeleteBlock;
+using Core.Commands.DeletedOrphanedAddresses;
 using Core.Commands.DeleteEpoch;
 using Core.Commands.GetMostRecentBlock;
 using FluentResults;
@@ -39,7 +40,7 @@ public class DeleteController : ControllerBase
     /// </summary>
     /// <returns></returns>
     [HttpDelete("api/delete/ledger")]
-    public async Task<ActionResult> Delete([FromQuery] string ledger)
+    public async Task<ActionResult> DeleteLedger([FromQuery] string ledger)
     {
         var hasAuthorization = _httpContextAccessor.HttpContext!.Request.Headers.TryGetValue("authorization", out StringValues authorization);
         if (!hasAuthorization || authorization.FirstOrDefault() == null || string.IsNullOrWhiteSpace(authorization) || !authorization.First()!.Equals(_appSettings.AuthorizationKey, StringComparison.InvariantCultureIgnoreCase))
@@ -63,12 +64,16 @@ public class DeleteController : ControllerBase
         }
 
         var result = await _mediator.Send(new DeleteLedgerRequest(ledgerType));
-
         if (result.IsFailed)
         {
-            _logger.LogError($"Unable to delete Ledger for prism:{ledger}");
-            _logger.LogError($"{result.Errors.FirstOrDefault()?.Message}");
+            _logger.LogError($"Unable to delete Ledger for prism:{ledger}: {result.Errors.FirstOrDefault()?.Message}");;
             return BadRequest(result.Errors.FirstOrDefault());
+        }
+        
+        var orphanedAddressesDeleteResult = await _mediator.Send(new DeleteOrphanedAddressesRequest(ledgerType));
+        if (orphanedAddressesDeleteResult.IsFailed)
+        {
+            return BadRequest($"The orphaned addresses could not be deleted for the ledger {ledger}: {orphanedAddressesDeleteResult.Errors.First().Message}");
         }
 
         _logger.LogInformation($"Deleting Ledger for prism:{ledger} completed");
@@ -83,7 +88,7 @@ public class DeleteController : ControllerBase
     /// </summary>
     /// <returns></returns>
     [HttpDelete("api/delete/block")]
-    public async Task<ActionResult> Delete([FromQuery] int? blockHeight, string ledger)
+    public async Task<ActionResult> DeleteBlock([FromQuery] int? blockHeight, string ledger)
     {
         var hasAuthorization = _httpContextAccessor.HttpContext!.Request.Headers.TryGetValue("authorization", out StringValues authorization);
         if (!hasAuthorization || authorization.FirstOrDefault() == null || string.IsNullOrWhiteSpace(authorization) || !authorization.First()!.Equals(_appSettings.AuthorizationKey, StringComparison.InvariantCultureIgnoreCase))
@@ -175,6 +180,12 @@ public class DeleteController : ControllerBase
                     {
                         return BadRequest($"The epoch {blockDeleteResult.Value.DeletedBlockWasInEpoch} could not be deleted for the ledger {ledger}: {epochDeleteResult.Errors.First().Message}");
                     }
+
+                    var orphanedAddressesDeleteResult = await _mediator.Send(new DeleteOrphanedAddressesRequest(ledgerType));
+                    if (orphanedAddressesDeleteResult.IsFailed)
+                    {
+                        return BadRequest($"The orphaned addresses could not be deleted for the ledger {ledger}: {orphanedAddressesDeleteResult.Errors.First().Message}");
+                    }
                 }
 
                 if (blockDeleteResult.Value.PreviousBlockHeight == 0 && blockDeleteResult.Value.PreviousBlockHashPrefix == 0)
@@ -183,6 +194,12 @@ public class DeleteController : ControllerBase
                     if (epochDeleteResult.IsFailed)
                     {
                         return BadRequest($"The epoch {blockDeleteResult.Value.DeletedBlockWasInEpoch} could not be deleted for the ledger {ledger}: {epochDeleteResult.Errors.First().Message}");
+                    }
+
+                    var orphanedAddressesDeleteResult = await _mediator.Send(new DeleteOrphanedAddressesRequest(ledgerType));
+                    if (orphanedAddressesDeleteResult.IsFailed)
+                    {
+                        return BadRequest($"The orphaned addresses could not be deleted for the ledger {ledger}: {orphanedAddressesDeleteResult.Errors.First().Message}");
                     }
 
                     _logger.LogInformation($"Deletion completed for the ledger {ledger}. The ledger is now empty.");
@@ -200,5 +217,110 @@ public class DeleteController : ControllerBase
 
             return Ok();
         }
+    }
+
+    /// <summary>
+    /// Deletes a range of epoch beginninning from the tip down to a specific epoch-number (not included in the delete)
+    /// That means the last block of the provided epoch will be the new tip of the chain
+    /// Any automatic syncing or the execution of other tasks is diabled in the meantime
+    /// </summary>
+    /// <returns></returns>
+    [HttpDelete("api/delete/epoch")]
+    public async Task<ActionResult> DeleteEpoch([FromQuery] int? epochNumber, string ledger)
+    {
+        var hasAuthorization = _httpContextAccessor.HttpContext!.Request.Headers.TryGetValue("authorization", out StringValues authorization);
+        if (!hasAuthorization || authorization.FirstOrDefault() == null || string.IsNullOrWhiteSpace(authorization) || !authorization.First()!.Equals(_appSettings.AuthorizationKey, StringComparison.InvariantCultureIgnoreCase))
+        {
+            return StatusCode(401);
+        }
+
+        if (string.IsNullOrEmpty(ledger))
+        {
+            return BadRequest("The ledger must be provided, e.g 'preprod' or 'mainnet'");
+        }
+
+        await _backgroundSyncService.StopAsync(CancellationToken.None);
+        _logger.LogInformation($"The automatic sync service is stopped. Restart the service after the deletion is completed if needed");
+
+        var isParseable = Enum.TryParse<LedgerType>("cardano" + ledger, ignoreCase: true, out var ledgerType);
+        if (!isParseable)
+        {
+            return BadRequest("The valid network identifier must be provided: 'preprod','mainnet', or 'inmemory'");
+        }
+
+        if (epochNumber is null)
+        {
+            var mostRecentBlock = await _mediator.Send(new GetMostRecentBlockRequest(ledgerType));
+            if (mostRecentBlock.IsFailed)
+            {
+                return BadRequest($"The most recent block could not be found for the ledger {ledger}: {mostRecentBlock.Errors.First().Message}");
+            }
+
+            _logger.LogInformation($"Deleting epoch {mostRecentBlock.Value.EpochNumber} of {ledger} ledger...");
+
+            var epochDeleteResult = await _mediator.Send(new DeleteEpochRequest(mostRecentBlock.Value.EpochNumber, ledgerType));
+            if (epochDeleteResult.IsFailed)
+            {
+                return BadRequest($"The most recent epoch could not be deleted for the ledger {ledger}: {epochDeleteResult.Errors.First().Message}");
+            }
+
+            var orphanedAddressesDeleteResult = await _mediator.Send(new DeleteOrphanedAddressesRequest(ledgerType));
+            if (orphanedAddressesDeleteResult.IsFailed)
+            {
+                return BadRequest($"The orphaned addresses could not be deleted for the ledger {ledger}: {orphanedAddressesDeleteResult.Errors.First().Message}");
+            }
+
+            // TODO cache update!
+
+            _logger.LogInformation($"Deletion completed for epoch {mostRecentBlock.Value.EpochNumber} of {ledger} ledger");
+            return Ok();
+        }
+        else
+        {
+            _logger.LogInformation($"Deleting epoch of {ledger} ledger until epoch {epochNumber} (not included)...");
+            var mostRecentBlock = await _mediator.Send(new GetMostRecentBlockRequest(ledgerType));
+            if (mostRecentBlock.IsFailed)
+            {
+                return BadRequest($"The most recent block could not be found for the ledger {ledger}: {mostRecentBlock.Errors.First().Message}");
+            }
+
+            if (mostRecentBlock.Value.EpochNumber < epochNumber)
+            {
+                return BadRequest($"The current epoch is {mostRecentBlock.Value.EpochNumber}.The provided epoch {epochNumber} is greater than the current epoch");
+            }
+            else if (mostRecentBlock.Value.EpochNumber == epochNumber)
+            {
+                // nothing to delete
+                Result.Ok();
+            }
+
+            for (int i = mostRecentBlock.Value.EpochNumber; i > epochNumber; i--)
+            {
+                var epochDeleteResult = await _mediator.Send(new DeleteEpochRequest(i, ledgerType));
+                if (epochDeleteResult.IsFailed)
+                {
+                    return BadRequest($"The epoch {i} could not be deleted for the ledger {ledger}: {epochDeleteResult.Errors.First().Message}");
+                }
+
+                if (i == 0)
+                {
+                    _logger.LogInformation($"Deletion completed for the ledger {ledger}. The ledger is now empty.");
+                }
+            }
+
+            var orphanedAddressesDeleteResult = await _mediator.Send(new DeleteOrphanedAddressesRequest(ledgerType));
+            if (orphanedAddressesDeleteResult.IsFailed)
+            {
+                return BadRequest($"The orphaned addresses could not be deleted for the ledger {ledger}: {orphanedAddressesDeleteResult.Errors.First().Message}");
+            }
+
+            return Ok();
+        }
+
+        // TODO cache update!
+
+        _logger.LogInformation($"Deletion completed for the ledger {ledger}. The last epoch in the database is now {epochNumber}");
+
+        return Ok();
     }
 }
