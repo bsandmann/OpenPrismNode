@@ -2,6 +2,7 @@
 namespace OpenPrismNode.Core.Entities;
 
 using System.ComponentModel.DataAnnotations.Schema;
+using Models;
 
 /// <summary>
 /// PrismBlockEntity 
@@ -54,6 +55,8 @@ public class BlockEntity
     /// </summary>
     [Column(TypeName = "smallint")]
     public int EpochNumber { get; set; }
+    
+    public LedgerType Ledger { get; set; }
     
     /// <summary>
     /// Flag that this block is a part of a fork

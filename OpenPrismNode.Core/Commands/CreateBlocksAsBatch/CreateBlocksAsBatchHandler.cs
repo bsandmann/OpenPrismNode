@@ -52,7 +52,8 @@ namespace OpenPrismNode.Core.Commands.CreateBlocksAsBatch
                     LastParsedOnUtc = dateTimeNow,
                     PreviousBlockHeight = previousBlock.BlockHeight,
                     PreviousBlockHashPrefix = previousBlock.BlockHashPrefix,
-                    IsFork = false // Assuming IsFork is not part of the Block class, defaulting to false
+                    IsFork = false, // Assuming IsFork is not part of the Block class, defaulting to false
+                    Ledger = request.ledger
                 };
 
                 newBlocks.Add(blockEntity);

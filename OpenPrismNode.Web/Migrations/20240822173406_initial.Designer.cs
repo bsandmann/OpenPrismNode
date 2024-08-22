@@ -12,8 +12,8 @@ using OpenPrismNode.Core;
 namespace OpenPrismNode.Web.Migrations
 {
     [DbContext(typeof(DataContext))]
-    [Migration("20240820163521_initial2")]
-    partial class initial2
+    [Migration("20240822173406_initial")]
+    partial class initial
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -46,6 +46,9 @@ namespace OpenPrismNode.Web.Migrations
                     b.Property<DateTime?>("LastParsedOnUtc")
                         .HasColumnType("timestamp without time zone");
 
+                    b.Property<int>("Ledger")
+                        .HasColumnType("integer");
+
                     b.Property<int?>("PreviousBlockHashPrefix")
                         .HasColumnType("integer");
 
@@ -61,6 +64,8 @@ namespace OpenPrismNode.Web.Migrations
                     b.HasKey("BlockHeight", "BlockHashPrefix");
 
                     b.HasIndex("EpochNumber");
+
+                    b.HasIndex("EpochNumber", "Ledger");
 
                     b.HasIndex("PreviousBlockHeight", "PreviousBlockHashPrefix");
 
@@ -150,7 +155,7 @@ namespace OpenPrismNode.Web.Migrations
                     b.Property<int>("Ledger")
                         .HasColumnType("integer");
 
-                    b.HasKey("EpochNumber");
+                    b.HasKey("EpochNumber", "Ledger");
 
                     b.HasIndex("Ledger");
 
@@ -462,7 +467,7 @@ namespace OpenPrismNode.Web.Migrations
                 {
                     b.HasOne("OpenPrismNode.Core.Entities.EpochEntity", "EpochEntity")
                         .WithMany("BlockEntities")
-                        .HasForeignKey("EpochNumber")
+                        .HasForeignKey("EpochNumber", "Ledger")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 

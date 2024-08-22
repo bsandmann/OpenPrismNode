@@ -7,7 +7,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace OpenPrismNode.Web.Migrations
 {
     /// <inheritdoc />
-    public partial class initial2 : Migration
+    public partial class initial : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -55,7 +55,7 @@ namespace OpenPrismNode.Web.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_EpochEntities", x => x.EpochNumber);
+                    table.PrimaryKey("PK_EpochEntities", x => new { x.EpochNumber, x.Ledger });
                     table.ForeignKey(
                         name: "FK_EpochEntities_LedgerEntities_Ledger",
                         column: x => x.Ledger,
@@ -75,6 +75,7 @@ namespace OpenPrismNode.Web.Migrations
                     TxCount = table.Column<short>(type: "smallint", nullable: false),
                     LastParsedOnUtc = table.Column<DateTime>(type: "timestamp without time zone", nullable: true),
                     EpochNumber = table.Column<short>(type: "smallint", nullable: false),
+                    Ledger = table.Column<int>(type: "integer", nullable: false),
                     IsFork = table.Column<bool>(type: "boolean", nullable: false),
                     PreviousBlockHeight = table.Column<int>(type: "integer", nullable: true),
                     PreviousBlockHashPrefix = table.Column<int>(type: "integer", nullable: true)
@@ -88,10 +89,10 @@ namespace OpenPrismNode.Web.Migrations
                         principalTable: "BlockEntities",
                         principalColumns: new[] { "BlockHeight", "BlockHashPrefix" });
                     table.ForeignKey(
-                        name: "FK_BlockEntities_EpochEntities_EpochNumber",
-                        column: x => x.EpochNumber,
+                        name: "FK_BlockEntities_EpochEntities_EpochNumber_Ledger",
+                        columns: x => new { x.EpochNumber, x.Ledger },
                         principalTable: "EpochEntities",
-                        principalColumn: "EpochNumber",
+                        principalColumns: new[] { "EpochNumber", "Ledger" },
                         onDelete: ReferentialAction.Cascade);
                 });
 
@@ -349,6 +350,11 @@ namespace OpenPrismNode.Web.Migrations
                 name: "IX_BlockEntities_EpochNumber",
                 table: "BlockEntities",
                 column: "EpochNumber");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_BlockEntities_EpochNumber_Ledger",
+                table: "BlockEntities",
+                columns: new[] { "EpochNumber", "Ledger" });
 
             migrationBuilder.CreateIndex(
                 name: "IX_BlockEntities_PreviousBlockHeight_PreviousBlockHashPrefix",

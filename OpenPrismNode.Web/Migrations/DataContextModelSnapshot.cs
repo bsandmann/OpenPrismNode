@@ -43,6 +43,9 @@ namespace OpenPrismNode.Web.Migrations
                     b.Property<DateTime?>("LastParsedOnUtc")
                         .HasColumnType("timestamp without time zone");
 
+                    b.Property<int>("Ledger")
+                        .HasColumnType("integer");
+
                     b.Property<int?>("PreviousBlockHashPrefix")
                         .HasColumnType("integer");
 
@@ -58,6 +61,8 @@ namespace OpenPrismNode.Web.Migrations
                     b.HasKey("BlockHeight", "BlockHashPrefix");
 
                     b.HasIndex("EpochNumber");
+
+                    b.HasIndex("EpochNumber", "Ledger");
 
                     b.HasIndex("PreviousBlockHeight", "PreviousBlockHashPrefix");
 
@@ -147,7 +152,7 @@ namespace OpenPrismNode.Web.Migrations
                     b.Property<int>("Ledger")
                         .HasColumnType("integer");
 
-                    b.HasKey("EpochNumber");
+                    b.HasKey("EpochNumber", "Ledger");
 
                     b.HasIndex("Ledger");
 
@@ -459,7 +464,7 @@ namespace OpenPrismNode.Web.Migrations
                 {
                     b.HasOne("OpenPrismNode.Core.Entities.EpochEntity", "EpochEntity")
                         .WithMany("BlockEntities")
-                        .HasForeignKey("EpochNumber")
+                        .HasForeignKey("EpochNumber", "Ledger")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 

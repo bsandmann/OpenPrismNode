@@ -32,7 +32,7 @@ public class DataContext : DbContext
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.Entity<LedgerEntity>().HasKey(p => p.Ledger);
-        modelBuilder.Entity<EpochEntity>().HasKey(p => p.EpochNumber);
+        modelBuilder.Entity<EpochEntity>().HasKey(p => new { p.EpochNumber, p.Ledger });
         modelBuilder.Entity<BlockEntity>()
             .HasKey(b => new { b.BlockHeight, b.BlockHashPrefix });
         modelBuilder.Entity<TransactionEntity>()
@@ -60,7 +60,7 @@ public class DataContext : DbContext
         modelBuilder.Entity<BlockEntity>()
             .HasOne(p => p.EpochEntity)
             .WithMany(b => b.BlockEntities)
-            .HasForeignKey(p => p.EpochNumber)
+            .HasForeignKey(p => new { p.EpochNumber, p.Ledger })
             .OnDelete(DeleteBehavior.Cascade);
 
         modelBuilder.Entity<BlockEntity>()
@@ -120,34 +120,34 @@ public class DataContext : DbContext
             .WithMany(s => s.CreateDidEntities)
             .HasForeignKey(e => new { e.TransactionHash, e.BlockHeight, e.BlockHashPrefix })
             .OnDelete(DeleteBehavior.Cascade);
-        
+
         modelBuilder.Entity<CreateDidEntity>()
             .HasMany(e => e.PrismPublicKeys)
-            .WithOne()  // No navigation property back to CreateDidEntity
-            .HasForeignKey(p =>  p.CreateDidEntityOperationHash)
+            .WithOne() // No navigation property back to CreateDidEntity
+            .HasForeignKey(p => p.CreateDidEntityOperationHash)
             .OnDelete(DeleteBehavior.Cascade);
-        
+
         modelBuilder.Entity<CreateDidEntity>()
             .HasMany(e => e.PrismServices)
-            .WithOne()  // No navigation property back to CreateDidEntity
-            .HasForeignKey(p =>  p.CreateDidEntityOperationHash)
+            .WithOne() // No navigation property back to CreateDidEntity
+            .HasForeignKey(p => p.CreateDidEntityOperationHash)
             .OnDelete(DeleteBehavior.Cascade);
-        
+
         modelBuilder.Entity<UpdateDidEntity>()
             .HasOne(u => u.TransactionEntity)
             .WithMany(s => s.UpdateDidEntities)
             .HasForeignKey(e => new { e.TransactionHash, e.BlockHeight, e.BlockHashPrefix })
             .OnDelete(DeleteBehavior.Cascade);
-        
+
         modelBuilder.Entity<UpdateDidEntity>()
             .HasOne(u => u.CreateDidEntity)
             .WithMany(c => c.DidUpdates)
             .HasForeignKey(u => u.Did)
             .OnDelete(DeleteBehavior.Restrict);
-        
+
         modelBuilder.Entity<UpdateDidEntity>()
             .HasIndex(u => u.Did);
-        
+
         modelBuilder.Entity<PrismPublicKeyEntity>()
             .HasOne<UpdateDidEntity>()
             .WithMany(u => u.PrismPublicKeysToAdd)
@@ -159,7 +159,7 @@ public class DataContext : DbContext
             .WithMany(u => u.PrismServices)
             .HasForeignKey(p => p.UpdateDidEntityOperationHash)
             .OnDelete(DeleteBehavior.Cascade);
-        
+
         modelBuilder.Entity<PrismPublicKeyRemoveEntity>()
             .HasOne(p => p.UpdateDidEntity)
             .WithMany(u => u.PrismPublicKeysToRemove)
@@ -169,7 +169,7 @@ public class DataContext : DbContext
         modelBuilder.Entity<PrismPublicKeyRemoveEntity>()
             .Property(p => p.UpdateDidOperationHash)
             .HasColumnName("UpdateDidEntityOperationHash");
-        
+
         modelBuilder.Entity<PatchedContextEntity>()
             .HasOne(p => p.UpdateDidEntity)
             .WithMany(u => u.PatchedContexts)
@@ -179,7 +179,7 @@ public class DataContext : DbContext
         modelBuilder.Entity<PatchedContextEntity>()
             .HasIndex(p => p.ContextListJson)
             .HasMethod("gin");
-        
+
         modelBuilder.Entity<DeactivateDidEntity>()
             .HasOne(d => d.CreateDidEntity)
             .WithOne(c => c.DidDeactivation)
@@ -194,7 +194,7 @@ public class DataContext : DbContext
 
         modelBuilder.Entity<DeactivateDidEntity>()
             .HasIndex(d => d.Did);
-        
+
         modelBuilder.Entity<BlockEntity>()
             .HasIndex(b => b.EpochNumber);
 
@@ -218,6 +218,5 @@ public class DataContext : DbContext
 
         modelBuilder.Entity<PrismPublicKeyEntity>()
             .HasIndex(p => p.UpdateDidEntityOperationHash);
-        
     }
 }

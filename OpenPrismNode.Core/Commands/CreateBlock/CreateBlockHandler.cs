@@ -33,7 +33,11 @@ public class CreateBlockHandler : IRequestHandler<CreateBlockRequest, Result<Blo
         _context.ChangeTracker.Clear();
         _context.ChangeTracker.AutoDetectChangesEnabled = false;
 
-        if (!await _context.BlockEntities.AnyAsync(p => p.BlockHeight == request.BlockHeight && p.EpochEntity.Ledger == request.ledger, cancellationToken: cancellationToken))
+        var existingBlock = await _context.BlockEntities.AnyAsync(
+            p => p.BlockHeight == request.BlockHeight && p.EpochEntity.Ledger == request.ledger, 
+            cancellationToken: cancellationToken);
+
+        if (!existingBlock)
         {
             var dateTimeNow = DateTime.SpecifyKind(DateTime.UtcNow, DateTimeKind.Unspecified);
             var timeCreatedUtc = DateTime.SpecifyKind(request.TimeUtc, DateTimeKind.Unspecified);
@@ -49,7 +53,8 @@ public class CreateBlockHandler : IRequestHandler<CreateBlockRequest, Result<Blo
                 LastParsedOnUtc = dateTimeNow,
                 PreviousBlockHeight = request.PreviousBlockHeight,
                 PreviousBlockHashPrefix = BlockEntity.CalculateBlockHashPrefix(request.PreviousBlockHash?.Value),
-                IsFork = request.IsFork
+                IsFork = request.IsFork,
+                Ledger = request.ledger
             };
 
             await _context.AddAsync(blockEntity, cancellationToken);
