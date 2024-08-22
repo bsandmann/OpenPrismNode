@@ -16,9 +16,7 @@ public class TransactionBaseRequest
     /// <param name="fees"></param>
     /// <param name="size"></param>
     /// <param name="index"></param>
-    /// <param name="label"></param>
-    /// <param name="incomingUtxos"></param>
-    /// <param name="outgoingUtxos"></param>
+    /// <param name="utxos"></param>
     public TransactionBaseRequest(Hash transactionHash, Hash blockHash, int blockHeight, int fees, int size, int index, List<UtxoWrapper> utxos)
     {
         TransactionHash = transactionHash;

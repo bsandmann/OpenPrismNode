@@ -34,7 +34,7 @@ public class CreateBlockHandler : IRequestHandler<CreateBlockRequest, Result<Blo
         _context.ChangeTracker.AutoDetectChangesEnabled = false;
 
         var existingBlock = await _context.BlockEntities.AnyAsync(
-            p => p.BlockHeight == request.BlockHeight && p.EpochEntity.Ledger == request.ledger, 
+            p => p.BlockHeight == request.BlockHeight && p.EpochEntity.Ledger == request.ledger,
             cancellationToken: cancellationToken);
 
         if (!existingBlock)
@@ -68,7 +68,7 @@ public class CreateBlockHandler : IRequestHandler<CreateBlockRequest, Result<Blo
 
             blockEntity.TimeUtc = DateTime.SpecifyKind(blockEntity.TimeUtc, DateTimeKind.Utc);
             blockEntity.LastParsedOnUtc = blockEntity.LastParsedOnUtc is not null ? DateTime.SpecifyKind(blockEntity.LastParsedOnUtc!.Value, DateTimeKind.Utc) : null;
-            
+
             return Result.Ok(blockEntity);
         }
         else
