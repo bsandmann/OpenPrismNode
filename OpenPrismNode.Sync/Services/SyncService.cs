@@ -21,7 +21,7 @@ using Microsoft.Extensions.Logging;
 
 public static class SyncService
 {
-    public static async Task<Result> RunSync(IMediator mediator, ILogger logger, string ledger, int startAtEpochNumber = 0, bool isInitialStartup = false)
+    public static async Task<Result> RunSync(IMediator mediator, ILogger logger, string ledger, CancellationToken cancellationToken, int startAtEpochNumber = 0, bool isInitialStartup = false)
     {
         LedgerType ledgerType;
         if (ledger.Equals("mainnet", StringComparison.InvariantCultureIgnoreCase))
@@ -118,6 +118,11 @@ public static class SyncService
         // Normal Sync-Path
         for (int i = startingBlock; i <= postgresBlockTipResult.Value.block_no; i++)
         {
+            if (cancellationToken.IsCancellationRequested)
+            {
+                return Result.Fail("Sync operation was cancelled");
+            }
+            
             if (postgresBlockTipResult.Value.block_no - i - 1 > PrismParameters.FastSyncBlockDistanceRequirement)
             {
                 // Fast Sync-Path
@@ -194,8 +199,6 @@ public static class SyncService
             previousBlockHeight = processBlockResult.Value.PreviousBlockHeight;
         }
 
-
-        //
         return Result.Ok();
     }
 

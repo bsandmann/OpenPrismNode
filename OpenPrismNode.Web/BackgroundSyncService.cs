@@ -59,16 +59,16 @@ public class BackgroundSyncService : BackgroundService
                     
                     _logger.LogInformation($"Sync running for {_appSettings.PrismLedger.Name}");
                     
-                    // var syncResult = await SyncService.RunSync(mediator, _logger, _appSettings.PrismLedger.Name, _appSettings.PrismLedger.StartAtEpochNumber, isInitialStartup);
-                    // if (syncResult.IsFailed)
-                    // {
-                    //     _logger.LogCritical($"Sync failed for {_appSettings.PrismLedger.Name}: {syncResult.Errors.SingleOrDefault()}");
-                    // }
-                    // else
-                    // {
-                    //     isInitialStartup = false;
-                    //     _logger.LogInformation($"Sync succussfully completed for {_appSettings.PrismLedger.Name}");
-                    // }
+                    var syncResult = await SyncService.RunSync(mediator, _logger, _appSettings.PrismLedger.Name, _cts.Token, _appSettings.PrismLedger.StartAtEpochNumber, isInitialStartup);
+                    if (syncResult.IsFailed)
+                    {
+                        _logger.LogCritical($"Sync failed for {_appSettings.PrismLedger.Name}: {syncResult.Errors.SingleOrDefault()}");
+                    }
+                    else
+                    {
+                        isInitialStartup = false;
+                        _logger.LogInformation($"Sync succussfully completed for {_appSettings.PrismLedger.Name}");
+                    }
                 }
                 catch (OperationCanceledException)
                 {
