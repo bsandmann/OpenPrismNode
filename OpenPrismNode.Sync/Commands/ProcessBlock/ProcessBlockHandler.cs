@@ -40,25 +40,6 @@ public class ProcessBlockHandler : IRequestHandler<ProcessBlockRequest, Result<P
             return Result.Ok(new ProcessBlockResponse(block.Value.BlockHash, block.Value.BlockHeight));
         }
 
-        if (previousBlockHash is null)
-        {
-            // TODO ?
-            //         // special case, when starting this method. The previous blockHash should be null when we start the db
-            //         // but when we have done a rollback before we have to connect the oldchain to new continuation
-            //         var previousBlock = await _mediator.Send(new GetPostgresBlockByBlockIdRequest(request.Block.previous_id));
-            //         if (previousBlock.IsSuccess)
-            //         {
-            //             //lets try to find that block in our db
-            //             var previousBlockHashDb = Hash.CreateFrom(previousBlock.Value.hash);
-            //             var previousBlockInDb = await _mediator.Send(new GetBlockByHashRequest(previousBlockHashDb));
-            //             if (previousBlockInDb.IsSuccess)
-            //             {
-            //                 previousBlockHash = previousBlockInDb.Value.BlockHash;
-            //              previousBlockHeight = previousBlockInDb.Value.BlockHeight;
-            //             }
-            //         }
-        }
-
         var prismBlockResult = await _mediator.Send(new CreateBlockRequest(
             ledgerType: request.LedgerType,
             blockHeight: request.Block.block_no,

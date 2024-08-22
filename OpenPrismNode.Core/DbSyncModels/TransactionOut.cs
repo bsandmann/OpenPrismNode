@@ -1,5 +1,4 @@
 ﻿namespace OpenPrismNode.Core.DbSyncModels;
-#pragma warning disable CS8618
 
 /// <summary>
 /// Entitiy for the tx_out postgres table

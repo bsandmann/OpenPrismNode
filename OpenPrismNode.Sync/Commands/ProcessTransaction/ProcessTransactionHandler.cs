@@ -165,59 +165,9 @@ public class ProcessTransactionHandler : IRequestHandler<ProcessTransactionReque
                         if (didIdentifier is not null)
                         {
                             // OUT OF SCOPE
-
-                            // var resolvedDid = await _mediator.Send(new ResolveDidRequest(new Did(did)));
-                            // if (resolvedDid.IsFailed)
-                            // {
-                            //     _logger.LogCritical("Failed while resolving did {Did}: {Error}", did, resolvedDid.Errors.First().Message);
-                            // }
-                            // else
-                            // {
-                            //     var createLedgerResult = await _mediator.Send(new CreateLederRequest("prism", _appSettings.PrismNetwork.Name.ToLowerInvariant()));
-                            //     if (createLedgerResult.IsFailed)
-                            //     {
-                            //         _logger.LogCritical("Failed while creating ledger {Ledger}: {Error}", "prism", createLedgerResult.Errors.First().Message);
-                            //         continue;
-                            //     }
-                            //
-                            //     var createDidResult = await _mediator.Send(new CreateEntryInDidStorageRequest(
-                            //         resolveDidResponse: resolvedDid.Value,
-                            //         network: _appSettings.PrismNetwork.Name.ToLowerInvariant(),
-                            //         operationResultType: parsingResult.Value.OperationResultType,
-                            //         transactionHash: Hash.CreateFrom(blockTransaction.hash),
-                            //         transactionBlock: Hash.CreateFrom(selectedBlock.hash),
-                            //         blockheight: selectedBlock.block_no,
-                            //         blocktime: selectedBlock.time,
-                            //         transactionSize: blockTransaction.size,
-                            //         transactionFees: long.Parse(blockTransaction.fee.ToString(CultureInfo.InvariantCulture)),
-                            //         transactionIndex: (uint)blockTransaction.block_index,
-                            //         incomingUtxos: paymentdata.Value.Incoming.Select(p => new PrismUtxoModel()
-                            //         {
-                            //             Index = (uint)p.Index,
-                            //             Value = p.Value,
-                            //             PrismWalletAddress = new PrismWalletAddressModel()
-                            //             {
-                            //                 StakeAddress = p.WalletAddress.StakeAddress,
-                            //                 WalletAddressString = p.WalletAddress.WalletAddressString
-                            //             }
-                            //         }).ToList(),
-                            //         outgoingUtxos: paymentdata.Value.Outgoing.Select(p => new PrismUtxoModel()
-                            //         {
-                            //             Index = (uint)p.Index,
-                            //             Value = p.Value,
-                            //             PrismWalletAddress = new PrismWalletAddressModel()
-                            //             {
-                            //                 StakeAddress = p.WalletAddress.StakeAddress,
-                            //                 WalletAddressString = p.WalletAddress.WalletAddressString
-                            //             }
-                            //         }).ToList()
-                            //     ));
-                            //
-                            //     if (createDidResult.IsFailed)
-                            //     {
-                            //         _logger.LogError("Failed while creating did {Did}: {Error}", did, createDidResult.Errors.First().Message);
-                            //     }
-                            // }
+ 
+                            // Resolving as qualified did and pushing to external database
+                          
                         }
 
                         operationSequenceIndex++;

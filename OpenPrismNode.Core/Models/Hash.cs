@@ -3,12 +3,11 @@ namespace OpenPrismNode.Core.Models;
 using System.Diagnostics;
 using Crypto;
 
-// [JsonConverter(typeof(HashJsonConverter))]
 public sealed class Hash
 {
-// #pragma warning disable CS8618
+    // TODO refactor or remove the Hash implemantion?
+    
      private static ISha256Service _sha256Service;
-// #pragma warning restore CS8618
 
     public byte[] Value { get; private set; }
 
@@ -49,35 +48,4 @@ public sealed class Hash
         // Ensure.That(value.Length).Is(32);
         return new Hash(value);
     }
-    //
-    // public Hash Prefix(ISha256Service sha256Service)
-    // {
-    //     return new Hash(sha256Service).Of(PrefixByteArray(LeafPrefix, Value));
-    // }
-    //
-    // public Hash Combine(Hash left, Hash right, ISha256Service sha256Service)
-    // {
-    //     return new Hash(sha256Service).Of(PrefixByteArray(NodePrefix, CombineByteArrays(left.Value, right.Value)));
-    // }
-    //
-    // public string AsHex()
-    // {
-    //     return PrismEncoding.ByteArrayToHex(this.Value);
-    // }
-    //
-    // private static byte[] CombineByteArrays(byte[] left, byte[] right)
-    // {
-    //     byte[] newArray = new byte[left.Length + right.Length];
-    //     left.CopyTo(newArray, 0);
-    //     right.CopyTo(newArray, left.Length);
-    //     return newArray;
-    // }
-    //
-    // private static byte[] PrefixByteArray(byte newByte, byte[] bArray)
-    // {
-    //     byte[] newArray = new byte[bArray.Length + 1];
-    //     bArray.CopyTo(newArray, 1);
-    //     newArray[0] = newByte;
-    //     return newArray;
-    // }
 }

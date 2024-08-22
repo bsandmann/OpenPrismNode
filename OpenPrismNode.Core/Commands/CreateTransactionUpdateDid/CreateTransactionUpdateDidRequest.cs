@@ -8,7 +8,7 @@ using OpenPrismNode.Core.Models;
 /// <summary>
 /// Request
 /// </summary>
-public class CreateTransactionUpdateDidRequest : TransactionBaseRequest, IRequest<Result<TransactionModel>>
+public class CreateTransactionUpdateDidRequest : TransactionBaseRequest, IRequest<Result>
 {
     /// <summary>
     /// Request Constructor

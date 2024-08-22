@@ -1,6 +1,4 @@
 ﻿namespace OpenPrismNode.Core.DbSyncModels;
-#pragma warning disable CS8618
-
 public class StakeAddress
 {
     public int id { get; set; }

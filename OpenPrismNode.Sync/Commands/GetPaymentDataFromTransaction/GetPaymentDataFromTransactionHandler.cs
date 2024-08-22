@@ -34,7 +34,7 @@ public class GetPaymentDataFromTransactionHandler : IRequestHandler<GetPaymentDa
         return Result.Ok(payment);
     }
 
-    private async Task<List<Utxo>> GetUtxos(NpgsqlConnection connection, long txId, bool isOutgoing, CancellationToken cancellationToken)
+    private async Task<List<Utxo>> GetUtxos(NpgsqlConnection connection, int txId, bool isOutgoing, CancellationToken cancellationToken)
     {
         const string sql = @"
             SELECT t.index, t.value, t.stake_address_id, t.address, s.view as stake_address

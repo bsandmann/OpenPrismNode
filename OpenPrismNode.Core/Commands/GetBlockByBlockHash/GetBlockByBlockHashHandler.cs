@@ -32,7 +32,6 @@ public class GetBlockByBlockHashHandler : IRequestHandler<GetBlockByBlockHashReq
                 IsFork = b.IsFork,
                 PreviousBlockHeight = b.PreviousBlockHeight,
                 PreviousBlockHashPrefix = b.PreviousBlockHashPrefix
-                // Add other properties as needed
             })
             .AsNoTracking()
             .FirstOrDefaultAsync(cancellationToken);

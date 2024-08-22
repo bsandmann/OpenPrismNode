@@ -13,7 +13,7 @@ using OpenPrismNode.Core.Models;
 /// <summary>
 /// Handler to write a UpdateDid-PRISM-Operation in the node database
 /// </summary>
-public class CreateTransactionUpdateDidHandler : IRequestHandler<CreateTransactionUpdateDidRequest, Result<TransactionModel>>
+public class CreateTransactionUpdateDidHandler : IRequestHandler<CreateTransactionUpdateDidRequest, Result>
 {
     private readonly DataContext _context;
     private readonly ILogger<CreateTransactionUpdateDidHandler> _logger;
@@ -29,7 +29,7 @@ public class CreateTransactionUpdateDidHandler : IRequestHandler<CreateTransacti
     }
 
     /// <inheritdoc />
-    public async Task<Result<TransactionModel>> Handle(CreateTransactionUpdateDidRequest request, CancellationToken cancellationToken)
+    public async Task<Result> Handle(CreateTransactionUpdateDidRequest request, CancellationToken cancellationToken)
     {
         try
         {
