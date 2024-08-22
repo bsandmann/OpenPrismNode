@@ -14,6 +14,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OpenPrismNode.Sync.Tests", 
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OpenPrismNode.Sync.IntegrationTests", "OpenPrismNode.Sync.IntegrationTests\OpenPrismNode.Sync.IntegrationTests.csproj", "{C3C26DB5-F78C-4673-B4B8-0C8DBE5FE9D4}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OpenPrismNode.Core.IntegrationTests", "OpenPrismNode.Core.IntegrationTests\OpenPrismNode.Core.IntegrationTests.csproj", "{41C1B41B-D3E7-475A-894A-815FE7D56154}"
+EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Documents", "Documents", "{AF93072F-B3F2-43DF-ADCC-0CB6DF55F3A7}"
 	ProjectSection(SolutionItems) = preProject
 		Documents\development_m1.md = Documents\development_m1.md
@@ -50,9 +52,14 @@ Global
 		{C3C26DB5-F78C-4673-B4B8-0C8DBE5FE9D4}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{C3C26DB5-F78C-4673-B4B8-0C8DBE5FE9D4}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{C3C26DB5-F78C-4673-B4B8-0C8DBE5FE9D4}.Release|Any CPU.Build.0 = Release|Any CPU
+		{41C1B41B-D3E7-475A-894A-815FE7D56154}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{41C1B41B-D3E7-475A-894A-815FE7D56154}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{41C1B41B-D3E7-475A-894A-815FE7D56154}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{41C1B41B-D3E7-475A-894A-815FE7D56154}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{09B6FFC6-090F-44D8-8F20-D6B1CC001CA4} = {BC63DBFB-9321-4851-8A28-7B8A4397CF46}
 		{C3C26DB5-F78C-4673-B4B8-0C8DBE5FE9D4} = {BC63DBFB-9321-4851-8A28-7B8A4397CF46}
+		{41C1B41B-D3E7-475A-894A-815FE7D56154} = {BC63DBFB-9321-4851-8A28-7B8A4397CF46}
 	EndGlobalSection
 EndGlobal

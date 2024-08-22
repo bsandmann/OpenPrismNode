@@ -2,11 +2,13 @@
 	<s:String x:Key="/Default/Environment/UnitTesting/UnitTestSessionStore/Sessions/=4888c0b6_002Df275_002D43cc_002D8b4f_002Dbae6c2de144c/@EntryIndexedValue">&lt;SessionState ContinuousTestingMode="0" IsActive="True" Name="All tests from &amp;lt;Tests&amp;gt;" xmlns="urn:schemas-jetbrains-com:jetbrains-ut-session"&gt;
   &lt;Project Location="/home/bjoern/_Projekte/OpenPrismNode" Presentation="&amp;lt;Tests&amp;gt;" /&gt;
 &lt;/SessionState&gt;</s:String>
+	<s:String x:Key="/Default/Housekeeping/UnitTestingMru/UnitTestRunner/EnvironmentVariablesIndexed/=DbSyncPostgresConnectionString/@EntryIndexedValue">User ID=bjoern;Password=Delaysdq123!;Host=10.10.20.111;Port=5432;Database=cexplorer;</s:String>
 	
 	
 	
 	
 	<s:Boolean x:Key="/Default/Housekeeping/UnitTestingMru/UnitTestRunner/EnvironmentVariablesIndexed/=DOTNET_005FENVIRONMENT/@EntryIndexRemoved">True</s:Boolean>
-	<s:String x:Key="/Default/Housekeeping/UnitTestingMru/UnitTestRunner/EnvironmentVariablesIndexed/=PostgreSqlConnectionString/@EntryIndexedValue">User ID=bjoern;Password=Delaysdq123!;Host=10.10.20.111;Port=5432;Database=cexplorer;</s:String>
+	
+	<s:String x:Key="/Default/Housekeeping/UnitTestingMru/UnitTestRunner/EnvironmentVariablesIndexed/=PrismPostgresConnectionString/@EntryIndexedValue">Host=10.10.20.103; Database=prismdatabasetest; Username=postgres; Password=postgres; Include Error Detail=true</s:String>
 	<s:Boolean x:Key="/Default/Housekeeping/UnitTestingMru/UnitTestRunner/EnvironmentVariablesIndexed/=RESHARPER_005FHOST_005FVERSION/@EntryIndexRemoved">True</s:Boolean>
 	<s:Boolean x:Key="/Default/Housekeeping/UnitTestingMru/UnitTestRunner/EnvironmentVariablesIndexed/=RESHARPER_005FHOST/@EntryIndexRemoved">True</s:Boolean></wpf:ResourceDictionary>

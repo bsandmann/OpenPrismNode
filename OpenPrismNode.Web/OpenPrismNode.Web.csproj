@@ -15,7 +15,7 @@
           <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
         <PackageReference Include="Seq.Extensions.Logging" Version="8.0.0" />
-        <PackageReference Include="Swashbuckle.AspNetCore" Version="6.7.0" />
+        <PackageReference Include="Swashbuckle.AspNetCore" Version="6.7.1" />
     </ItemGroup>
 
     <ItemGroup>
