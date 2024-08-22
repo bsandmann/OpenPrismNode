@@ -2,6 +2,7 @@
 using MediatR;
 using Moq;
 using OpenPrismNode.Core;
+using OpenPrismNode.Core.Commands.CreateBlock;
 using OpenPrismNode.Core.Commands.CreateEpoch;
 using OpenPrismNode.Core.Commands.CreateLedger;
 using OpenPrismNode.Core.Commands.DeleteLedger;
@@ -16,6 +17,7 @@ public partial class IntegrationTests : IDisposable
     private readonly Mock<IMediator> _mediatorMock;
     private readonly CreateLedgerHandler _createLedgerHandler;
     private readonly CreateEpochHandler _createEpochHandler;
+    private readonly CreateBlockHandler _createBlockHandler;
     private readonly DeleteLedgerHandler _deleteLedgerHandler;
 
 
@@ -29,6 +31,7 @@ public partial class IntegrationTests : IDisposable
         this._createLedgerHandler = new CreateLedgerHandler(_context);
         this._createEpochHandler = new CreateEpochHandler(_context);
         this._deleteLedgerHandler = new DeleteLedgerHandler(_context, _mediatorMock.Object);
+        this._createBlockHandler = new CreateBlockHandler(_context);
 
         // this._mediatorMock.Setup(p => p.Send(It.IsAny<UpdateDidDocumentMetadataRequest>(), It.IsAny<CancellationToken>()))
         //     .Returns(async (UpdateDidDocumentMetadataRequest request, CancellationToken token) => await this._updateDidDocumentMetadataHandler.Handle(request, token));

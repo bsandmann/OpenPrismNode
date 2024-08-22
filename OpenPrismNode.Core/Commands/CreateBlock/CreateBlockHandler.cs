@@ -33,7 +33,7 @@ public class CreateBlockHandler : IRequestHandler<CreateBlockRequest, Result<Blo
         _context.ChangeTracker.Clear();
         _context.ChangeTracker.AutoDetectChangesEnabled = false;
 
-        if (!await _context.BlockEntities.AnyAsync(p => p.BlockHeight == request.BlockHeight, cancellationToken: cancellationToken))
+        if (!await _context.BlockEntities.AnyAsync(p => p.BlockHeight == request.BlockHeight && p.EpochEntity.Ledger == request.ledger, cancellationToken: cancellationToken))
         {
             var dateTimeNow = DateTime.SpecifyKind(DateTime.UtcNow, DateTimeKind.Unspecified);
             var timeCreatedUtc = DateTime.SpecifyKind(request.TimeUtc, DateTimeKind.Unspecified);
