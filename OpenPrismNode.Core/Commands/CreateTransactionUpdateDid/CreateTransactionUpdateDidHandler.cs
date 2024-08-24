@@ -39,6 +39,7 @@ public class CreateTransactionUpdateDidHandler : IRequestHandler<CreateTransacti
             var prismPublicKeysToAdd = new List<PrismPublicKeyEntity>();
             var prismPublicKeysToRemove = new List<PrismPublicKeyRemoveEntity>();
             var prismServices = new List<PrismServiceEntity>();
+            var patchedContexts = new List<PatchedContextEntity>();
             foreach (var updateDidAction in request.UpdateDidActions)
             {
                 if (updateDidAction.UpdateDidActionType == UpdateDidActionType.AddKey)
@@ -104,17 +105,10 @@ public class CreateTransactionUpdateDidHandler : IRequestHandler<CreateTransacti
                 }
                 else if (updateDidAction.UpdateDidActionType == UpdateDidActionType.PatchContext)
                 {
-                    throw new NotImplementedException();
-                    prismServices.Add(new PrismServiceEntity()
+                    patchedContexts.Add(new PatchedContextEntity()
                     {
-                        ServiceId = updateDidAction.RemovedKeyId,
-                        Type = null,
-                        Uri = null,
-                        ListOfUris = null,
-                        JsonData = null,
+                        ContextList = updateDidAction.Contexts is not null ? updateDidAction.Contexts : new List<string>(),
                         UpdateOperationOrder = operationOrderIndex,
-                        Updated = false,
-                        Removed = true
                     });
                 }
 
@@ -125,7 +119,6 @@ public class CreateTransactionUpdateDidHandler : IRequestHandler<CreateTransacti
             var hasExistingTransaction = await _context.TransactionEntities.AnyAsync(p => p.TransactionHash == request.TransactionHash.Value, cancellationToken: cancellationToken);
             if (!hasExistingTransaction)
             {
-                
                 var trans = new TransactionEntity()
                 {
                     TransactionHash = request.TransactionHash.Value,
@@ -154,7 +147,7 @@ public class CreateTransactionUpdateDidHandler : IRequestHandler<CreateTransacti
                             PrismPublicKeysToAdd = prismPublicKeysToAdd,
                             PrismPublicKeysToRemove = prismPublicKeysToRemove,
                             PrismServices = prismServices,
-                            // TODO patch context
+                            PatchedContexts = patchedContexts,
                         }
                     }
                 };
@@ -179,7 +172,7 @@ public class CreateTransactionUpdateDidHandler : IRequestHandler<CreateTransacti
                         PrismPublicKeysToAdd = prismPublicKeysToAdd,
                         PrismPublicKeysToRemove = prismPublicKeysToRemove,
                         PrismServices = prismServices,
-                        // TODO patch context
+                        PatchedContexts = patchedContexts
                     };
                 await _context.UpdateDidEntities.AddAsync(prismUpdateDidEntity, cancellationToken);
                 await _context.SaveChangesAsync(cancellationToken);

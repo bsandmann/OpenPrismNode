@@ -6,15 +6,20 @@ using OpenPrismNode.Core;
 using OpenPrismNode.Core.Commands.CreateBlock;
 using OpenPrismNode.Core.Commands.CreateEpoch;
 using OpenPrismNode.Core.Commands.CreateLedger;
+using OpenPrismNode.Core.Commands.CreateStakeAddress;
 using OpenPrismNode.Core.Commands.CreateTransactionCreateDid;
+using OpenPrismNode.Core.Commands.CreateTransactionDeactivateDid;
 using OpenPrismNode.Core.Commands.CreateTransactionUpdateDid;
+using OpenPrismNode.Core.Commands.CreateWalletAddress;
 using OpenPrismNode.Core.Commands.DeleteEpoch;
 using OpenPrismNode.Core.Commands.DeleteLedger;
 using OpenPrismNode.Core.Commands.GetBlockByBlockHash;
 using OpenPrismNode.Core.Commands.GetBlockByBlockHeight;
 using OpenPrismNode.Core.Commands.GetEpoch;
 using OpenPrismNode.Core.Commands.GetMostRecentBlock;
+using OpenPrismNode.Core.Commands.ResolveDid;
 using OpenPrismNode.Core.IntegrationTests;
+using OpenPrismNode.Core.Services;
 
 [Collection("TransactionalTests")]
 public partial class IntegrationTests : IDisposable
@@ -34,11 +39,18 @@ public partial class IntegrationTests : IDisposable
     private readonly DeleteEpochHandler _deleteEpochHandler;
     private readonly CreateTransactionCreateDidHandler _createTransactionCreateDidHandler;
     private readonly CreateTransactionUpdateDidHandler _createTransactionUpdateDidHandler;
-
-
+    private readonly CreateTransactionDeactivateDidHandler _createTransactionDeactivateDidHandler;
+    private readonly CreateWalletAddressHandler _createWalletAddressHandler;
+    private readonly CreateStakeAddressHandler _createStakeAddressHandler;
+    private readonly IWalletAddressCache _walletAddressCache;
+    private readonly IStakeAddressCache _stakeAddressCache;
+    private readonly ResolveDidHandler _resolveDidHandler;
 
     public IntegrationTests(TransactionalTestDatabaseFixture fixture)
     {
+        _walletAddressCache = new WalletAddressCache(100);
+        _stakeAddressCache = new StakeAddressCache(100);
+
         this.Fixture = fixture;
         this._context = this.Fixture.CreateContext();
 
@@ -55,6 +67,11 @@ public partial class IntegrationTests : IDisposable
         this._deleteEpochHandler = new DeleteEpochHandler(_context);
         this._createTransactionCreateDidHandler = new CreateTransactionCreateDidHandler(_context, Mock.Of<ILogger<CreateTransactionCreateDidHandler>>());
         this._createTransactionUpdateDidHandler = new CreateTransactionUpdateDidHandler(_context, Mock.Of<ILogger<CreateTransactionUpdateDidHandler>>());
+        this._createTransactionDeactivateDidHandler = new CreateTransactionDeactivateDidHandler(_context, Mock.Of<ILogger<CreateTransactionDeactivateDidHandler>>());
+        this._createWalletAddressHandler = new CreateWalletAddressHandler(_context, _walletAddressCache, Mock.Of<ILogger<CreateWalletAddressHandler>>());
+        this._createStakeAddressHandler = new CreateStakeAddressHandler(_context, _stakeAddressCache, Mock.Of<ILogger<CreateStakeAddressHandler>>());
+        this._resolveDidHandler = new ResolveDidHandler(_context);
+
 
         // this._mediatorMock.Setup(p => p.Send(It.IsAny<UpdateDidDocumentMetadataRequest>(), It.IsAny<CancellationToken>()))
         //     .Returns(async (UpdateDidDocumentMetadataRequest request, CancellationToken token) => await this._updateDidDocumentMetadataHandler.Handle(request, token));

@@ -43,9 +43,9 @@ public partial class IntegrationTests
         var blockHash = new byte[] { 1, 6, 7, 8 };
         await SetupLedgerEpochAndBlock(ledgerType, epochNumber, blockHeight, blockHash);
 
-        var transactionHash = Hash.CreateFrom(new byte[] { 1, 2, 1, 4 });
-        var operationHash = Hash.CreateFrom(new byte[] { 9, 10, 11, 11 });
         var did = "9c96389a50a41e1bb0dac7e786cc646c33f57f514ae96b6375e0b56ff505ecc2";
+        var transactionHash = Hash.CreateFrom(PrismEncoding.HexToByteArray(did));
+        var operationHash = Hash.CreateFrom(PrismEncoding.HexToByteArray(did));
         var signingKeyId = "key1";
         var publicKeys = new List<PrismPublicKey>
         {
@@ -91,7 +91,7 @@ public partial class IntegrationTests
         var savedCreateDid = await _context.CreateDidEntities
             .Include(p => p.PrismPublicKeys)
             .Include(p => p.PrismServices)
-            .FirstOrDefaultAsync(c => c.Did == PrismEncoding.HexToByteArray(did));
+            .FirstOrDefaultAsync(c => c.OperationHash == PrismEncoding.HexToByteArray(did));
         Assert.NotNull(savedCreateDid);
         Assert.Equal(operationHash.Value, savedCreateDid.OperationHash);
         Assert.Equal(signingKeyId, savedCreateDid.SigningKeyId);
@@ -121,9 +121,9 @@ public partial class IntegrationTests
         var blockHash = new byte[] { 5, 6, 7, 8 };
         await SetupLedgerEpochAndBlock(ledgerType, epochNumber, blockHeight, blockHash);
 
-        var transactionHash = Hash.CreateFrom(new byte[] { 1, 2, 3, 4 });
-        var operationHash = Hash.CreateFrom(new byte[] { 9, 10, 11, 12 });
         var did = "060e60bc35ce7f665c123fb1934c3a06d5cf6124f3a8f4cfd723b38762168d32";
+        var transactionHash = Hash.CreateFrom(PrismEncoding.HexToByteArray(did));
+        var operationHash = Hash.CreateFrom(PrismEncoding.HexToByteArray(did));
 
         // Create an existing transaction
         _context.TransactionEntities.Add(new TransactionEntity
@@ -164,7 +164,7 @@ public partial class IntegrationTests
 
         // Verify that a CreateDid operation was added to the existing transaction
         var savedCreateDid = await _context.CreateDidEntities
-            .FirstOrDefaultAsync(c => c.Did == PrismEncoding.HexToByteArray(did));
+            .FirstOrDefaultAsync(c => c.OperationHash == PrismEncoding.HexToByteArray(did));
         Assert.NotNull(savedCreateDid);
     }
 }

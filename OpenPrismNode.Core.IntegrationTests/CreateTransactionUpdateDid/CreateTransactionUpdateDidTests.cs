@@ -47,7 +47,7 @@ public partial class IntegrationTests
             throw new Exception("Failed to set up existing DID: " + result.Errors.First().Message);
         }
 
-        var createdDid = await _context.CreateDidEntities.FirstOrDefaultAsync(d => d.Did == PrismEncoding.HexToByteArray(did));
+        var createdDid = await _context.CreateDidEntities.FirstOrDefaultAsync(d => d.OperationHash == PrismEncoding.HexToByteArray(did));
         if (createdDid == null)
         {
             throw new Exception("CreateDidEntity was not found in the database after creation.");
@@ -77,14 +77,15 @@ public partial class IntegrationTests
 
         var existingDid = await _context.CreateDidEntities
             .Include(d => d.PrismPublicKeys)
-            .FirstOrDefaultAsync(d => d.Did == PrismEncoding.HexToByteArray(did.Item1));
+            .FirstOrDefaultAsync(d => d.OperationHash == PrismEncoding.HexToByteArray(did.Item1));
 
         var updateActions = new List<UpdateDidActionResult>
         {
             new UpdateDidActionResult(new PrismPublicKey(PrismKeyUsage.IssuingKey, "newKey", "secp256k1", new byte[] { 5, 7, 7 }, new byte[] { 8, 7, 10 })),
-            new UpdateDidActionResult("existingService", true) // Remove existing service
+            new UpdateDidActionResult("existingService", true), // Remove existing service
+            new UpdateDidActionResult(new List<string>() { "https://mycontext.com" })
         };
-        
+
         var request = new CreateTransactionUpdateDidRequest(
             transactionHash: transactionHash,
             blockHash: Hash.CreateFrom(newBlockHash),
@@ -94,7 +95,7 @@ public partial class IntegrationTests
             index: 0,
             operationHash: operationHash,
             previousOperationHash: Hash.CreateFrom(existingDid.OperationHash),
-            did: PrismEncoding.ByteArrayToHex(existingDid.Did),
+            did: PrismEncoding.ByteArrayToHex(existingDid.OperationHash),
             signingKeyId: signingKeyId,
             updateDidActions: updateActions,
             operationSequenceNumber: 2,
@@ -139,5 +140,8 @@ public partial class IntegrationTests
         var removedService = savedUpdateDid.PrismServices.First();
         Assert.Equal("existingService", removedService.ServiceId);
         Assert.True(removedService.Removed);
+        
+        // Verify a context exists
+        Assert.Single(savedUpdateDid.PatchedContexts);
     }
 }

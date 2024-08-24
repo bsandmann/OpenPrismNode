@@ -123,7 +123,6 @@ namespace OpenPrismNode.Web.Migrations
                 columns: table => new
                 {
                     OperationHash = table.Column<byte[]>(type: "bytea", nullable: false),
-                    Did = table.Column<byte[]>(type: "bytea", nullable: false),
                     SigningKeyId = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: false),
                     OperationSequenceNumber = table.Column<int>(type: "integer", nullable: false),
                     TransactionHash = table.Column<byte[]>(type: "bytea", nullable: false),

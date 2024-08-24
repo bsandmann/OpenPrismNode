@@ -40,7 +40,7 @@ public class CreateTransactionCreateDidHandler : IRequestHandler<CreateTransacti
             if (!hasExistingTransaction)
             {
                 var existingDid = await _context.CreateDidEntities
-                    .AnyAsync(p => p.Did == PrismEncoding.HexToByteArray(request.Did), cancellationToken: cancellationToken);
+                    .AnyAsync(p => p.OperationHash == PrismEncoding.HexToByteArray(request.Did), cancellationToken: cancellationToken);
                 if (existingDid)
                 {
                     _logger.LogWarning($"CreateDid-Operation for {request.Did} already exists in the database. This is a problem with the integrety of the ledger. TransactionHash: {request.TransactionHash.Value} Block: {request.BlockHeight}");
@@ -70,7 +70,6 @@ public class CreateTransactionCreateDidHandler : IRequestHandler<CreateTransacti
                         {
                             OperationHash = request.OperationHash.Value!,
                             OperationSequenceNumber = request.OperationSequenceNumber,
-                            Did = PrismEncoding.HexToByteArray(request.Did),
                             SigningKeyId = request.SigningKeyId,
                             TransactionHash = request.TransactionHash.Value,
                             BlockHeight = request.BlockHeight,
@@ -104,7 +103,6 @@ public class CreateTransactionCreateDidHandler : IRequestHandler<CreateTransacti
                     {
                         OperationHash = request.OperationHash.Value!,
                         OperationSequenceNumber = request.OperationSequenceNumber,
-                        Did = PrismEncoding.HexToByteArray(request.Did),
                         SigningKeyId = request.SigningKeyId,
                         TransactionHash = request.TransactionHash.Value,
                         BlockHeight = request.BlockHeight,

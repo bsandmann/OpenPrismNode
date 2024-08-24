@@ -4,6 +4,7 @@ using Entities;
 using FluentResults;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using OpenPrismNode.Core;
 using OpenPrismNode.Core.Common;
 
@@ -13,14 +14,16 @@ using OpenPrismNode.Core.Common;
 public class CreateTransactionDeactivateDidHandler : IRequestHandler<CreateTransactionDeactivateDidRequest, Result>
 {
     private readonly DataContext _context;
+    private readonly ILogger<CreateTransactionDeactivateDidHandler> _logger;
 
     /// <summary>
     /// Constructor
     /// </summary>
     /// <param name="context"></param>
-    public CreateTransactionDeactivateDidHandler(DataContext context)
+    public CreateTransactionDeactivateDidHandler(DataContext context, ILogger<CreateTransactionDeactivateDidHandler> logger)
     {
         this._context = context;
+        this._logger = logger;
     }
 
     /// <inheritdoc />

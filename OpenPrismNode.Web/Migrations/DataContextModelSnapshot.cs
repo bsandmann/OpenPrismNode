@@ -80,10 +80,6 @@ namespace OpenPrismNode.Web.Migrations
                     b.Property<int>("BlockHeight")
                         .HasColumnType("integer");
 
-                    b.Property<byte[]>("Did")
-                        .IsRequired()
-                        .HasColumnType("bytea");
-
                     b.Property<int>("OperationSequenceNumber")
                         .HasColumnType("integer");
 

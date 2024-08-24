@@ -354,6 +354,7 @@ public class ResolveDidHandler : IRequestHandler<ResolveDidRequest, Result<Resol
             resolved.PublicKeys.AddRange(prismPublicKeys.OrderBy(p => p.KeyId));
             resolved.PrismServices.Clear();
             resolved.PrismServices.AddRange(prismServices.OrderBy(p => p.ServiceId));
+            resolved.Contexts.AddRange(patchedContexts);
         }
 
         // lastly we have to apply the deactivateDid operation

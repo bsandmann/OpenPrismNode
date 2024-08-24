@@ -9,12 +9,6 @@ using System.ComponentModel.DataAnnotations.Schema;
 public class CreateDidEntity : BaseOperationEntity
 {
     /// <summary>
-    /// The Did created
-    /// </summary>
-    [Column(TypeName = "bytea")]
-    public byte[] Did { get; set; }
-
-    /// <summary>
     /// The signing Key used in the CreateDid Operation
     /// </summary>
     [MaxLength(50)]

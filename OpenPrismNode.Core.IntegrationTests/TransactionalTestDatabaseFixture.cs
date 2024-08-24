@@ -20,14 +20,14 @@ public class TransactionalTestDatabaseFixture
 
     public TransactionalTestDatabaseFixture()
     {
-        using var context = CreateContext();
-        context.Database.EnsureDeleted();
-        context.Database.EnsureCreated();
-
         Cleanup();
     }
 
     public void Cleanup()
     {
+        using var context = CreateContext();
+        context.Database.EnsureDeleted();
+        context.Database.EnsureCreated();
     }
+   
 }

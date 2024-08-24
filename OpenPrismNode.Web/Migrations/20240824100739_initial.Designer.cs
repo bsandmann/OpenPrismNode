@@ -12,7 +12,7 @@ using OpenPrismNode.Core;
 namespace OpenPrismNode.Web.Migrations
 {
     [DbContext(typeof(DataContext))]
-    [Migration("20240822173406_initial")]
+    [Migration("20240824100739_initial")]
     partial class initial
     {
         /// <inheritdoc />
@@ -82,10 +82,6 @@ namespace OpenPrismNode.Web.Migrations
 
                     b.Property<int>("BlockHeight")
                         .HasColumnType("integer");
-
-                    b.Property<byte[]>("Did")
-                        .IsRequired()
-                        .HasColumnType("bytea");
 
                     b.Property<int>("OperationSequenceNumber")
                         .HasColumnType("integer");
