@@ -50,7 +50,7 @@ public partial class IntegrationTests
 
         await _createTransactionCreateDidHandler.Handle(createDidRequest, CancellationToken.None);
 
-        var resolveDidRequest = new ResolveDidRequest(did);
+        var resolveDidRequest = new ResolveDidRequest(ledgerType, did);
 
         // Act
         var result = await _resolveDidHandler.Handle(resolveDidRequest, CancellationToken.None);
@@ -158,7 +158,7 @@ public partial class IntegrationTests
 
         await _createTransactionUpdateDidHandler.Handle(updateDidRequest, CancellationToken.None);
 
-        var resolveDidRequest = new ResolveDidRequest(did);
+        var resolveDidRequest = new ResolveDidRequest(ledgerType, did);
 
         // Act
         var result = await _resolveDidHandler.Handle(resolveDidRequest, CancellationToken.None);
@@ -285,7 +285,7 @@ public partial class IntegrationTests
 
         await _createTransactionDeactivateDidHandler.Handle(deactivateDidRequest, CancellationToken.None);
 
-        var resolveDidRequest = new ResolveDidRequest(did);
+        var resolveDidRequest = new ResolveDidRequest(ledgerType, did);
 
         // Act
         var result = await _resolveDidHandler.Handle(resolveDidRequest, CancellationToken.None);

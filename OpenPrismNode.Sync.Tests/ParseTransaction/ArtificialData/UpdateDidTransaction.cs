@@ -69,6 +69,7 @@ public class UpdateDidTransaction
                 SignedWith = "master0",
                 Signature = PrismEncoding.Utf8StringToByteString("someSignature")
             },
+            LedgerType.UnknownLedger,
             0,
             resolveMode: new ResolveMode(0, 0, 0)
         );
@@ -116,6 +117,7 @@ public class UpdateDidTransaction
                 SignedWith = "master0",
                 Signature = PrismEncoding.Utf8StringToByteString("someSignature")
             },
+            LedgerType.UnknownLedger,
             0,
             resolveMode: new ResolveMode(0, 0, 0)
         );
@@ -168,6 +170,7 @@ public class UpdateDidTransaction
                 SignedWith = "master0",
                 Signature = PrismEncoding.Utf8StringToByteString("someSignature")
             },
+            LedgerType.UnknownLedger,
             0,
             resolveMode: new ResolveMode(0, 0, 0)
         );
@@ -225,6 +228,7 @@ public class UpdateDidTransaction
                 SignedWith = "master0",
                 Signature = PrismEncoding.Utf8StringToByteString("someSignature")
             },
+            LedgerType.UnknownLedger,
             0,
             resolveMode: new ResolveMode(0, 0, 0)
         );
@@ -276,6 +280,7 @@ public class UpdateDidTransaction
                 SignedWith = "master0",
                 Signature = PrismEncoding.Utf8StringToByteString("someSignature")
             },
+            LedgerType.UnknownLedger,
             0,
             resolveMode: new ResolveMode(0, 0, 0)
         );
@@ -332,6 +337,7 @@ public class UpdateDidTransaction
                 SignedWith = "master0",
                 Signature = PrismEncoding.Utf8StringToByteString("someSignature")
             },
+            LedgerType.UnknownLedger,
             0,
             resolveMode: new ResolveMode(0, 0, 0)
         );
@@ -381,6 +387,7 @@ public class UpdateDidTransaction
                 SignedWith = "master0",
                 Signature = PrismEncoding.Utf8StringToByteString("someSignature")
             },
+            LedgerType.UnknownLedger,
             0,
             resolveMode: new ResolveMode(0, 0, 0)
         );
@@ -426,6 +433,7 @@ public class UpdateDidTransaction
                 SignedWith = "master0",
                 Signature = PrismEncoding.Utf8StringToByteString("someSignature")
             },
+            LedgerType.UnknownLedger,
             0,
             resolveMode: new ResolveMode(0, 0, 0)
         );

@@ -45,15 +45,15 @@ public class ParseTransactionHandler : IRequestHandler<ParseTransactionRequest, 
         }
         else if (request.SignedAtalaOperation.Operation.UpdateDid != null)
         {
-            return await ParseUpdateDidOperation(request.SignedAtalaOperation, request.Index, request.ResolveMode!);
+            return await ParseUpdateDidOperation(request.SignedAtalaOperation,   request.Ledger, request.Index, request.ResolveMode!);
         }
         else if (request.SignedAtalaOperation.Operation.ProtocolVersionUpdate != null)
         {
-            return await ParseProtocolVersionUpdateOperation(request.SignedAtalaOperation, request.Index, request.ResolveMode!);
+            return await ParseProtocolVersionUpdateOperation(request.SignedAtalaOperation,request.Ledger, request.Index, request.ResolveMode!);
         }
         else if (request.SignedAtalaOperation.Operation.DeactivateDid != null)
         {
-            return await ParseDeactivateDidOperation(request.SignedAtalaOperation, request.Index, request.ResolveMode!);
+            return await ParseDeactivateDidOperation(request.SignedAtalaOperation, request.Ledger, request.Index, request.ResolveMode!);
         }
         else
         {
@@ -112,7 +112,7 @@ public class ParseTransactionHandler : IRequestHandler<ParseTransactionRequest, 
     }
 
 
-    private async Task<Result<OperationResultWrapper>> ParseUpdateDidOperation(SignedAtalaOperation signedAtalaOperation, int index, ResolveMode resolveMode)
+    private async Task<Result<OperationResultWrapper>> ParseUpdateDidOperation(SignedAtalaOperation signedAtalaOperation, LedgerType ledger, int index, ResolveMode resolveMode)
     {
         var signature = PrismEncoding.ByteStringToByteArray(signedAtalaOperation.Signature);
         var signedWith = signedAtalaOperation.SignedWith;
@@ -127,7 +127,7 @@ public class ParseTransactionHandler : IRequestHandler<ParseTransactionRequest, 
         var actions = signedAtalaOperation.Operation.UpdateDid.Actions;
         var updateActionResults = new List<UpdateDidActionResult>();
 
-        var verificationResult = await ResolveAndVerifySignature(signedAtalaOperation, resolveMode, didIdentifier, signedWith, signature);
+        var verificationResult = await ResolveAndVerifySignature(signedAtalaOperation, resolveMode, ledger, didIdentifier, signedWith, signature);
         if (verificationResult.IsFailed)
         {
             return verificationResult.ToResult();
@@ -268,7 +268,7 @@ public class ParseTransactionHandler : IRequestHandler<ParseTransactionRequest, 
             else if (action.ActionCase == UpdateDIDAction.ActionOneofCase.PatchContext)
             {
                 // TODO verify against on-chain data if available
-                
+
                 if (action.PatchContext.Context.Any())
                 {
                     // Replace all
@@ -309,10 +309,10 @@ public class ParseTransactionHandler : IRequestHandler<ParseTransactionRequest, 
         return Result.Ok(operationResultWrapper);
     }
 
-    private async Task<Result<OperationResultWrapper>> ParseProtocolVersionUpdateOperation(SignedAtalaOperation signedAtalaOperation, int index, ResolveMode resolveMode)
+    private async Task<Result<OperationResultWrapper>> ParseProtocolVersionUpdateOperation(SignedAtalaOperation signedAtalaOperation, LedgerType ledger, int index, ResolveMode resolveMode)
     {
         // TODO verify against on-chain data if available
-        
+
         var update = signedAtalaOperation.Operation.ProtocolVersionUpdate;
         var signature = PrismEncoding.ByteStringToByteArray(signedAtalaOperation.Signature);
         var signedWith = signedAtalaOperation.SignedWith;
@@ -324,7 +324,7 @@ public class ParseTransactionHandler : IRequestHandler<ParseTransactionRequest, 
 
         var proposerDidIdentifier = update.ProposerDid;
 
-        var verificationResult = await ResolveAndVerifySignature(signedAtalaOperation, resolveMode, proposerDidIdentifier, signedWith, signature);
+        var verificationResult = await ResolveAndVerifySignature(signedAtalaOperation, resolveMode, ledger, proposerDidIdentifier, signedWith, signature);
         if (verificationResult.IsFailed)
         {
             return verificationResult.ToResult();
@@ -357,7 +357,7 @@ public class ParseTransactionHandler : IRequestHandler<ParseTransactionRequest, 
         return Result.Ok(operationResultWrapper);
     }
 
-    private async Task<Result<OperationResultWrapper>> ParseDeactivateDidOperation(SignedAtalaOperation signedAtalaOperation, int index, ResolveMode resolveMode)
+    private async Task<Result<OperationResultWrapper>> ParseDeactivateDidOperation(SignedAtalaOperation signedAtalaOperation,LedgerType ledger, int index, ResolveMode resolveMode)
     {
         var signature = PrismEncoding.ByteStringToByteArray(signedAtalaOperation.Signature);
         var signedWith = signedAtalaOperation.SignedWith;
@@ -370,7 +370,7 @@ public class ParseTransactionHandler : IRequestHandler<ParseTransactionRequest, 
 
         var operationBytes = PrismEncoding.ByteStringToByteArray(signedAtalaOperation.Operation.ToByteString());
 
-        var verificationResult = await ResolveAndVerifySignature(signedAtalaOperation, resolveMode, didIdentifier, signedWith, signature);
+        var verificationResult = await ResolveAndVerifySignature(signedAtalaOperation, resolveMode, ledger, didIdentifier, signedWith, signature);
         if (verificationResult.IsFailed)
         {
             return verificationResult.ToResult();
@@ -627,9 +627,9 @@ public class ParseTransactionHandler : IRequestHandler<ParseTransactionRequest, 
         ));
     }
 
-    private async Task<Result<ResolveDidResponse>> ResolveAndVerifySignature(SignedAtalaOperation signedAtalaOperation, ResolveMode resolveMode, string didIdentifier, string signedWith, byte[] signature)
+    private async Task<Result<ResolveDidResponse>> ResolveAndVerifySignature(SignedAtalaOperation signedAtalaOperation, ResolveMode resolveMode, LedgerType ledger, string didIdentifier, string signedWith, byte[] signature)
     {
-        var resolved = await _mediator.Send(new ResolveDidRequest(didIdentifier, resolveMode.BlockHeight, resolveMode.BlockSequence, resolveMode.OperationSequence));
+        var resolved = await _mediator.Send(new ResolveDidRequest(ledger, didIdentifier, resolveMode.BlockHeight, resolveMode.BlockSequence, resolveMode.OperationSequence));
         if (resolved.IsFailed)
         {
             return Result.Fail(ParserErrors.UnableToResolveForPublicKeys + $" for {GetOperationResultType.GetFromSignedAtalaOperation(signedAtalaOperation)} operation for DID {didIdentifier}");

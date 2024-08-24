@@ -2,6 +2,7 @@
 
 using FluentResults;
 using MediatR;
+using Models;
 
 public class ResolveDidRequest : IRequest<Result<ResolveDid.ResolveDidResponse>>
 {
@@ -13,12 +14,13 @@ public class ResolveDidRequest : IRequest<Result<ResolveDid.ResolveDidResponse>>
     /// <param name="blockSequence">Setting this value to null, means to consider all available information up to the current point int time. Providing a value insted resolves up to that point in time, allowing for the resolving past events correctly. </param>
     /// <param name="operationSequence">Setting this value to null, means to consider all available information up to the current point int time. Providing a value insted resolves up to that point in time, allowing for the resolving past events correctly.</param>
     /// <exception cref="ArgumentException"></exception>
-    public ResolveDidRequest(string didIdentifier, long? blockHeight = null, int? blockSequence = null, int? operationSequence = null)
+    public ResolveDidRequest(LedgerType ledger, string didIdentifier, long? blockHeight = null, int? blockSequence = null, int? operationSequence = null)
     {
         DidIdentifier = didIdentifier;
         BlockHeight = blockHeight;
         BlockSequence = blockSequence;
         OperationSequence = operationSequence;
+        Ledger = ledger;
 
         if (blockHeight is null && (blockSequence is not null || operationSequence is not null))
         {
@@ -49,4 +51,6 @@ public class ResolveDidRequest : IRequest<Result<ResolveDid.ResolveDidResponse>>
     /// The Operation with the specifiged OperationsSeuqnde will note be included
     /// </summary>
     public int? OperationSequence { get; }
+    
+    public LedgerType Ledger { get; }
 }

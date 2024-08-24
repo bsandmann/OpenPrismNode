@@ -75,7 +75,7 @@ public class ProcessTransactionHandler : IRequestHandler<ProcessTransactionReque
                     foreach (var operation in decodeResult.Value)
                     {
                         var resolveMode = new ResolveMode(request.Block.block_no, request.Transaction.block_index, operationSequenceIndex);
-                        var parsingResult = await _mediator.Send(new ParseTransactionRequest(operation, operationSequenceIndex, resolveMode), cancellationToken);
+                        var parsingResult = await _mediator.Send(new ParseTransactionRequest(operation, request.Ledger,  operationSequenceIndex, resolveMode), cancellationToken);
                         if (parsingResult.IsSuccess)
                         {
                             var utxos = paymentdata.Value.Incoming

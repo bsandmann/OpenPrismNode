@@ -63,6 +63,7 @@ public class CreateDidTransaction
                 SignedWith = "master0",
                 Signature = PrismEncoding.Utf8StringToByteString("someSignature")
             },
+            LedgerType.UnknownLedger,
             0
         );
 
@@ -119,6 +120,7 @@ public class CreateDidTransaction
                 SignedWith = "master0",
                 Signature = PrismEncoding.Utf8StringToByteString("someSignature")
             },
+            LedgerType.UnknownLedger,
             0
         );
 
@@ -171,6 +173,7 @@ public class CreateDidTransaction
                 SignedWith = "master0",
                 Signature = PrismEncoding.Utf8StringToByteString("someSignature")
             },
+            LedgerType.UnknownLedger,
             0
         );
 
@@ -223,6 +226,7 @@ public class CreateDidTransaction
                 SignedWith = "master0",
                 Signature = PrismEncoding.Utf8StringToByteString("someSignature")
             },
+            LedgerType.UnknownLedger,
             0
         );
 
@@ -275,6 +279,7 @@ public class CreateDidTransaction
                 SignedWith = "master0",
                 Signature = PrismEncoding.Utf8StringToByteString("someSignature")
             },
+            LedgerType.UnknownLedger,
             0
         );
 
@@ -327,6 +332,7 @@ public class CreateDidTransaction
                 SignedWith = "master0",
                 Signature = PrismEncoding.Utf8StringToByteString("someSignature")
             },
+            LedgerType.UnknownLedger,
             0
         );
 
@@ -379,6 +385,7 @@ public class CreateDidTransaction
                 SignedWith = "master0",
                 Signature = PrismEncoding.Utf8StringToByteString("someSignature")
             },
+            LedgerType.UnknownLedger,
             0
         );
 
@@ -431,6 +438,7 @@ public class CreateDidTransaction
                 SignedWith = "master0",
                 Signature = PrismEncoding.Utf8StringToByteString("someSignature")
             },
+            LedgerType.UnknownLedger,
             0
         );
 
@@ -488,6 +496,7 @@ public class CreateDidTransaction
                 SignedWith = "master0",
                 Signature = PrismEncoding.Utf8StringToByteString("someSignature")
             },
+            LedgerType.UnknownLedger,
             0
         );
 
@@ -537,6 +546,7 @@ public class CreateDidTransaction
                 SignedWith = "master0",
                 Signature = PrismEncoding.Utf8StringToByteString("someSignature")
             },
+            LedgerType.UnknownLedger,
             0
         );
 
@@ -596,6 +606,7 @@ public class CreateDidTransaction
                 SignedWith = "myMasterKey",
                 Signature = PrismEncoding.Utf8StringToByteString("someSignature")
             },
+            LedgerType.UnknownLedger,
             0
         );
 
@@ -665,6 +676,7 @@ public class CreateDidTransaction
                 SignedWith = "myMasterKey",
                 Signature = PrismEncoding.Utf8StringToByteString("someSignature")
             },
+            LedgerType.UnknownLedger,
             0
         );
 
@@ -724,6 +736,7 @@ public class CreateDidTransaction
                 SignedWith = "myMasterKey",
                 Signature = PrismEncoding.Utf8StringToByteString("someSignature")
             },
+            LedgerType.UnknownLedger,
             0
         );
 

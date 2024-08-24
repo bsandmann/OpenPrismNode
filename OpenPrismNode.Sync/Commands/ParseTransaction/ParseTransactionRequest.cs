@@ -7,11 +7,12 @@ using Models;
 
 public class ParseTransactionRequest : IRequest<Result<OperationResultWrapper>>
 {
-    public ParseTransactionRequest(SignedAtalaOperation signedAtalaOperation, int index, ResolveMode? resolveMode = null)
+    public ParseTransactionRequest(SignedAtalaOperation signedAtalaOperation, LedgerType ledger, int index, ResolveMode? resolveMode = null)
     {
         SignedAtalaOperation = signedAtalaOperation;
         Index = index;
         ResolveMode = resolveMode;
+        Ledger = ledger;
     }
 
     public SignedAtalaOperation SignedAtalaOperation { get; }
@@ -23,4 +24,6 @@ public class ParseTransactionRequest : IRequest<Result<OperationResultWrapper>>
     /// Can be null, depending on the operation. A Create DID operation does not need to be resolved
     /// </summary>
     public ResolveMode? ResolveMode { get; }
+    
+    public LedgerType Ledger { get; }
 }

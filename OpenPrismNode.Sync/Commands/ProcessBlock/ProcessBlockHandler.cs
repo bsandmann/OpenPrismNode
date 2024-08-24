@@ -65,7 +65,7 @@ public class ProcessBlockHandler : IRequestHandler<ProcessBlockRequest, Result<P
 
         foreach (var blockTransaction in blockTransactions.Value)
         {
-            var result = await _mediator.Send(new ProcessTransactionRequest(request.Block, blockTransaction), cancellationToken);
+            var result = await _mediator.Send(new ProcessTransactionRequest(request.LedgerType, request.Block, blockTransaction), cancellationToken);
 
             Debug.Assert(result.IsSuccess);
         }

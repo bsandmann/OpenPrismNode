@@ -44,6 +44,7 @@ public class DeactivateDidTransactions
 
         var parseTransactionRequest = new ParseTransactionRequest(
             decodedResult.Value.Single(),
+            LedgerType.UnknownLedger,
             0,
             resolveMode: new ResolveMode(0, 0, 0)
         );

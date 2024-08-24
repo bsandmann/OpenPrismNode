@@ -42,6 +42,7 @@ public class CreateDidTransactions
 
         var parseTransactionRequest = new ParseTransactionRequest(
             decodedResult.Value.Single(),
+            LedgerType.UnknownLedger,
             0
         );
 
@@ -93,6 +94,7 @@ public class CreateDidTransactions
 
         var parseTransactionRequest = new ParseTransactionRequest(
             decodedResult.Value.Single(),
+            LedgerType.UnknownLedger,
             0
         );
 
@@ -152,6 +154,7 @@ public class CreateDidTransactions
 
         var parseTransactionRequest = new ParseTransactionRequest(
             decodedResult.Value.Single(),
+            LedgerType.UnknownLedger,
             0
         );
 
@@ -179,6 +182,7 @@ public class CreateDidTransactions
 
         var parseTransactionRequest = new ParseTransactionRequest(
             decodedResult.Value.First(),
+            LedgerType.UnknownLedger,
             0
         );
 
@@ -230,6 +234,7 @@ public class CreateDidTransactions
 
         var parseTransactionRequest = new ParseTransactionRequest(
             decodedResult.Value.First(),
+            LedgerType.UnknownLedger,
             0
         );
 
