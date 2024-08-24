@@ -104,6 +104,7 @@ public class CreateTransactionUpdateDidHandler : IRequestHandler<CreateTransacti
                 }
                 else if (updateDidAction.UpdateDidActionType == UpdateDidActionType.PatchContext)
                 {
+                    throw new NotImplementedException();
                     prismServices.Add(new PrismServiceEntity()
                     {
                         ServiceId = updateDidAction.RemovedKeyId,
@@ -124,6 +125,7 @@ public class CreateTransactionUpdateDidHandler : IRequestHandler<CreateTransacti
             var hasExistingTransaction = await _context.TransactionEntities.AnyAsync(p => p.TransactionHash == request.TransactionHash.Value, cancellationToken: cancellationToken);
             if (!hasExistingTransaction)
             {
+                
                 var trans = new TransactionEntity()
                 {
                     TransactionHash = request.TransactionHash.Value,
@@ -151,7 +153,8 @@ public class CreateTransactionUpdateDidHandler : IRequestHandler<CreateTransacti
                             SigningKeyId = request.SigningKeyId,
                             PrismPublicKeysToAdd = prismPublicKeysToAdd,
                             PrismPublicKeysToRemove = prismPublicKeysToRemove,
-                            PrismServices = prismServices
+                            PrismServices = prismServices,
+                            // TODO patch context
                         }
                     }
                 };
@@ -175,7 +178,8 @@ public class CreateTransactionUpdateDidHandler : IRequestHandler<CreateTransacti
                         SigningKeyId = request.SigningKeyId,
                         PrismPublicKeysToAdd = prismPublicKeysToAdd,
                         PrismPublicKeysToRemove = prismPublicKeysToRemove,
-                        PrismServices = prismServices
+                        PrismServices = prismServices,
+                        // TODO patch context
                     };
                 await _context.UpdateDidEntities.AddAsync(prismUpdateDidEntity, cancellationToken);
                 await _context.SaveChangesAsync(cancellationToken);

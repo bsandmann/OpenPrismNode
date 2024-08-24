@@ -1,10 +1,13 @@
 ﻿using LazyCache;
 using MediatR;
+using Microsoft.Extensions.Logging;
 using Moq;
 using OpenPrismNode.Core;
 using OpenPrismNode.Core.Commands.CreateBlock;
 using OpenPrismNode.Core.Commands.CreateEpoch;
 using OpenPrismNode.Core.Commands.CreateLedger;
+using OpenPrismNode.Core.Commands.CreateTransactionCreateDid;
+using OpenPrismNode.Core.Commands.CreateTransactionUpdateDid;
 using OpenPrismNode.Core.Commands.DeleteEpoch;
 using OpenPrismNode.Core.Commands.DeleteLedger;
 using OpenPrismNode.Core.Commands.GetBlockByBlockHash;
@@ -29,6 +32,9 @@ public partial class IntegrationTests : IDisposable
     private readonly GetMostRecentBlockHandler _getMostRecentBlockHandler;
     private readonly GetEpochHandler _getEpochHandler;
     private readonly DeleteEpochHandler _deleteEpochHandler;
+    private readonly CreateTransactionCreateDidHandler _createTransactionCreateDidHandler;
+    private readonly CreateTransactionUpdateDidHandler _createTransactionUpdateDidHandler;
+
 
 
     public IntegrationTests(TransactionalTestDatabaseFixture fixture)
@@ -47,6 +53,9 @@ public partial class IntegrationTests : IDisposable
         this._getMostRecentBlockHandler = new GetMostRecentBlockHandler(_context);
         this._getEpochHandler = new GetEpochHandler(_context, _mockedCache);
         this._deleteEpochHandler = new DeleteEpochHandler(_context);
+        this._createTransactionCreateDidHandler = new CreateTransactionCreateDidHandler(_context, Mock.Of<ILogger<CreateTransactionCreateDidHandler>>());
+        this._createTransactionUpdateDidHandler = new CreateTransactionUpdateDidHandler(_context, Mock.Of<ILogger<CreateTransactionUpdateDidHandler>>());
+
         // this._mediatorMock.Setup(p => p.Send(It.IsAny<UpdateDidDocumentMetadataRequest>(), It.IsAny<CancellationToken>()))
         //     .Returns(async (UpdateDidDocumentMetadataRequest request, CancellationToken token) => await this._updateDidDocumentMetadataHandler.Handle(request, token));
     }

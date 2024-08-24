@@ -12,15 +12,15 @@ public partial class IntegrationTests
     {
         // Arrange
         await _createLedgerHandler.Handle(new CreateLedgerRequest(LedgerType.CardanoPreprod), CancellationToken.None);
-        await _createEpochHandler.Handle(new CreateEpochRequest(LedgerType.CardanoPreprod, 1), CancellationToken.None);
+        await _createEpochHandler.Handle(new CreateEpochRequest(LedgerType.CardanoPreprod, 5), CancellationToken.None);
 
         var request = new CreateBlockRequest(
             ledgerType: LedgerType.CardanoPreprod,
             blockHash: Hash.CreateFrom(new byte[] { 1, 2, 3, 4 }),
-            previousBlockHash: Hash.CreateFrom(new byte[] { 1, 1, 1, 1 }),
-            blockHeight: 1,
+            previousBlockHash: Hash.CreateFrom(new byte[] { 1, 5, 1, 1 }),
+            blockHeight: 2,
             previousBlockHeight: null,
-            epochNumber: 1,
+            epochNumber: 5,
             timeUtc: DateTime.SpecifyKind(DateTime.UtcNow, DateTimeKind.Unspecified),
             txCount: 0
         );
@@ -31,7 +31,7 @@ public partial class IntegrationTests
         // Assert
         Assert.True(result.IsSuccess);
         Assert.NotNull(result.Value);
-        Assert.Equal(1, result.Value.BlockHeight);
+        Assert.Equal(2, result.Value.BlockHeight);
     }
 
     [Fact]
