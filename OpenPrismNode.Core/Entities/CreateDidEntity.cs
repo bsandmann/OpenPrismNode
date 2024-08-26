@@ -30,6 +30,11 @@ public class CreateDidEntity : BaseOperationEntity
     public List<UpdateDidEntity> DidUpdates { get; set; }
     
     /// <summary>
+    /// Optional List of patched Contexts. List of strings
+    /// </summary>
+    public PatchedContextEntity? PatchedContext { get; set; }
+    
+    /// <summary>
     /// Reference to possible Deactivation
     /// </summary>
     public DeactivateDidEntity? DidDeactivation { get; set; }

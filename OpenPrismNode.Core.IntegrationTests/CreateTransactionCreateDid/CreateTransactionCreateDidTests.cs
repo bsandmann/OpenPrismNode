@@ -69,7 +69,8 @@ public partial class IntegrationTests
             operationSequenceNumber: 1,
             utxos: new List<UtxoWrapper>(),
             prismPublicKeys: publicKeys,
-            prismServices: services
+            prismServices: services,
+            patchedContexts: new List<string>() { "https://first.com", "https://second.com" }
         );
 
         // Act
@@ -91,6 +92,7 @@ public partial class IntegrationTests
         var savedCreateDid = await _context.CreateDidEntities
             .Include(p => p.PrismPublicKeys)
             .Include(p => p.PrismServices)
+            .Include(p => p.PatchedContext)
             .FirstOrDefaultAsync(c => c.OperationHash == PrismEncoding.HexToByteArray(did));
         Assert.NotNull(savedCreateDid);
         Assert.Equal(operationHash.Value, savedCreateDid.OperationHash);
@@ -109,6 +111,10 @@ public partial class IntegrationTests
         Assert.Equal("service1", savedService.ServiceId);
         Assert.Equal("LinkedDomains", savedService.Type);
         Assert.Equal("https://example.com/", savedService.Uri.ToString());
+
+        // Verify contexts were saved
+        Assert.NotNull(savedCreateDid.PatchedContext);
+        Assert.True(savedCreateDid.PatchedContext.ContextList.Count == 2);
     }
 
     [Fact]
@@ -150,7 +156,8 @@ public partial class IntegrationTests
             operationSequenceNumber: 1,
             utxos: new List<UtxoWrapper>(),
             prismPublicKeys: new List<PrismPublicKey>(),
-            prismServices: new List<PrismService>()
+            prismServices: new List<PrismService>(),
+            patchedContexts: new List<string>()
         );
 
         // Act
@@ -164,7 +171,11 @@ public partial class IntegrationTests
 
         // Verify that a CreateDid operation was added to the existing transaction
         var savedCreateDid = await _context.CreateDidEntities
+            .Include(p => p.PatchedContext)
             .FirstOrDefaultAsync(c => c.OperationHash == PrismEncoding.HexToByteArray(did));
         Assert.NotNull(savedCreateDid);
+
+        // Verify contexts were saved
+        Assert.Null(savedCreateDid.PatchedContext);
     }
 }

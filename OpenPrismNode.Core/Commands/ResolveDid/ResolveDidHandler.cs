@@ -64,6 +64,7 @@ public class ResolveDidHandler : IRequestHandler<ResolveDidRequest, Result<Resol
                         Updated = r.Updated,
                         UpdateOperationOrder = r.UpdateOperationOrder
                     }).ToList(),
+                    PatchedContexts = p.PatchedContext != null ? p.PatchedContext.ContextList : null,
                     DeactivateDid = p.DidDeactivation == null
                         ? null
                         : new DeactivateDidInCreateDidResult()
@@ -106,6 +107,7 @@ public class ResolveDidHandler : IRequestHandler<ResolveDidRequest, Result<Resol
                         Updated = r.Updated,
                         UpdateOperationOrder = r.UpdateOperationOrder
                     }).ToList(),
+                    PatchedContexts = p.PatchedContext != null ? p.PatchedContext.ContextList : null,
                     DeactivateDid = p.DidDeactivation == null
                         ? null
                         : new DeactivateDidInCreateDidResult()
@@ -236,7 +238,7 @@ public class ResolveDidHandler : IRequestHandler<ResolveDidRequest, Result<Resol
         {
             var prismPublicKeys = new List<PrismPublicKey>();
             var prismServices = new List<PrismService>();
-            var patchedContexts = new List<string>();
+            var patchedContexts = resolved.Contexts;
             prismPublicKeys.AddRange(resolved.PublicKeys);
             prismServices.AddRange(resolved.PrismServices);
             var orderedUpdateOperations = OrderUpdateOperations(updateOperations);
@@ -336,7 +338,10 @@ public class ResolveDidHandler : IRequestHandler<ResolveDidRequest, Result<Resol
                     {
                         if (!patchedContextAction.ContextList.Any())
                         {
-                            patchedContexts = new List<string>();
+                            patchedContexts = patchedContexts.Where(p => p.Equals(PrismParameters.JsonLdDefaultContext) ||
+                                                                         p.Equals(PrismParameters.JsonLdJsonWebKey2020) ||
+                                                                         p.Equals(PrismParameters.JsonLdDidCommMessaging) ||
+                                                                         p.Equals(PrismParameters.JsonLdLinkedDomains)).ToList();
                         }
                         else
                         {
@@ -354,7 +359,7 @@ public class ResolveDidHandler : IRequestHandler<ResolveDidRequest, Result<Resol
             resolved.PublicKeys.AddRange(prismPublicKeys.OrderBy(p => p.KeyId));
             resolved.PrismServices.Clear();
             resolved.PrismServices.AddRange(prismServices.OrderBy(p => p.ServiceId));
-            resolved.Contexts.AddRange(patchedContexts);
+            resolved.Contexts = patchedContexts.Distinct().ToList();
         }
 
         // lastly we have to apply the deactivateDid operation
@@ -395,6 +400,11 @@ public class ResolveDidHandler : IRequestHandler<ResolveDidRequest, Result<Resol
             ));
         }
 
+        if (prismPublicKeys.Any(p => p.KeyUsage != PrismKeyUsage.MasterKey))
+        {
+            returnDocument.Contexts.Add(PrismParameters.JsonLdJsonWebKey2020);
+        }
+
         foreach (var service in createDidResult.Services)
         {
             prismServices.Add(new PrismService(
@@ -409,6 +419,17 @@ public class ResolveDidHandler : IRequestHandler<ResolveDidRequest, Result<Resol
             ));
         }
 
+        if (prismServices.Any(p => p.Type.Equals(PrismParameters.ServiceTypeDIDCommMessaging)))
+        {
+            returnDocument.Contexts.Add(PrismParameters.JsonLdDidCommMessaging);
+        }
+
+        if (prismServices.Any(p => p.Type.Equals(PrismParameters.ServiceTypeLinkedDomains)))
+        {
+            returnDocument.Contexts.Add(PrismParameters.JsonLdLinkedDomains);
+        }
+
+        returnDocument.Contexts.AddRange(createDidResult.PatchedContexts ?? new List<string>());
         returnDocument.PublicKeys.AddRange(prismPublicKeys.OrderBy(p => p.KeyId));
         returnDocument.PrismServices.AddRange(prismServices);
 

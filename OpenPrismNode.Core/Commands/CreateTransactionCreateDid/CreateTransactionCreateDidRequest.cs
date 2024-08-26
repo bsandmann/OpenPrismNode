@@ -27,7 +27,7 @@ public class CreateTransactionCreateDidRequest : TransactionBaseRequest, IReques
     /// <param name="prismPublicKeys"></param>
     /// <param name="prismServices"></param>
     public CreateTransactionCreateDidRequest(Hash transactionHash, Hash blockHash, int blockHeight, int fees, int size, int index, Hash operationHash, string did, string signingKeyId,
-        int operationSequenceNumber, List<UtxoWrapper> utxos, List<PrismPublicKey> prismPublicKeys, List<PrismService> prismServices)
+        int operationSequenceNumber, List<UtxoWrapper> utxos, List<PrismPublicKey> prismPublicKeys, List<PrismService> prismServices, List<string>? patchedContexts = null)
         : base(transactionHash, blockHash, blockHeight, fees, size, index, utxos)
     {
         OperationHash = operationHash;
@@ -36,6 +36,7 @@ public class CreateTransactionCreateDidRequest : TransactionBaseRequest, IReques
         OperationSequenceNumber = operationSequenceNumber;
         PrismPublicKeys = prismPublicKeys;
         PrismServices = prismServices;
+        PatchedContexts = patchedContexts;
     }
 
     /// <summary>
@@ -47,6 +48,11 @@ public class CreateTransactionCreateDidRequest : TransactionBaseRequest, IReques
     /// List of the Services
     /// </summary>
     public List<PrismService> PrismServices { get; }
+    
+    /// <summary>
+    /// Optional list of patched contexts
+    /// </summary>
+    public List<string>? PatchedContexts { get; set; }
 
     ///  /// <summary>
     /// Hash of the Prism-operation

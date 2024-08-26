@@ -132,6 +132,18 @@ public class DataContext : DbContext
             .WithOne() // No navigation property back to CreateDidEntity
             .HasForeignKey(p => p.CreateDidEntityOperationHash)
             .OnDelete(DeleteBehavior.Cascade);
+        
+        modelBuilder.Entity<CreateDidEntity>()
+            .HasOne(c => c.PatchedContext)
+            .WithOne(p => p.CreateDidEntity)
+            .HasForeignKey<PatchedContextEntity>(p => p.CreateDidEntityOperationHash)
+            .IsRequired(false);
+        
+        modelBuilder.Entity<PatchedContextEntity>()
+            .HasOne(p => p.CreateDidEntity)
+            .WithOne(c => c.PatchedContext)
+            .HasForeignKey<PatchedContextEntity>(p => p.CreateDidEntityOperationHash)
+            .IsRequired(false);
 
         modelBuilder.Entity<UpdateDidEntity>()
             .HasOne(u => u.TransactionEntity)
@@ -174,6 +186,7 @@ public class DataContext : DbContext
             .HasOne(p => p.UpdateDidEntity)
             .WithMany(u => u.PatchedContexts)
             .HasForeignKey(p => p.UpdateDidEntityOperationHash)
+            .IsRequired(false)
             .OnDelete(DeleteBehavior.Cascade);
 
         modelBuilder.Entity<PatchedContextEntity>()

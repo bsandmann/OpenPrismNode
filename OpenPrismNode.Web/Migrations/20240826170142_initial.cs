@@ -246,11 +246,17 @@ namespace OpenPrismNode.Web.Migrations
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
                     ContextListJson = table.Column<string>(type: "jsonb", nullable: false),
                     UpdateOperationOrder = table.Column<short>(type: "smallint", nullable: true),
-                    UpdateDidEntityOperationHash = table.Column<byte[]>(type: "bytea", nullable: false)
+                    UpdateDidEntityOperationHash = table.Column<byte[]>(type: "bytea", nullable: true),
+                    CreateDidEntityOperationHash = table.Column<byte[]>(type: "bytea", nullable: true)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_PatchedContextEntity", x => x.PatchedContextEntityId);
+                    table.ForeignKey(
+                        name: "FK_PatchedContextEntity_CreateDidEntities_CreateDidEntityOpera~",
+                        column: x => x.CreateDidEntityOperationHash,
+                        principalTable: "CreateDidEntities",
+                        principalColumn: "OperationHash");
                     table.ForeignKey(
                         name: "FK_PatchedContextEntity_UpdateDidEntities_UpdateDidEntityOpera~",
                         column: x => x.UpdateDidEntityOperationHash,
@@ -386,6 +392,12 @@ namespace OpenPrismNode.Web.Migrations
                 table: "PatchedContextEntity",
                 column: "ContextListJson")
                 .Annotation("Npgsql:IndexMethod", "gin");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_PatchedContextEntity_CreateDidEntityOperationHash",
+                table: "PatchedContextEntity",
+                column: "CreateDidEntityOperationHash",
+                unique: true);
 
             migrationBuilder.CreateIndex(
                 name: "IX_PatchedContextEntity_UpdateDidEntityOperationHash",

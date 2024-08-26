@@ -46,5 +46,10 @@ public class CreateDidResult
     /// </summary>
     public List<ServiceResult> Services { get; set; } = new List<ServiceResult>();
     
+    /// <summary>
+    /// Optional List of additional Contexts
+    /// </summary>
+    public List<string>? PatchedContexts { get; set; }
+    
     public DeactivateDidInCreateDidResult? DeactivateDid { get; set; }
 }

@@ -12,7 +12,7 @@ using OpenPrismNode.Core;
 namespace OpenPrismNode.Web.Migrations
 {
     [DbContext(typeof(DataContext))]
-    [Migration("20240824100739_initial")]
+    [Migration("20240826170142_initial")]
     partial class initial
     {
         /// <inheritdoc />
@@ -183,8 +183,10 @@ namespace OpenPrismNode.Web.Migrations
                         .IsRequired()
                         .HasColumnType("jsonb");
 
+                    b.Property<byte[]>("CreateDidEntityOperationHash")
+                        .HasColumnType("bytea");
+
                     b.Property<byte[]>("UpdateDidEntityOperationHash")
-                        .IsRequired()
                         .HasColumnType("bytea");
 
                     b.Property<short?>("UpdateOperationOrder")
@@ -195,6 +197,9 @@ namespace OpenPrismNode.Web.Migrations
                     b.HasIndex("ContextListJson");
 
                     NpgsqlIndexBuilderExtensions.HasMethod(b.HasIndex("ContextListJson"), "gin");
+
+                    b.HasIndex("CreateDidEntityOperationHash")
+                        .IsUnique();
 
                     b.HasIndex("UpdateDidEntityOperationHash");
 
@@ -520,11 +525,16 @@ namespace OpenPrismNode.Web.Migrations
 
             modelBuilder.Entity("OpenPrismNode.Core.Entities.PatchedContextEntity", b =>
                 {
+                    b.HasOne("OpenPrismNode.Core.Entities.CreateDidEntity", "CreateDidEntity")
+                        .WithOne("PatchedContext")
+                        .HasForeignKey("OpenPrismNode.Core.Entities.PatchedContextEntity", "CreateDidEntityOperationHash");
+
                     b.HasOne("OpenPrismNode.Core.Entities.UpdateDidEntity", "UpdateDidEntity")
                         .WithMany("PatchedContexts")
                         .HasForeignKey("UpdateDidEntityOperationHash")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .OnDelete(DeleteBehavior.Cascade);
+
+                    b.Navigation("CreateDidEntity");
 
                     b.Navigation("UpdateDidEntity");
                 });
@@ -633,6 +643,8 @@ namespace OpenPrismNode.Web.Migrations
                     b.Navigation("DidDeactivation");
 
                     b.Navigation("DidUpdates");
+
+                    b.Navigation("PatchedContext");
 
                     b.Navigation("PrismPublicKeys");
 

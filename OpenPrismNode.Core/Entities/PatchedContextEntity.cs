@@ -26,9 +26,14 @@ public class PatchedContextEntity
     /// References to the linked operation which added this service
     /// </summary>
     [Column(TypeName = "bytea")]
-    public byte[] UpdateDidEntityOperationHash { get; set; }
+    public byte[]? UpdateDidEntityOperationHash { get; set; }
     
-    public UpdateDidEntity UpdateDidEntity { get; set; }
+    public UpdateDidEntity? UpdateDidEntity { get; set; }
+    
+    [Column(TypeName = "bytea")]
+    public byte[]? CreateDidEntityOperationHash { get; set; }
+
+    public CreateDidEntity? CreateDidEntity { get; set; }
     
     [NotMapped]
     public List<string> ContextList
