@@ -50,6 +50,7 @@ public partial class IntegrationTests : IDisposable
     private readonly IStakeAddressCache _stakeAddressCache;
     private readonly ResolveDidHandler _resolveDidHandler;
     private readonly ProcessBlockHandler _processBlockHandler;
+    private readonly SwitchBranchHandler _switchBranchHandler;
 
     public IntegrationTests(TransactionalTestDatabaseFixture fixture)
     {
@@ -84,10 +85,8 @@ public partial class IntegrationTests : IDisposable
         this._createStakeAddressHandler = new CreateStakeAddressHandler(_context, _stakeAddressCache, Mock.Of<ILogger<CreateStakeAddressHandler>>());
         this._resolveDidHandler = new ResolveDidHandler(_context);
         this._processBlockHandler = new ProcessBlockHandler(_mediatorMock.Object, _appSettingsOptions, Mock.Of<ILogger<ProcessBlockHandler>>());
+        this._switchBranchHandler = new SwitchBranchHandler(_context);
 
-
-        // this._mediatorMock.Setup(p => p.Send(It.IsAny<UpdateDidDocumentMetadataRequest>(), It.IsAny<CancellationToken>()))
-        //     .Returns(async (UpdateDidDocumentMetadataRequest request, CancellationToken token) => await this._updateDidDocumentMetadataHandler.Handle(request, token));
     }
 
     public void Dispose()

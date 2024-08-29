@@ -15,6 +15,7 @@ using Core.Commands.GetBlockByBlockHash;
 using Core.Commands.GetBlockByBlockHeight;
 using Core.Commands.GetEpoch;
 using Core.Commands.GetMostRecentBlock;
+using Core.Commands.SwitchBranch;
 using Core.DbSyncModels;
 using Core.Entities;
 using Core.Models;
@@ -116,7 +117,13 @@ public static class SyncService
 
         if (postgresBlockTipResult.Value.block_no < mostRecentBlockResult.Value.BlockHeight)
         {
+            // Handle the fork without switching branches
             return await HandleFork(mediator, cancellationToken, postgresBlockTipResult, ledgerType);
+        }
+        else if (postgresBlockTipResult.Value.block_no == mostRecentBlockResult.Value.BlockHeight)
+        {
+            // Handle the fork and switch to the new branch
+            return await HandleFork(mediator, cancellationToken, postgresBlockTipResult, ledgerType, true);
         }
 
         var previousBlockHash = mostRecentBlockResult.Value.BlockHash;
@@ -211,38 +218,85 @@ public static class SyncService
         return Result.Ok();
     }
 
-    private static async Task<Result> HandleFork(IMediator mediator, CancellationToken cancellationToken, Result<Block> postgresBlockTipResult, LedgerType ledgerType)
+    private static async Task<Result> HandleFork(IMediator mediator, CancellationToken cancellationToken, Result<Block> postgresBlockTipResult, LedgerType ledgerType, bool switchBranch = false)
     {
-        // We have a fork here. The block is not already in the database, but the blocknumber is lower than the tip of the internal database
-        // We add the block to the database, but mark it as a fork
-        // But first we have to find the prior block to this one
-        var priorBlock = await mediator.Send(new GetPostgresBlockByBlockIdRequest(postgresBlockTipResult.Value.previous_id), cancellationToken);
-        if (priorBlock.IsFailed)
+        Block currentBlock = postgresBlockTipResult.Value;
+        List<Block> blocksToCreate = new List<Block>();
+        var baseBlockHeight = 0;
+        var baseBlockPrefix = 0;
+        var newTipBlockHeight = 0;
+        var newTipBlockPrefix = 0;
+
+
+        while (true)
         {
-            return Result.Fail($"Cannot find prior block for forked block {postgresBlockTipResult.Value.block_no} in {ledgerType}");
+            var prefixCurrentBlock = BlockEntity.CalculateBlockHashPrefix(currentBlock.hash) ?? 0;
+            var blockInDatabase = await mediator.Send(new GetBlockByBlockHashRequest(currentBlock.block_no, prefixCurrentBlock, ledgerType), cancellationToken);
+
+            if (blockInDatabase.IsSuccess)
+            {
+                // We found the point where the fork starts
+                baseBlockHeight = blockInDatabase.Value.BlockHeight;
+                baseBlockPrefix = blockInDatabase.Value.BlockHashPrefix;
+                break;
+            }
+
+            blocksToCreate.Add(currentBlock);
+
+            // Get the previous block
+            var priorBlock = await mediator.Send(new GetPostgresBlockByBlockIdRequest(currentBlock.previous_id), cancellationToken);
+            if (priorBlock.IsFailed)
+            {
+                return Result.Fail($"Cannot find prior block for forked block {currentBlock.block_no} in {ledgerType}");
+            }
+
+            currentBlock = priorBlock.Value;
         }
 
-        var prefixPriorBlock = BlockEntity.CalculateBlockHashPrefix(priorBlock.Value.hash) ?? 0;
-        var priorBlockInDatabase = await mediator.Send(new GetBlockByBlockHashRequest(priorBlock.Value.block_no, prefixPriorBlock, ledgerType), cancellationToken);
-        if (priorBlockInDatabase.IsFailed)
+        // Now create all the forked blocks, starting from the earliest
+        for (int i = blocksToCreate.Count - 1; i >= 0; i--)
         {
-            return Result.Fail($"Cannot find prior block for forked block {postgresBlockTipResult.Value.block_no} in {ledgerType}");
+            var blockToCreate = blocksToCreate[i];
+            var previousBlock = i == blocksToCreate.Count - 1
+                ? await mediator.Send(new GetBlockByBlockHashRequest(currentBlock.block_no, BlockEntity.CalculateBlockHashPrefix(currentBlock.hash) ?? 0, ledgerType), cancellationToken)
+                : await mediator.Send(new GetBlockByBlockHashRequest(blocksToCreate[i + 1].block_no, BlockEntity.CalculateBlockHashPrefix(blocksToCreate[i + 1].hash) ?? 0, ledgerType), cancellationToken);
+
+            if (previousBlock.IsFailed)
+            {
+                return Result.Fail($"Cannot find previous block for forked block {blockToCreate.block_no} in {ledgerType}");
+            }
+
+            var createBlockResult = await mediator.Send(new CreateBlockRequest(
+                ledgerType: ledgerType,
+                blockHeight: blockToCreate.block_no,
+                blockHash: Hash.CreateFrom(blockToCreate.hash),
+                previousBlockHash: Hash.CreateFrom(previousBlock.Value.BlockHash),
+                previousBlockHeight: previousBlock.Value.BlockHeight,
+                epochNumber: blockToCreate.epoch_no,
+                timeUtc: blockToCreate.time,
+                txCount: blockToCreate.tx_count,
+                isFork: true
+            ), cancellationToken);
+
+            if (createBlockResult.IsFailed)
+            {
+                return Result.Fail($"Unable to create forked block in database {ledgerType} for block # {blockToCreate.block_no}: {createBlockResult.Errors.First().Message}");
+            }
+
+            if (i == 0)
+            {
+                newTipBlockHeight = createBlockResult.Value.BlockHeight;
+                newTipBlockPrefix = createBlockResult.Value.BlockHashPrefix;
+            }
         }
 
-        var createBlockResult = await mediator.Send(new CreateBlockRequest(
-            ledgerType: ledgerType,
-            blockHeight: postgresBlockTipResult.Value.block_no,
-            blockHash: Hash.CreateFrom(postgresBlockTipResult.Value.hash),
-            previousBlockHash: Hash.CreateFrom(priorBlockInDatabase.Value.BlockHash),
-            previousBlockHeight: priorBlockInDatabase.Value.BlockHeight,
-            epochNumber: postgresBlockTipResult.Value.epoch_no,
-            timeUtc: postgresBlockTipResult.Value.time,
-            txCount: postgresBlockTipResult.Value.tx_count,
-            isFork: true
-        ), cancellationToken);
-        if (createBlockResult.IsFailed)
+        if (switchBranch)
         {
-            return Result.Fail($"Unable to create forked block in database {ledgerType} for block # {postgresBlockTipResult.Value.block_no}: {createBlockResult.Errors.First().Message}");
+            var switchBranchResult = await mediator.Send(new SwitchBranchRequest(ledgerType, baseBlockHeight, baseBlockPrefix, newTipBlockHeight, newTipBlockPrefix), cancellationToken);
+            if (switchBranchResult.IsFailed)
+            {
+                return switchBranchResult;
+            }
         }
 
         return Result.Ok();
