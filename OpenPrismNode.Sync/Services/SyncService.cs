@@ -1,5 +1,6 @@
 namespace OpenPrismNode.Sync.Services;
 
+using Commands.GetPostgresBlockByBlockId;
 using Commands.GetPostgresBlockByBlockNo;
 using Commands.GetPostgresBlocksByBlockNos;
 using Commands.GetPostgresBlockTip;
@@ -10,10 +11,12 @@ using Core.Commands.CreateBlock;
 using Core.Commands.CreateBlocksAsBatch;
 using Core.Commands.CreateEpoch;
 using Core.Commands.CreateLedger;
+using Core.Commands.GetBlockByBlockHash;
 using Core.Commands.GetBlockByBlockHeight;
 using Core.Commands.GetEpoch;
 using Core.Commands.GetMostRecentBlock;
 using Core.DbSyncModels;
+using Core.Entities;
 using Core.Models;
 using FluentResults;
 using MediatR;
@@ -37,7 +40,7 @@ public static class SyncService
             return Result.Fail("Unknown ledger");
         }
 
-        var postgresBlockTipResult = await mediator.Send(new GetPostgresBlockTipRequest());
+        var postgresBlockTipResult = await mediator.Send(new GetPostgresBlockTipRequest(), cancellationToken);
         if (postgresBlockTipResult.IsFailed)
         {
             return Result.Fail(postgresBlockTipResult.Errors.First().Message);
@@ -49,7 +52,7 @@ public static class SyncService
             if (existingStartingEpoch.IsFailed)
             {
                 // This indicates that we have not yet created the starting epoch
-                var ledgerResult = await mediator.Send(new CreateLedgerRequest(ledgerType));
+                var ledgerResult = await mediator.Send(new CreateLedgerRequest(ledgerType), cancellationToken);
                 if (ledgerResult.IsFailed)
                 {
                     return Result.Fail($"Cannot create network {ledgerType}. Database connection error?");
@@ -64,11 +67,11 @@ public static class SyncService
                 Result<Block> firstBlock;
                 if (startAtEpochNumber != 0)
                 {
-                    firstBlock = await mediator.Send(new GetPostgresFirstBlockOfEpochRequest(startAtEpochNumber));
+                    firstBlock = await mediator.Send(new GetPostgresFirstBlockOfEpochRequest(startAtEpochNumber), cancellationToken);
                 }
                 else
                 {
-                    firstBlock = await mediator.Send(new GetPostgresBlockByBlockNoRequest(1));
+                    firstBlock = await mediator.Send(new GetPostgresBlockByBlockNoRequest(1), cancellationToken);
                 }
 
                 if (firstBlock.IsFailed)
@@ -85,7 +88,7 @@ public static class SyncService
                     epochNumber: firstBlock.Value.epoch_no,
                     timeUtc: firstBlock.Value.time,
                     txCount: firstBlock.Value.tx_count
-                ));
+                ), cancellationToken);
                 if (firstBlockResult.IsFailed)
                 {
                     return Result.Fail($"Cannot create first block for {ledgerType}. Database connection error?");
@@ -94,7 +97,7 @@ public static class SyncService
         }
 
         // Gets the tip of the internal database of blocks
-        var mostRecentBlockResult = await mediator.Send(new GetMostRecentBlockRequest(ledgerType));
+        var mostRecentBlockResult = await mediator.Send(new GetMostRecentBlockRequest(ledgerType), cancellationToken);
         if (mostRecentBlockResult.IsFailed)
         {
             return Result.Fail(mostRecentBlockResult.Errors.First().Message);
@@ -103,11 +106,17 @@ public static class SyncService
         // Checks if we have the tip of the postgrs-dbSync database also in our internal database
         // This does only check the longest chain. If a new fork is shorter than the longest chain, we'll still cling to the longest chain.
         // The check for forks is done in the ProcessBlockHandler
-        var blockInDb = await mediator.Send(new GetBlockByBlockHeightRequest(ledgerType, postgresBlockTipResult.Value.block_no));
+        var prefix = BlockEntity.CalculateBlockHashPrefix(postgresBlockTipResult.Value.hash) ?? 0;
+        var blockInDb = await mediator.Send(new GetBlockByBlockHashRequest(postgresBlockTipResult.Value.block_no, prefix, ledgerType), cancellationToken);
         if (blockInDb.IsSuccess)
         {
             logger.LogInformation($"{ledgerType} is already up to date on tip {postgresBlockTipResult.Value.block_no}");
             return Result.Ok();
+        }
+
+        if (postgresBlockTipResult.Value.block_no < mostRecentBlockResult.Value.BlockHeight)
+        {
+            return await HandleFork(mediator, cancellationToken, postgresBlockTipResult, ledgerType);
         }
 
         var previousBlockHash = mostRecentBlockResult.Value.BlockHash;
@@ -122,13 +131,13 @@ public static class SyncService
             {
                 return Result.Fail("Sync operation was cancelled");
             }
-            
+
             if (postgresBlockTipResult.Value.block_no - i - 1 > PrismParameters.FastSyncBlockDistanceRequirement)
             {
                 // Fast Sync-Path
                 // We are at least 150 blocks behind (THe requirement is set in the PrismParameters)
                 // We find the next block with the PRISM metadata
-                var getNextBlockWithPrismMetadataResult = await mediator.Send(new GetNextBlockWithPrismMetadataRequest(i, PrismParameters.MetadataKey, postgresBlockTipResult.Value.block_no, ledgerType));
+                var getNextBlockWithPrismMetadataResult = await mediator.Send(new GetNextBlockWithPrismMetadataRequest(i, PrismParameters.MetadataKey, postgresBlockTipResult.Value.block_no, ledgerType), cancellationToken);
                 if (getNextBlockWithPrismMetadataResult.IsFailed)
                 {
                     return Result.Fail(getNextBlockWithPrismMetadataResult.Errors.First().Message);
@@ -170,7 +179,7 @@ public static class SyncService
                 }
             }
 
-            var getBlockByIdResult = await mediator.Send(new GetPostgresBlockByBlockNoRequest(i));
+            var getBlockByIdResult = await mediator.Send(new GetPostgresBlockByBlockNoRequest(i), cancellationToken);
             if (getBlockByIdResult.IsFailed)
             {
                 logger.LogError($"Cannot read block from postgres (dbSync) for {ledgerType}: {getBlockByIdResult.Errors.First().Message}");
@@ -188,7 +197,7 @@ public static class SyncService
 
             lastEpochInDatabase = epochNumber;
 
-            var processBlockResult = await mediator.Send(new ProcessBlockRequest(getBlockByIdResult.Value, previousBlockHash, previousBlockHeight, ledgerType));
+            var processBlockResult = await mediator.Send(new ProcessBlockRequest(getBlockByIdResult.Value, previousBlockHash, previousBlockHeight, ledgerType), cancellationToken);
             if (processBlockResult.IsFailed)
             {
                 logger.LogError(processBlockResult.Errors.First().Message);
@@ -197,6 +206,43 @@ public static class SyncService
             // TODO implement the notifications
             previousBlockHash = processBlockResult.Value.PreviousBlockHash;
             previousBlockHeight = processBlockResult.Value.PreviousBlockHeight;
+        }
+
+        return Result.Ok();
+    }
+
+    private static async Task<Result> HandleFork(IMediator mediator, CancellationToken cancellationToken, Result<Block> postgresBlockTipResult, LedgerType ledgerType)
+    {
+        // We have a fork here. The block is not already in the database, but the blocknumber is lower than the tip of the internal database
+        // We add the block to the database, but mark it as a fork
+        // But first we have to find the prior block to this one
+        var priorBlock = await mediator.Send(new GetPostgresBlockByBlockIdRequest(postgresBlockTipResult.Value.previous_id), cancellationToken);
+        if (priorBlock.IsFailed)
+        {
+            return Result.Fail($"Cannot find prior block for forked block {postgresBlockTipResult.Value.block_no} in {ledgerType}");
+        }
+
+        var prefixPriorBlock = BlockEntity.CalculateBlockHashPrefix(priorBlock.Value.hash) ?? 0;
+        var priorBlockInDatabase = await mediator.Send(new GetBlockByBlockHashRequest(priorBlock.Value.block_no, prefixPriorBlock, ledgerType), cancellationToken);
+        if (priorBlockInDatabase.IsFailed)
+        {
+            return Result.Fail($"Cannot find prior block for forked block {postgresBlockTipResult.Value.block_no} in {ledgerType}");
+        }
+
+        var createBlockResult = await mediator.Send(new CreateBlockRequest(
+            ledgerType: ledgerType,
+            blockHeight: postgresBlockTipResult.Value.block_no,
+            blockHash: Hash.CreateFrom(postgresBlockTipResult.Value.hash),
+            previousBlockHash: Hash.CreateFrom(priorBlockInDatabase.Value.BlockHash),
+            previousBlockHeight: priorBlockInDatabase.Value.BlockHeight,
+            epochNumber: postgresBlockTipResult.Value.epoch_no,
+            timeUtc: postgresBlockTipResult.Value.time,
+            txCount: postgresBlockTipResult.Value.tx_count,
+            isFork: true
+        ), cancellationToken);
+        if (createBlockResult.IsFailed)
+        {
+            return Result.Fail($"Unable to create forked block in database {ledgerType} for block # {postgresBlockTipResult.Value.block_no}: {createBlockResult.Errors.First().Message}");
         }
 
         return Result.Ok();

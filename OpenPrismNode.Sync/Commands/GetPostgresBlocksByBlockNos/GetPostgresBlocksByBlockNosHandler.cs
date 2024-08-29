@@ -21,7 +21,7 @@ namespace OpenPrismNode.Sync.Commands.GetPostgresBlocksByBlockNos
             await using var connection = _connectionFactory.CreateConnection();
 
             string commandText = @"
-                SELECT id, hash, epoch_no, block_no, time, tx_count
+                SELECT id, hash, epoch_no, block_no, time, tx_count, previous_id
                 FROM public.block
                 WHERE block_no >= @StartBlockNo AND block_no < @EndBlockNo
                 ORDER BY block_no;";

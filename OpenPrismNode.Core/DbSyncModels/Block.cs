@@ -11,4 +11,6 @@ public class Block
     public int block_no { get; set; }
     public DateTime time { get; set; }
     public int tx_count { get; set; }
+
+    public int previous_id { get; set; }
 }

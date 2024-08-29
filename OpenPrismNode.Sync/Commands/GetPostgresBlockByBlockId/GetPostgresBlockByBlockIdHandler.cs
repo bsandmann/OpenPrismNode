@@ -1,26 +1,26 @@
-﻿namespace OpenPrismNode.Sync.Commands.GetPostgresBlockByBlockNo;
+﻿namespace OpenPrismNode.Sync.Commands.GetPostgresBlockByBlockId;
 
-using Core.DbSyncModels;
 using Dapper;
 using FluentResults;
 using MediatR;
-using Services;
+using OpenPrismNode.Core.DbSyncModels;
+using OpenPrismNode.Sync.Services;
 
-public class GetPostgresBlockByBlockNoHandler : IRequestHandler<GetPostgresBlockByBlockNoRequest, Result<Block>>
+public class GetPostgresBlockByBlockIdHandler : IRequestHandler<GetPostgresBlockByBlockIdRequest, Result<Block>>
 {
     private readonly INpgsqlConnectionFactory _connectionFactory;
 
-    public GetPostgresBlockByBlockNoHandler(INpgsqlConnectionFactory connectionFactory)
+    public GetPostgresBlockByBlockIdHandler(INpgsqlConnectionFactory connectionFactory)
     {
         _connectionFactory = connectionFactory;
     }
 
     /// <inheritdoc />
-    public async Task<Result<Block>> Handle(GetPostgresBlockByBlockNoRequest request, CancellationToken cancellationToken)
+    public async Task<Result<Block>> Handle(GetPostgresBlockByBlockIdRequest request, CancellationToken cancellationToken)
     {
         await using (var connection = _connectionFactory.CreateConnection())
         {
-            string commandText = $"  SELECT id, hash, epoch_no, block_no, time, tx_count, previous_id FROM public.block WHERE block_no = {request.BlockNo};";
+            string commandText = $"  SELECT id, hash, epoch_no, block_no, time, tx_count, previous_id FROM public.block WHERE block_id = {request.BlockId};";
             var block = await connection.QueryFirstOrDefaultAsync<Block>(commandText);
             if (block is null)
             {

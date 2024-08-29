@@ -36,12 +36,11 @@ public class CreateBlockHandler : IRequestHandler<CreateBlockRequest, Result<Blo
         var existingBlock = await _context.BlockEntities.AnyAsync(
             p => p.BlockHeight == request.BlockHeight && p.EpochEntity.Ledger == request.ledger,
             cancellationToken: cancellationToken);
+        var dateTimeNow = DateTime.SpecifyKind(DateTime.UtcNow, DateTimeKind.Unspecified);
+        var timeCreatedUtc = DateTime.SpecifyKind(request.TimeUtc, DateTimeKind.Unspecified);
 
         if (!existingBlock)
         {
-            var dateTimeNow = DateTime.SpecifyKind(DateTime.UtcNow, DateTimeKind.Unspecified);
-            var timeCreatedUtc = DateTime.SpecifyKind(request.TimeUtc, DateTimeKind.Unspecified);
-
             var blockEntity = new BlockEntity()
             {
                 BlockHeight = request.BlockHeight,
@@ -73,9 +72,42 @@ public class CreateBlockHandler : IRequestHandler<CreateBlockRequest, Result<Blo
         }
         else
         {
-            // if the blockheight already exists we have to determine if the block is a fork or just the same block
-            // which was already parsed and readded by mistake.
-            throw new NotImplementedException();
+            // LIKELY A FORK
+            try
+            {
+                var blockEntity = new BlockEntity()
+                {
+                    BlockHeight = request.BlockHeight,
+                    BlockHashPrefix = BlockEntity.CalculateBlockHashPrefix(request.BlockHash.Value) ?? 0,
+                    BlockHash = request.BlockHash.Value!,
+                    EpochNumber = request.EpochNumber,
+                    TimeUtc = timeCreatedUtc,
+                    TxCount = request.TxCount,
+                    LastParsedOnUtc = dateTimeNow,
+                    PreviousBlockHeight = request.PreviousBlockHeight,
+                    PreviousBlockHashPrefix = BlockEntity.CalculateBlockHashPrefix(request.PreviousBlockHash?.Value),
+                    IsFork = request.IsFork,
+                    Ledger = request.ledger
+                };
+
+                await _context.AddAsync(blockEntity, cancellationToken);
+
+                // Update ledger LastSynced time
+                await _context.LedgerEntities
+                    .Where(n => n.Ledger == request.ledger)
+                    .ExecuteUpdateAsync(s => s.SetProperty(n => n.LastSynced, dateTimeNow), cancellationToken);
+
+                await _context.SaveChangesAsync(cancellationToken);
+
+                blockEntity.TimeUtc = DateTime.SpecifyKind(blockEntity.TimeUtc, DateTimeKind.Utc);
+                blockEntity.LastParsedOnUtc = blockEntity.LastParsedOnUtc is not null ? DateTime.SpecifyKind(blockEntity.LastParsedOnUtc!.Value, DateTimeKind.Utc) : null;
+
+                return Result.Ok(blockEntity);
+            }
+            catch (Exception e)
+            {
+                return Result.Fail("Error while creating forked-block: " + e.Message);
+            }
         }
     }
 }

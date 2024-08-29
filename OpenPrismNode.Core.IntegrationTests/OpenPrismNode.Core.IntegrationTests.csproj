@@ -26,6 +26,7 @@
 
     <ItemGroup>
       <ProjectReference Include="..\OpenPrismNode.Core\OpenPrismNode.Core.csproj" />
+      <ProjectReference Include="..\OpenPrismNode.Sync\OpenPrismNode.Sync.csproj" />
     </ItemGroup>
 
     <ItemGroup>

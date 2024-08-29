@@ -1,6 +1,7 @@
 ﻿using LazyCache;
 using MediatR;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using Moq;
 using OpenPrismNode.Core;
 using OpenPrismNode.Core.Commands.CreateBlock;
@@ -18,14 +19,17 @@ using OpenPrismNode.Core.Commands.GetBlockByBlockHeight;
 using OpenPrismNode.Core.Commands.GetEpoch;
 using OpenPrismNode.Core.Commands.GetMostRecentBlock;
 using OpenPrismNode.Core.Commands.ResolveDid;
+using OpenPrismNode.Core.Common;
 using OpenPrismNode.Core.IntegrationTests;
 using OpenPrismNode.Core.Services;
+using OpenPrismNode.Sync.Commands.ProcessBlock;
 
 [Collection("TransactionalTests")]
 public partial class IntegrationTests : IDisposable
 {
     private TransactionalTestDatabaseFixture Fixture { get; }
     readonly IAppCache _mockedCache;
+    readonly IOptions<AppSettings> _appSettingsOptions;
     private readonly DataContext _context;
     private readonly Mock<IMediator> _mediatorMock;
     private readonly CreateLedgerHandler _createLedgerHandler;
@@ -45,15 +49,23 @@ public partial class IntegrationTests : IDisposable
     private readonly IWalletAddressCache _walletAddressCache;
     private readonly IStakeAddressCache _stakeAddressCache;
     private readonly ResolveDidHandler _resolveDidHandler;
+    private readonly ProcessBlockHandler _processBlockHandler;
 
     public IntegrationTests(TransactionalTestDatabaseFixture fixture)
     {
         _walletAddressCache = new WalletAddressCache(100);
         _stakeAddressCache = new StakeAddressCache(100);
 
+
         this.Fixture = fixture;
         this._context = this.Fixture.CreateContext();
-
+        this._appSettingsOptions = Options.Create(new AppSettings()
+        {
+            PrismLedger = new PrismLedger()
+            {
+                Name = "preprod"
+            }
+        });
         this._mediatorMock = new Mock<IMediator>();
         this._mockedCache = LazyCache.Testing.Moq.Create.MockedCachingService();
         this._createLedgerHandler = new CreateLedgerHandler(_context);
@@ -71,6 +83,7 @@ public partial class IntegrationTests : IDisposable
         this._createWalletAddressHandler = new CreateWalletAddressHandler(_context, _walletAddressCache, Mock.Of<ILogger<CreateWalletAddressHandler>>());
         this._createStakeAddressHandler = new CreateStakeAddressHandler(_context, _stakeAddressCache, Mock.Of<ILogger<CreateStakeAddressHandler>>());
         this._resolveDidHandler = new ResolveDidHandler(_context);
+        this._processBlockHandler = new ProcessBlockHandler(_mediatorMock.Object, _appSettingsOptions, Mock.Of<ILogger<ProcessBlockHandler>>());
 
 
         // this._mediatorMock.Setup(p => p.Send(It.IsAny<UpdateDidDocumentMetadataRequest>(), It.IsAny<CancellationToken>()))
