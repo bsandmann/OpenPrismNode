@@ -22,8 +22,7 @@ public class SwitchBranchHandler : IRequestHandler<SwitchBranchRequest, Result>
         {
             // Find the base block
             var baseBlock = await _context.BlockEntities
-                .AsNoTracking()
-                .FirstOrDefaultAsync(b => b.BlockHeight == request.BaseBlockHeight && b.BlockHashPrefix == request.BaseBlockPrefix, cancellationToken);
+                .FirstOrDefaultAsync(b => b.BlockHeight == request.BaseBlockHeight && b.BlockHashPrefix == request.BaseBlockPrefix && b.Ledger == request.Ledger, cancellationToken);
 
             if (baseBlock == null)
             {
@@ -32,8 +31,7 @@ public class SwitchBranchHandler : IRequestHandler<SwitchBranchRequest, Result>
 
             // Find the new tip block
             var newTipBlock = await _context.BlockEntities
-                .AsNoTracking()
-                .FirstOrDefaultAsync(b => b.BlockHeight == request.NewTipBlockHeight && b.BlockHashPrefix == request.NewTipBlockPrefix, cancellationToken);
+                .FirstOrDefaultAsync(b => b.BlockHeight == request.NewTipBlockHeight && b.BlockHashPrefix == request.NewTipBlockPrefix && b.Ledger == request.Ledger, cancellationToken);
 
             if (newTipBlock == null)
             {
@@ -42,8 +40,7 @@ public class SwitchBranchHandler : IRequestHandler<SwitchBranchRequest, Result>
 
             // Get all blocks after the base block
             var blocksAfterBase = await _context.BlockEntities
-                .AsNoTracking()
-                .Where(b => b.BlockHeight > baseBlock.BlockHeight)
+                .Where(b => b.BlockHeight > baseBlock.BlockHeight && b.Ledger == request.Ledger)
                 .ToListAsync(cancellationToken);
 
             // Find the path from new tip to base block
@@ -53,8 +50,7 @@ public class SwitchBranchHandler : IRequestHandler<SwitchBranchRequest, Result>
             {
                 newMainChain.Add((currentBlock.BlockHeight, currentBlock.BlockHashPrefix));
                 currentBlock = await _context.BlockEntities
-                    .AsNoTracking()
-                    .FirstOrDefaultAsync(b => b.BlockHeight == currentBlock.PreviousBlockHeight && b.BlockHashPrefix == currentBlock.PreviousBlockHashPrefix, cancellationToken);
+                    .FirstOrDefaultAsync(b => b.BlockHeight == currentBlock.PreviousBlockHeight && b.BlockHashPrefix == currentBlock.PreviousBlockHashPrefix && b.Ledger == request.Ledger, cancellationToken);
 
                 if (currentBlock == null)
                 {
@@ -67,7 +63,7 @@ public class SwitchBranchHandler : IRequestHandler<SwitchBranchRequest, Result>
             foreach (var block in blocksAfterBase)
             {
                 bool shouldBeFork = !newMainChain.Contains((block.BlockHeight, block.BlockHashPrefix));
-                
+
                 if (block.IsFork != shouldBeFork)
                 {
                     // Only update if the flag needs to change
@@ -84,6 +80,7 @@ public class SwitchBranchHandler : IRequestHandler<SwitchBranchRequest, Result>
                 {
                     _context.Entry(block).Property(x => x.IsFork).IsModified = true;
                 }
+
                 await _context.SaveChangesAsync(cancellationToken);
             }
 
