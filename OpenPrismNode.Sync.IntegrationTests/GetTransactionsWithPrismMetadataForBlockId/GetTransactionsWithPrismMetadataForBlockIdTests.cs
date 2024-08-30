@@ -9,7 +9,7 @@ public class GetTransactionsWithPrismMetadataForBlockIdTests
 {
     private readonly TestNpgsqlConnectionFactory _testFactory;
     private readonly GetTransactionsWithPrismMetadataForBlockIdHandler _handler;
-    private const int TestBlockId = 180021; // ! This is the block if of a block with PRISM metadata. THis number might be different with a new databas!
+    private const int TestBlockId = 190363; // ! This is the block if of a block with PRISM metadata. THis number might be different with a new databas!
     
 
     public GetTransactionsWithPrismMetadataForBlockIdTests()

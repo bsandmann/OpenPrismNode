@@ -13,4 +13,5 @@ public class Block
     public int tx_count { get; set; }
 
     public int previous_id { get; set; }
+    public byte[]? previousHash { get; set; }
 }

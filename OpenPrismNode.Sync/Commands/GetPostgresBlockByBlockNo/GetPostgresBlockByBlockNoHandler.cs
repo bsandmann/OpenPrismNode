@@ -20,8 +20,13 @@ public class GetPostgresBlockByBlockNoHandler : IRequestHandler<GetPostgresBlock
     {
         await using (var connection = _connectionFactory.CreateConnection())
         {
-            string commandText = $"  SELECT id, hash, epoch_no, block_no, time, tx_count, previous_id FROM public.block WHERE block_no = {request.BlockNo};";
-            var block = await connection.QueryFirstOrDefaultAsync<Block>(commandText);
+            string commandText = @"
+                SELECT b.id, b.hash, b.epoch_no, b.block_no, b.time, b.tx_count, b.previous_id, 
+                       pb.hash as previousHash
+                FROM public.block b
+                LEFT JOIN public.block pb ON b.previous_id = pb.id
+                WHERE b.block_no = @BlockNo;";
+            var block = await connection.QueryFirstOrDefaultAsync<Block>(commandText, new { BlockNo = request.BlockNo });
             if (block is null)
             {
                 return Result.Fail("Block could not be found");

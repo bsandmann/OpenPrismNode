@@ -204,6 +204,12 @@ public static class SyncService
 
             lastEpochInDatabase = epochNumber;
 
+            if (getBlockByIdResult.Value.previousHash is not null && !getBlockByIdResult.Value.previousHash.Equals(previousBlockHash))
+            {
+                logger.LogError("HITTING FORK");
+                var fff = 3;
+            }
+
             var processBlockResult = await mediator.Send(new ProcessBlockRequest(getBlockByIdResult.Value, previousBlockHash, previousBlockHeight, ledgerType), cancellationToken);
             if (processBlockResult.IsFailed)
             {

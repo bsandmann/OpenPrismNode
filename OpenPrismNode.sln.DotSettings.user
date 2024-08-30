@@ -6,7 +6,7 @@
 	
 	
 	
-	<s:String x:Key="/Default/Housekeeping/UnitTestingMru/UnitTestRunner/EnvironmentVariablesIndexed/=DbSyncPostgresConnectionString/@EntryIndexedValue">User ID=bjoern;Password=Delaysdq123!;Host=10.10.20.111;Port=5432;Database=cexplorer;</s:String>
+	<s:String x:Key="/Default/Housekeeping/UnitTestingMru/UnitTestRunner/EnvironmentVariablesIndexed/=DbSyncPostgresConnectionString/@EntryIndexedValue">User ID=bjoern;Password=Delaysdq123!;Host=10.10.20.104;Port=5432;Database=cexplorer;</s:String>
 	
 	
 	

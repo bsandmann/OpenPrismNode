@@ -20,7 +20,7 @@ public class GetPostgresBlockByBlockIdHandler : IRequestHandler<GetPostgresBlock
     {
         await using (var connection = _connectionFactory.CreateConnection())
         {
-            string commandText = $"  SELECT id, hash, epoch_no, block_no, time, tx_count, previous_id FROM public.block WHERE block_id = {request.BlockId};";
+            string commandText = $"  SELECT id, hash, epoch_no, block_no, time, tx_count, previous_id FROM public.block WHERE id = {request.BlockId};";
             var block = await connection.QueryFirstOrDefaultAsync<Block>(commandText);
             if (block is null)
             {

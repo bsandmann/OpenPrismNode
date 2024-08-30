@@ -967,7 +967,8 @@ public partial class IntegrationTests
                 time = DateTime.UtcNow,
                 tx_count = 0,
                 id = 110,
-                previous_id = 100
+                previous_id = 100,
+                previousHash = new byte[] { 10, 1, 1, 1 }
             })).ReturnsAsync(Result.Ok(new Block()
             {
                 block_no = 12,
@@ -976,7 +977,8 @@ public partial class IntegrationTests
                 time = DateTime.UtcNow,
                 tx_count = 0,
                 id = 120,
-                previous_id = 110
+                previous_id = 110,
+                previousHash = new byte[] { 11, 1, 1, 1 }
             }));
 
         // Act 1
@@ -1015,7 +1017,8 @@ public partial class IntegrationTests
                 time = DateTime.UtcNow,
                 tx_count = 0,
                 id = 121,
-                previous_id = 111
+                previous_id = 111,
+                previousHash = new byte[] { 11, 11, 11, 11 }
             })).ReturnsAsync(Result.Ok(new Block()
             {
                 block_no = 11,
@@ -1024,7 +1027,8 @@ public partial class IntegrationTests
                 time = DateTime.UtcNow,
                 tx_count = 0,
                 id = 111,
-                previous_id = 100
+                previous_id = 100,
+                previousHash = new byte[] { 10, 1, 1, 1 }
             }));
 
         // Get block 11 from dbsync by its id
@@ -1070,7 +1074,8 @@ public partial class IntegrationTests
             time = DateTime.UtcNow,
             tx_count = 0,
             id = 130,
-            previous_id = 120
+            previous_id = 120,
+            previousHash = new byte[] { 12, 1, 1, 1 }
         }));
 
         // Get data for block 13
@@ -1083,7 +1088,8 @@ public partial class IntegrationTests
                 time = DateTime.UtcNow,
                 tx_count = 0,
                 id = 130,
-                previous_id = 120
+                previous_id = 120,
+                previousHash = new byte[] { 12, 1, 1, 1 }
             }));
 
         var syncResult3 = await SyncService.RunSync(_mediatorMock.Object, logger.Object, "preprod", new CancellationToken(), 10, false);
