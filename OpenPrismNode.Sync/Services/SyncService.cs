@@ -118,11 +118,13 @@ public static class SyncService
         if (postgresBlockTipResult.Value.block_no < mostRecentBlockResult.Value.BlockHeight)
         {
             // Handle the fork without switching branches
+            logger.LogWarning($"Fork detected in {ledgerType}. Postgres tip: {postgresBlockTipResult.Value.block_no}, prism tip: {mostRecentBlockResult.Value.BlockHeight}");
             return await HandleFork(mediator, cancellationToken, postgresBlockTipResult, ledgerType);
         }
         else if (postgresBlockTipResult.Value.block_no == mostRecentBlockResult.Value.BlockHeight)
         {
             // Handle the fork and switch to the new branch
+            logger.LogWarning($"Fork detected in {ledgerType}. Postgres tip: {postgresBlockTipResult.Value.block_no}, prism tip: {mostRecentBlockResult.Value.BlockHeight}");
             return await HandleFork(mediator, cancellationToken, postgresBlockTipResult, ledgerType, true);
         }
 
@@ -161,9 +163,9 @@ public static class SyncService
                         return fastSyncResult.ToResult();
                     }
 
-                    i = postgresBlockTipResult.Value.block_no - 1;
+                    i = postgresBlockTipResult.Value.block_no;
                     previousBlockHash = fastSyncResult.Value.Value;
-                    previousBlockHeight = postgresBlockTipResult.Value.block_no;
+                    previousBlockHeight = postgresBlockTipResult.Value.block_no - 1;
                 }
                 else
                 {
@@ -182,6 +184,17 @@ public static class SyncService
                         i = getNextBlockWithPrismMetadataResult.Value.BlockHeight!.Value;
                         previousBlockHash = fastSyncResult.Value.Value;
                         previousBlockHeight = getNextBlockWithPrismMetadataResult.Value.BlockHeight.Value - 1;
+                    }
+                    else
+                    {
+                        var previousBlock = await mediator.Send(new GetBlockByBlockHeightRequest(ledgerType, i - 1), cancellationToken);
+                        if (previousBlock.IsFailed)
+                        {
+                            return Result.Fail($"Cannot find previous block for block {i} in {ledgerType}");
+                        }
+
+                        previousBlockHash = previousBlock.Value.BlockHash;
+                        previousBlockHeight = previousBlock.Value.BlockHeight;
                     }
                 }
             }
@@ -204,10 +217,11 @@ public static class SyncService
 
             lastEpochInDatabase = epochNumber;
 
-            if (getBlockByIdResult.Value.previousHash is not null && !getBlockByIdResult.Value.previousHash.Equals(previousBlockHash))
+            if (getBlockByIdResult.Value.previousHash is not null && !getBlockByIdResult.Value.previousHash.SequenceEqual(previousBlockHash))
             {
-                logger.LogError("HITTING FORK");
-                var fff = 3;
+                // The previous-hash of the new block we want to add to the database is not identical to the hash of the previous block in the database
+                // This means, the new block is not a direct successor of the previous block in the database and therefor part of a fork
+                var r = await HandleFork(mediator, cancellationToken, getBlockByIdResult, ledgerType, true);
             }
 
             var processBlockResult = await mediator.Send(new ProcessBlockRequest(getBlockByIdResult.Value, previousBlockHash, previousBlockHeight, ledgerType), cancellationToken);

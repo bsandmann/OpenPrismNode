@@ -914,7 +914,7 @@ public partial class IntegrationTests
         var syncResult3 = await SyncService.RunSync(_mediatorMock.Object, logger.Object, "preprod", new CancellationToken(), 10, false);
         var blocksNotforked = await _context.BlockEntities.Where(p => !p.IsFork).ToListAsync();
         blocksNotforked.Should().Contain(p => p.BlockHeight == 13);
-        blocksNotforked.FirstOrDefault(p=> p.BlockHeight == 13).PreviousBlockHashPrefix.Should().Be(202116108);
+        blocksNotforked.FirstOrDefault(p => p.BlockHeight == 13).PreviousBlockHashPrefix.Should().Be(202116108);
     }
 
     [Fact]
@@ -1091,6 +1091,20 @@ public partial class IntegrationTests
                 id = 130,
                 previous_id = 120,
                 previousHash = new byte[] { 12, 1, 1, 1 }
+            }));
+
+        // Get block 12 from dbsync by its id
+        _mediatorMock.SetupSequence(p => p.Send(It.IsAny<GetPostgresBlockByBlockIdRequest>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(Result.Ok(new Block()
+            {
+                block_no = 12,
+                epoch_no = 1,
+                hash = new byte[] { 12, 1, 1, 1 },
+                time = DateTime.UtcNow,
+                tx_count = 0,
+                id = 120,
+                previous_id = 110,
+                previousHash = new byte[] { 11, 1, 1, 1 }
             }));
 
         var syncResult3 = await SyncService.RunSync(_mediatorMock.Object, logger.Object, "preprod", new CancellationToken(), 10, false);
