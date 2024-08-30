@@ -914,6 +914,7 @@ public partial class IntegrationTests
         var syncResult3 = await SyncService.RunSync(_mediatorMock.Object, logger.Object, "preprod", new CancellationToken(), 10, false);
         var blocksNotforked = await _context.BlockEntities.Where(p => !p.IsFork).ToListAsync();
         blocksNotforked.Should().Contain(p => p.BlockHeight == 13);
+        blocksNotforked.FirstOrDefault(p=> p.BlockHeight == 13).PreviousBlockHashPrefix.Should().Be(202116108);
     }
 
     [Fact]
@@ -1095,6 +1096,7 @@ public partial class IntegrationTests
         var syncResult3 = await SyncService.RunSync(_mediatorMock.Object, logger.Object, "preprod", new CancellationToken(), 10, false);
         var blocksNotforked = await _context.BlockEntities.Where(p => !p.IsFork).ToListAsync();
         blocksNotforked.Should().Contain(p => p.BlockHeight == 13);
+        blocksNotforked.FirstOrDefault(p => p.BlockHeight == 13).PreviousBlockHashPrefix.Should().Be(16843020);
     }
 
     //  [Fact]
