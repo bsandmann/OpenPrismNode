@@ -88,7 +88,6 @@ public class BackgroundSyncService : BackgroundService
     /// </summary>
     public async Task StopService()
     {
-        _logger.LogInformation($"The automatic sync service is stopped");
         await _cts.CancelAsync();
     }
 
@@ -98,6 +97,5 @@ public class BackgroundSyncService : BackgroundService
     public async Task RestartServiceAsync()
     {
         _cts = new CancellationTokenSource();
-        _logger.LogInformation($"The automatic sync service has been restarted");
     }
 }
