@@ -4,14 +4,18 @@ using Microsoft.EntityFrameworkCore;
 using OpenPrismNode.Core;
 using OpenPrismNode.Core.Commands.SwitchBranch;
 using OpenPrismNode.Core.Entities;
+using OpenPrismNode.Sync.Commands.GetPostgresBlockByBlockNo;
+using OpenPrismNode.Sync.Commands.ProcessBlock;
 
 public class SwitchBranchHandler : IRequestHandler<SwitchBranchRequest, Result>
 {
     private readonly DataContext _context;
+    private readonly IMediator _mediator;
 
-    public SwitchBranchHandler(DataContext context)
+    public SwitchBranchHandler(DataContext context, IMediator mediator)
     {
         _context = context;
+        _mediator = mediator;
     }
 
     public async Task<Result> Handle(SwitchBranchRequest request, CancellationToken cancellationToken)
@@ -83,6 +87,48 @@ public class SwitchBranchHandler : IRequestHandler<SwitchBranchRequest, Result>
 
                 await _context.SaveChangesAsync(cancellationToken);
             }
+
+            var allForkedBlocks = await _context.BlockEntities
+                .Where(b => b.IsFork && b.Ledger == request.Ledger && b.BlockHeight > baseBlock.BlockHeight)
+                .ToListAsync(cancellationToken);
+
+            foreach (var forkedBlock in allForkedBlocks.OrderByDescending(p => p.BlockHeight))
+            {
+                var deleteTransactions = await _context.TransactionEntities
+                    .Where(t => t.BlockHeight == forkedBlock.BlockHeight && t.BlockHashPrefix == forkedBlock.BlockHashPrefix)
+                    .ToListAsync(cancellationToken);
+                _context.TransactionEntities.RemoveRange(deleteTransactions);
+                await _context.SaveChangesAsync(cancellationToken);
+            }
+
+            var allNonForkedBlocks = await _context.BlockEntities
+                .Select(p =>
+                    new
+                    {
+                        p.BlockHeight,
+                        p.IsFork,
+                        p.Ledger,
+                        p.BlockHash
+                    })
+                .Where(b => !b.IsFork && b.Ledger == request.Ledger && b.BlockHeight > baseBlock.BlockHeight)
+                .ToListAsync(cancellationToken);
+            foreach (var nonForkedBlock in allNonForkedBlocks.OrderBy(p => p.BlockHeight))
+            {
+                var postgresBlock = await _mediator.Send(new GetPostgresBlockByBlockNoRequest(nonForkedBlock.BlockHeight), cancellationToken);
+                if (postgresBlock.IsFailed || !postgresBlock.Value.hash.SequenceEqual(nonForkedBlock.BlockHash))
+                {
+                    return Result.Fail($"Error retriving expected block {nonForkedBlock.BlockHeight} from {request.Ledger} dbsync database");
+                }
+
+                var processBlockResult = await _mediator.Send(new ProcessBlockRequest(postgresBlock.Value, null, null, request.Ledger, true));
+                if (processBlockResult.IsFailed)
+                {
+                    return Result.Fail($"Error processing block {nonForkedBlock.BlockHeight} from {request.Ledger} dbsync database for rescan after fork");
+                }
+            }
+
+
+            // TODO cache cleaning
 
             return Result.Ok();
         }

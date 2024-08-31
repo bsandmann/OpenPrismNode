@@ -85,8 +85,7 @@ public partial class IntegrationTests : IDisposable
         this._createStakeAddressHandler = new CreateStakeAddressHandler(_context, _stakeAddressCache, Mock.Of<ILogger<CreateStakeAddressHandler>>());
         this._resolveDidHandler = new ResolveDidHandler(_context);
         this._processBlockHandler = new ProcessBlockHandler(_mediatorMock.Object, _appSettingsOptions, Mock.Of<ILogger<ProcessBlockHandler>>());
-        this._switchBranchHandler = new SwitchBranchHandler(_context);
-
+        this._switchBranchHandler = new SwitchBranchHandler(_context, _mediatorMock.Object);
     }
 
     public void Dispose()

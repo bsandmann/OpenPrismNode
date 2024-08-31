@@ -32,30 +32,39 @@ public class ProcessBlockHandler : IRequestHandler<ProcessBlockRequest, Result<P
     {
         byte[]? previousBlockHash = request.PreviousBlockHash;
         int? previousBlockHeight = request.PreviousBlockHeight;
+        ProcessBlockResponse? response = null;
 
         var block = await _mediator.Send(new GetBlockByBlockHashRequest(request.Block.block_no, BlockEntity.CalculateBlockHashPrefix(request.Block.hash), request.LedgerType), cancellationToken);
-        if (block.IsSuccess)
+        if (!request.IgnoreCheckForExistingBlock)
         {
-            // already in the db. Nothing to do here anymore
-            return Result.Ok(new ProcessBlockResponse(block.Value.BlockHash, block.Value.BlockHeight));
-        }
+            if (block.IsSuccess)
+            {
+                // already in the db. Nothing to do here anymore
+                return Result.Ok(new ProcessBlockResponse(block.Value.BlockHash, block.Value.BlockHeight));
+            }
 
-        var prismBlockResult = await _mediator.Send(new CreateBlockRequest(
-            ledgerType: request.LedgerType,
-            blockHeight: request.Block.block_no,
-            blockHash: Hash.CreateFrom(request.Block.hash),
-            previousBlockHash: Hash.CreateFrom(previousBlockHash),
-            previousBlockHeight: previousBlockHeight,
-            epochNumber: request.Block.epoch_no,
-            timeUtc: request.Block.time,
-            txCount: request.Block.tx_count
-        ), cancellationToken);
-        if (prismBlockResult.IsFailed)
+            var prismBlockResult = await _mediator.Send(new CreateBlockRequest(
+                ledgerType: request.LedgerType,
+                blockHeight: request.Block.block_no,
+                blockHash: Hash.CreateFrom(request.Block.hash),
+                previousBlockHash: Hash.CreateFrom(previousBlockHash),
+                previousBlockHeight: previousBlockHeight,
+                epochNumber: request.Block.epoch_no,
+                timeUtc: request.Block.time,
+                txCount: request.Block.tx_count
+            ), cancellationToken);
+            if (prismBlockResult.IsFailed)
+            {
+                return Result.Fail($"Error while creating block #{block.Value.BlockHeight} for {request.LedgerType}: {prismBlockResult.Errors.First().Message}");
+            }
+
+            response = new ProcessBlockResponse(prismBlockResult.Value.BlockHash, prismBlockResult.Value.BlockHeight);
+        }
+        else
         {
-            return Result.Fail($"Error while creating block #{block.Value.BlockHeight} for {request.LedgerType}: {prismBlockResult.Errors.First().Message}");
+            // The block does exist, but we still need to process the transactions
+            response = new ProcessBlockResponse(block.Value.BlockHash, block.Value.BlockHeight);
         }
-
-        var response = new ProcessBlockResponse(prismBlockResult.Value.BlockHash, prismBlockResult.Value.BlockHeight);
 
         var blockTransactions = await _mediator.Send(new GetTransactionsWithPrismMetadataForBlockIdRequest(request.Block.id), cancellationToken);
         if (blockTransactions.IsFailed)

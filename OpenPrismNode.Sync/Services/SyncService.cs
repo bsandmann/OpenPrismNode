@@ -118,13 +118,13 @@ public static class SyncService
         if (postgresBlockTipResult.Value.block_no < mostRecentBlockResult.Value.BlockHeight)
         {
             // Handle the fork without switching branches
-            logger.LogWarning($"Fork detected in {ledgerType}. Postgres tip: {postgresBlockTipResult.Value.block_no}, prism tip: {mostRecentBlockResult.Value.BlockHeight}");
+            logger.LogWarning($"Fork detected (1) in {ledgerType}. Postgres tip: {postgresBlockTipResult.Value.block_no}, prism tip: {mostRecentBlockResult.Value.BlockHeight}");
             return await HandleFork(mediator, cancellationToken, postgresBlockTipResult, ledgerType);
         }
         else if (postgresBlockTipResult.Value.block_no == mostRecentBlockResult.Value.BlockHeight)
         {
             // Handle the fork and switch to the new branch
-            logger.LogWarning($"Fork detected in {ledgerType}. Postgres tip: {postgresBlockTipResult.Value.block_no}, prism tip: {mostRecentBlockResult.Value.BlockHeight}");
+            logger.LogWarning($"Fork detected (2) in {ledgerType}. Postgres tip: {postgresBlockTipResult.Value.block_no}, prism tip: {mostRecentBlockResult.Value.BlockHeight}");
             return await HandleFork(mediator, cancellationToken, postgresBlockTipResult, ledgerType, true);
         }
 
@@ -221,7 +221,12 @@ public static class SyncService
             {
                 // The previous-hash of the new block we want to add to the database is not identical to the hash of the previous block in the database
                 // This means, the new block is not a direct successor of the previous block in the database and therefor part of a fork
-                var r = await HandleFork(mediator, cancellationToken, getBlockByIdResult, ledgerType, true);
+                logger.LogWarning($"Fork detected (3) in {ledgerType}. Postgres tip: {postgresBlockTipResult.Value.block_no}, prism tip: {getBlockByIdResult.Value.block_no}");
+                var handleForkResult = await HandleFork(mediator, cancellationToken, getBlockByIdResult, ledgerType, true);
+                if (handleForkResult.IsFailed)
+                {
+                    return handleForkResult;
+                }
             }
 
             var processBlockResult = await mediator.Send(new ProcessBlockRequest(getBlockByIdResult.Value, previousBlockHash, previousBlockHeight, ledgerType), cancellationToken);
