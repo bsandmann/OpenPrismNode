@@ -1,6 +1,10 @@
 ﻿<wpf:ResourceDictionary xml:space="preserve" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:s="clr-namespace:System;assembly=mscorlib" xmlns:ss="urn:shemas-jetbrains-com:settings-storage-xaml" xmlns:wpf="http://schemas.microsoft.com/winfx/2006/xaml/presentation">
-	<s:String x:Key="/Default/Environment/UnitTesting/UnitTestSessionStore/Sessions/=6d038ae0_002Daf64_002D489a_002D90ab_002De14c9e39a62a/@EntryIndexedValue">&lt;SessionState ContinuousTestingMode="0" IsActive="True" Name="All tests from &amp;lt;Tests&amp;gt;" xmlns="urn:schemas-jetbrains-com:jetbrains-ut-session"&gt;
-  &lt;Project Location="/home/bjoern/_Projekte/OpenPrismNode" Presentation="&amp;lt;Tests&amp;gt;" /&gt;
+	<s:String x:Key="/Default/Environment/UnitTesting/UnitTestSessionStore/Sessions/=6d038ae0_002Daf64_002D489a_002D90ab_002De14c9e39a62a/@EntryIndexedValue">&lt;SessionState ContinuousTestingMode="0" IsActive="True" Name="All tests from &amp;lt;Tests&amp;gt;" xmlns="urn:schemas-jetbrains-com:jetbrains-ut-session"&gt;&#xD;
+  &lt;Or&gt;&#xD;
+    &lt;Project Location="C:\_Projekte\OpenPrismNode\OpenPrismNode.Sync.Tests" Presentation="&amp;lt;Tests&amp;gt;\&amp;lt;OpenPrismNode.Sync.Tests&amp;gt;" /&gt;&#xD;
+    &lt;Project Location="C:\_Projekte\OpenPrismNode\OpenPrismNode.Sync.IntegrationTests" Presentation="&amp;lt;Tests&amp;gt;\&amp;lt;OpenPrismNode.Sync.IntegrationTests&amp;gt;" /&gt;&#xD;
+    &lt;Project Location="C:\_Projekte\OpenPrismNode\OpenPrismNode.Core.IntegrationTests" Presentation="&amp;lt;Tests&amp;gt;\&amp;lt;OpenPrismNode.Core.IntegrationTests&amp;gt;" /&gt;&#xD;
+  &lt;/Or&gt;&#xD;
 &lt;/SessionState&gt;</s:String>
 	
 	
