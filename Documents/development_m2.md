@@ -26,6 +26,7 @@ Moreover, the task of developing a robust application capable of handling variou
   - If a fork is detected, all PRISM operations on transactions in the forked blocks will be rolled back.
   - The new valid branch will then be rescanned, and processing will continue once the process is completed.
   - This ensures that, at any point, only DIDs valid according to the latest information from the node are returned.
+- The resolver also follows the specification and returns the latest valid DID state. The current format is not aligned with the W3C specification, but is still an internal representation. This will be addressed in the next milestone.
 
 For the vast majority of operations, tests have been written to handle specific edge cases, primarily focusing on the ordering of update operations and different rollback scenarios. For a screenshot of the current test output, see [here](https://github.com/bsandmann/OpenPrismNode/blob/master/Documents/Testoutput_August_31_2024.jpg).
 
