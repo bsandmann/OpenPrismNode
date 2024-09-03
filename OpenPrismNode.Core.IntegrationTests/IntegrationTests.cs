@@ -4,10 +4,12 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Moq;
 using OpenPrismNode.Core;
+using OpenPrismNode.Core.Commands.CreateAddresses;
 using OpenPrismNode.Core.Commands.CreateBlock;
 using OpenPrismNode.Core.Commands.CreateEpoch;
 using OpenPrismNode.Core.Commands.CreateLedger;
 using OpenPrismNode.Core.Commands.CreateStakeAddress;
+using OpenPrismNode.Core.Commands.CreateTransaction;
 using OpenPrismNode.Core.Commands.CreateTransactionCreateDid;
 using OpenPrismNode.Core.Commands.CreateTransactionDeactivateDid;
 using OpenPrismNode.Core.Commands.CreateTransactionUpdateDid;
@@ -20,9 +22,13 @@ using OpenPrismNode.Core.Commands.GetEpoch;
 using OpenPrismNode.Core.Commands.GetMostRecentBlock;
 using OpenPrismNode.Core.Commands.ResolveDid;
 using OpenPrismNode.Core.Common;
+using OpenPrismNode.Core.Crypto;
 using OpenPrismNode.Core.IntegrationTests;
 using OpenPrismNode.Core.Services;
+using OpenPrismNode.Sync.Commands.DecodeTransaction;
+using OpenPrismNode.Sync.Commands.ParseTransaction;
 using OpenPrismNode.Sync.Commands.ProcessBlock;
+using OpenPrismNode.Sync.Commands.ProcessTransaction;
 
 [Collection("TransactionalTests")]
 public partial class IntegrationTests : IDisposable
@@ -50,7 +56,12 @@ public partial class IntegrationTests : IDisposable
     private readonly IStakeAddressCache _stakeAddressCache;
     private readonly ResolveDidHandler _resolveDidHandler;
     private readonly ProcessBlockHandler _processBlockHandler;
+    private readonly ProcessTransactionHandler _processTransactionHandler;
+    private readonly DecodeTransactionHandler _decodeTransactionHandler;
     private readonly SwitchBranchHandler _switchBranchHandler;
+    private readonly CreateAddressesHandler _createAddressesHandler;
+    private readonly ParseTransactionHandler _parseTransactionHandler;
+    private readonly CreateTransactionHandler _createTransactionHandler;
 
     public IntegrationTests(TransactionalTestDatabaseFixture fixture)
     {
@@ -85,7 +96,13 @@ public partial class IntegrationTests : IDisposable
         this._createStakeAddressHandler = new CreateStakeAddressHandler(_context, _stakeAddressCache, Mock.Of<ILogger<CreateStakeAddressHandler>>());
         this._resolveDidHandler = new ResolveDidHandler(_context);
         this._processBlockHandler = new ProcessBlockHandler(_mediatorMock.Object, _appSettingsOptions, Mock.Of<ILogger<ProcessBlockHandler>>());
+        this._processTransactionHandler = new ProcessTransactionHandler(_mediatorMock.Object,Mock.Of<ILogger<ProcessTransactionHandler>>());
+        this._decodeTransactionHandler = new DecodeTransactionHandler();
         this._switchBranchHandler = new SwitchBranchHandler(_context, _mediatorMock.Object);
+        this._createAddressesHandler = new CreateAddressesHandler(_mediatorMock.Object);
+        this._parseTransactionHandler = new ParseTransactionHandler(_mediatorMock.Object, new Sha256ServiceBouncyCastle(), new EcServiceBouncyCastle(), Mock.Of<ILogger<ParseTransactionHandler>>());
+        this._createTransactionHandler = new CreateTransactionHandler(_mediatorMock.Object, new Sha256ServiceBouncyCastle());
+
     }
 
     public void Dispose()
