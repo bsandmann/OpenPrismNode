@@ -803,6 +803,13 @@ public partial class IntegrationTests
         blocksforked.Count.Should().Be(1);
         blocksforked.Single().BlockHeight.Should().Be(11);
         blocksforked.Single().BlockHashPrefix.Should().Be(BlockEntity.CalculateBlockHashPrefix(new byte[] { 11, 1, 1, 1 }));
+        
+        // Initiall a CreateDID operations gets added to the database.
+        // Thorugh the switching of the branch, the CreateDID operation is then removed.
+        // but since the mock is setup in a way that it again returns the same block, the CreateDID operation is added again
+        // It therefor should be in the database again
+        var createDIDOperations = await _context.CreateDidEntities.FirstOrDefaultAsync();
+        createDIDOperations.Should().NotBeNull();
     }
 
     [Fact]
