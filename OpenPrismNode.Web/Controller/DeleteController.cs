@@ -53,6 +53,7 @@ public class DeleteController : ControllerBase
             return BadRequest("The ledger must be provided, e.g 'preprod' or 'mainnet'");
         }
 
+        _backgroundSyncService.Lock();
         await _backgroundSyncService.StopAsync(CancellationToken.None);
         _logger.LogInformation($"The automatic sync service is stopped. Restart the service after the deletion is completed if needed");
         _logger.LogInformation($"Deleting {ledger} ledger...");
@@ -60,24 +61,29 @@ public class DeleteController : ControllerBase
         var isParseable = Enum.TryParse<LedgerType>("cardano" + ledger, ignoreCase: true, out var ledgerType);
         if (!isParseable)
         {
+            _backgroundSyncService.Unlock();
             return BadRequest("The valid network identifier must be provided: 'preprod','mainnet', or 'inmemory'");
         }
 
         var result = await _mediator.Send(new DeleteLedgerRequest(ledgerType));
         if (result.IsFailed)
         {
-            _logger.LogError($"Unable to delete Ledger for prism:{ledger}: {result.Errors.FirstOrDefault()?.Message}");;
+            _logger.LogError($"Unable to delete Ledger for prism:{ledger}: {result.Errors.FirstOrDefault()?.Message}");
+            ;
+            _backgroundSyncService.Unlock();
             return BadRequest(result.Errors.FirstOrDefault());
         }
-        
+
         var orphanedAddressesDeleteResult = await _mediator.Send(new DeleteOrphanedAddressesRequest(ledgerType));
         if (orphanedAddressesDeleteResult.IsFailed)
         {
+            _backgroundSyncService.Unlock();
             return BadRequest($"The orphaned addresses could not be deleted for the ledger {ledger}: {orphanedAddressesDeleteResult.Errors.First().Message}");
         }
 
         _logger.LogInformation($"Deleting Ledger for prism:{ledger} completed");
 
+        _backgroundSyncService.Unlock();
         return Ok();
     }
 
@@ -101,12 +107,14 @@ public class DeleteController : ControllerBase
             return BadRequest("The ledger must be provided, e.g 'preprod' or 'mainnet'");
         }
 
+        _backgroundSyncService.Lock();
         await _backgroundSyncService.StopAsync(CancellationToken.None);
         _logger.LogInformation($"The automatic sync service is stopped. Restart the service after the deletion is completed if needed");
 
         var isParseable = Enum.TryParse<LedgerType>("cardano" + ledger, ignoreCase: true, out var ledgerType);
         if (!isParseable)
         {
+            _backgroundSyncService.Unlock();
             return BadRequest("The valid network identifier must be provided: 'preprod','mainnet', or 'inmemory'");
         }
 
@@ -116,12 +124,14 @@ public class DeleteController : ControllerBase
             var mostRecentBlock = await _mediator.Send(new GetMostRecentBlockRequest(ledgerType));
             if (mostRecentBlock.IsFailed)
             {
+                _backgroundSyncService.Unlock();
                 return BadRequest($"The most recent block could not be found for the ledger {ledger}: {mostRecentBlock.Errors.First().Message}");
             }
 
             var blockDeleteResult = await _mediator.Send(new DeleteBlockRequest(mostRecentBlock.Value.BlockHeight, mostRecentBlock.Value.BlockHashPrefix, ledgerType));
             if (blockDeleteResult.IsFailed)
             {
+                _backgroundSyncService.Unlock();
                 return BadRequest($"The most recent block could not be deleted for the ledger {ledger}: {blockDeleteResult.Errors.First().Message}");
             }
 
@@ -132,14 +142,17 @@ public class DeleteController : ControllerBase
                 var epochDeleteResult = await _mediator.Send(new DeleteEmptyEpochRequest(blockDeleteResult.Value.DeletedBlockWasInEpoch, ledgerType));
                 if (epochDeleteResult.IsFailed)
                 {
+                    _backgroundSyncService.Unlock();
                     return BadRequest($"The epoch {blockDeleteResult.Value.DeletedBlockWasInEpoch} could not be deleted for the ledger {ledger}: {epochDeleteResult.Errors.First().Message}");
                 }
 
                 _logger.LogInformation($"Deletion completed for the ledger {ledger}. The ledger is now empty.");
+                _backgroundSyncService.Unlock();
                 return Ok();
             }
 
             _logger.LogInformation($"Deletion completed for the ledger {ledger}. New tip is now {mostRecentBlock.Value.PreviousBlockHeight}");
+            _backgroundSyncService.Unlock();
             return Ok();
         }
         else
@@ -148,16 +161,19 @@ public class DeleteController : ControllerBase
             var mostRecentBlock = await _mediator.Send(new GetMostRecentBlockRequest(ledgerType));
             if (mostRecentBlock.IsFailed)
             {
+                _backgroundSyncService.Unlock();
                 return BadRequest($"The most recent block could not be found for the ledger {ledger}: {mostRecentBlock.Errors.First().Message}");
             }
 
             if (mostRecentBlock.Value.BlockHeight < blockHeight)
             {
+                _backgroundSyncService.Unlock();
                 return BadRequest($"The most recent block height is {mostRecentBlock.Value.BlockHeight}.The provided block height {blockHeight} is greater than the most recent block height.");
             }
             else if (mostRecentBlock.Value.BlockHeight == blockHeight)
             {
                 // nothing to delete
+                _backgroundSyncService.Unlock();
                 Result.Ok();
             }
 
@@ -170,6 +186,7 @@ public class DeleteController : ControllerBase
                 var blockDeleteResult = await _mediator.Send(new DeleteBlockRequest(blockHeightAcc, blockHashPrefixAcc, ledgerType));
                 if (blockDeleteResult.IsFailed)
                 {
+                    _backgroundSyncService.Unlock();
                     return BadRequest($"The block {i} could not be deleted for the ledger {ledger}: {blockDeleteResult.Errors.First().Message}");
                 }
 
@@ -178,12 +195,14 @@ public class DeleteController : ControllerBase
                     var epochDeleteResult = await _mediator.Send(new DeleteEmptyEpochRequest(currentEpoch, ledgerType));
                     if (epochDeleteResult.IsFailed)
                     {
+                        _backgroundSyncService.Unlock();
                         return BadRequest($"The epoch {blockDeleteResult.Value.DeletedBlockWasInEpoch} could not be deleted for the ledger {ledger}: {epochDeleteResult.Errors.First().Message}");
                     }
 
                     var orphanedAddressesDeleteResult = await _mediator.Send(new DeleteOrphanedAddressesRequest(ledgerType));
                     if (orphanedAddressesDeleteResult.IsFailed)
                     {
+                        _backgroundSyncService.Unlock();
                         return BadRequest($"The orphaned addresses could not be deleted for the ledger {ledger}: {orphanedAddressesDeleteResult.Errors.First().Message}");
                     }
                 }
@@ -193,15 +212,18 @@ public class DeleteController : ControllerBase
                     var epochDeleteResult = await _mediator.Send(new DeleteEmptyEpochRequest(blockDeleteResult.Value.DeletedBlockWasInEpoch, ledgerType));
                     if (epochDeleteResult.IsFailed)
                     {
+                        _backgroundSyncService.Unlock();
                         return BadRequest($"The epoch {blockDeleteResult.Value.DeletedBlockWasInEpoch} could not be deleted for the ledger {ledger}: {epochDeleteResult.Errors.First().Message}");
                     }
 
                     var orphanedAddressesDeleteResult = await _mediator.Send(new DeleteOrphanedAddressesRequest(ledgerType));
                     if (orphanedAddressesDeleteResult.IsFailed)
                     {
+                        _backgroundSyncService.Unlock();
                         return BadRequest($"The orphaned addresses could not be deleted for the ledger {ledger}: {orphanedAddressesDeleteResult.Errors.First().Message}");
                     }
 
+                    _backgroundSyncService.Unlock();
                     _logger.LogInformation($"Deletion completed for the ledger {ledger}. The ledger is now empty.");
                     return Ok();
                 }
@@ -213,6 +235,7 @@ public class DeleteController : ControllerBase
 
             // TODO cache update!
 
+            _backgroundSyncService.Unlock();
             _logger.LogInformation($"Deletion completed for the ledger {ledger}. New tip is now {blockHeight}");
 
             return Ok();
@@ -239,12 +262,14 @@ public class DeleteController : ControllerBase
             return BadRequest("The ledger must be provided, e.g 'preprod' or 'mainnet'");
         }
 
+        _backgroundSyncService.Lock();
         await _backgroundSyncService.StopAsync(CancellationToken.None);
         _logger.LogInformation($"The automatic sync service is stopped. Restart the service after the deletion is completed if needed");
 
         var isParseable = Enum.TryParse<LedgerType>("cardano" + ledger, ignoreCase: true, out var ledgerType);
         if (!isParseable)
         {
+            _backgroundSyncService.Unlock();
             return BadRequest("The valid network identifier must be provided: 'preprod','mainnet', or 'inmemory'");
         }
 
@@ -253,6 +278,7 @@ public class DeleteController : ControllerBase
             var mostRecentBlock = await _mediator.Send(new GetMostRecentBlockRequest(ledgerType));
             if (mostRecentBlock.IsFailed)
             {
+                _backgroundSyncService.Unlock();
                 return BadRequest($"The most recent block could not be found for the ledger {ledger}: {mostRecentBlock.Errors.First().Message}");
             }
 
@@ -261,17 +287,20 @@ public class DeleteController : ControllerBase
             var epochDeleteResult = await _mediator.Send(new DeleteEpochRequest(mostRecentBlock.Value.EpochNumber, ledgerType));
             if (epochDeleteResult.IsFailed)
             {
+                _backgroundSyncService.Unlock();
                 return BadRequest($"The most recent epoch could not be deleted for the ledger {ledger}: {epochDeleteResult.Errors.First().Message}");
             }
 
             var orphanedAddressesDeleteResult = await _mediator.Send(new DeleteOrphanedAddressesRequest(ledgerType));
             if (orphanedAddressesDeleteResult.IsFailed)
             {
+                _backgroundSyncService.Unlock();
                 return BadRequest($"The orphaned addresses could not be deleted for the ledger {ledger}: {orphanedAddressesDeleteResult.Errors.First().Message}");
             }
 
             // TODO cache update!
 
+            _backgroundSyncService.Unlock();
             _logger.LogInformation($"Deletion completed for epoch {mostRecentBlock.Value.EpochNumber} of {ledger} ledger");
             return Ok();
         }
@@ -281,16 +310,19 @@ public class DeleteController : ControllerBase
             var mostRecentBlock = await _mediator.Send(new GetMostRecentBlockRequest(ledgerType));
             if (mostRecentBlock.IsFailed)
             {
+                _backgroundSyncService.Unlock();
                 return BadRequest($"The most recent block could not be found for the ledger {ledger}: {mostRecentBlock.Errors.First().Message}");
             }
 
             if (mostRecentBlock.Value.EpochNumber < epochNumber)
             {
+                _backgroundSyncService.Unlock();
                 return BadRequest($"The current epoch is {mostRecentBlock.Value.EpochNumber}.The provided epoch {epochNumber} is greater than the current epoch");
             }
             else if (mostRecentBlock.Value.EpochNumber == epochNumber)
             {
                 // nothing to delete
+                _backgroundSyncService.Unlock();
                 Result.Ok();
             }
 
@@ -299,11 +331,13 @@ public class DeleteController : ControllerBase
                 var epochDeleteResult = await _mediator.Send(new DeleteEpochRequest(i, ledgerType));
                 if (epochDeleteResult.IsFailed)
                 {
+                    _backgroundSyncService.Unlock();
                     return BadRequest($"The epoch {i} could not be deleted for the ledger {ledger}: {epochDeleteResult.Errors.First().Message}");
                 }
 
                 if (i == 0)
                 {
+                    _backgroundSyncService.Unlock();
                     _logger.LogInformation($"Deletion completed for the ledger {ledger}. The ledger is now empty.");
                 }
             }
@@ -311,9 +345,11 @@ public class DeleteController : ControllerBase
             var orphanedAddressesDeleteResult = await _mediator.Send(new DeleteOrphanedAddressesRequest(ledgerType));
             if (orphanedAddressesDeleteResult.IsFailed)
             {
+                _backgroundSyncService.Unlock();
                 return BadRequest($"The orphaned addresses could not be deleted for the ledger {ledger}: {orphanedAddressesDeleteResult.Errors.First().Message}");
             }
 
+            _backgroundSyncService.Unlock();
             return Ok();
         }
 

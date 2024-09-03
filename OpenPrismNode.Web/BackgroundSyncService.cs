@@ -17,6 +17,8 @@ public class BackgroundSyncService : BackgroundService
     private readonly IServiceScopeFactory _serviceScopeFactory;
     private CancellationTokenSource _cts;
     private readonly IMediator _mediator;
+    private bool _isRunning = false;
+    private bool _isLocked = false;
 
     /// <inheritdoc />
     public BackgroundSyncService(IOptions<AppSettings> appSettings, ILogger<BackgroundSyncService> logger, IServiceScopeFactory serviceScopeFactory, IMediator mediator)
@@ -31,6 +33,17 @@ public class BackgroundSyncService : BackgroundService
     /// <inheritdoc />
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
+        if (_isRunning)
+        {
+            return;
+        }
+
+        if (_isLocked)
+        {
+            _logger.LogWarning("The automatic sync service is locked due to an ongoing operations. Wait or restart the node.");
+        }
+        
+        _isRunning = true;
         using (IServiceScope scope = _serviceScopeFactory.CreateScope())
         {
             var mediator = scope.ServiceProvider.GetRequiredService<IMediator>();
@@ -51,14 +64,14 @@ public class BackgroundSyncService : BackgroundService
                 try
                 {
                     await Task.Delay(_appSettings.DelayBetweenSyncsInMs, stoppingToken);
-                    
+
                     if (_cts.Token.IsCancellationRequested)
                     {
                         continue;
                     }
-                    
+
                     _logger.LogInformation($"Sync running for {_appSettings.PrismLedger.Name}");
-                    
+
                     var syncResult = await SyncService.RunSync(mediator, _logger, _appSettings.PrismLedger.Name, _cts.Token, _appSettings.PrismLedger.StartAtEpochNumber, isInitialStartup);
                     if (syncResult.IsFailed)
                     {
@@ -88,8 +101,10 @@ public class BackgroundSyncService : BackgroundService
     /// </summary>
     public async Task StopService()
     {
-        _logger.LogInformation($"The automatic sync service is stopped");
         await _cts.CancelAsync();
+        await this.StopAsync(_cts.Token);
+        _isRunning = false;
+        _isLocked = false;
     }
 
     /// <summary>
@@ -98,6 +113,16 @@ public class BackgroundSyncService : BackgroundService
     public async Task RestartServiceAsync()
     {
         _cts = new CancellationTokenSource();
-        _logger.LogInformation($"The automatic sync service has been restarted");
+        await this.StartAsync(_cts.Token);
+    }
+    
+    public void Lock()
+    {
+        _isLocked = true;
+    }
+    
+    public void Unlock()
+    {
+        _isLocked = false;
     }
 }
