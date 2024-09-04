@@ -28,7 +28,7 @@ public class SyncController : ControllerBase
     /// Force the automatic sync service to stop
     /// </summary>
     /// <returns></returns>
-    [HttpPost("api/sync/serviceStop")]
+    [HttpPost("api/sync/stop")]
     public async Task<ActionResult> StopSyncService()
     {
         var hasAuthorization = _httpContextAccessor.HttpContext!.Request.Headers.TryGetValue("authorization", out StringValues authorization);
@@ -46,7 +46,7 @@ public class SyncController : ControllerBase
     /// Force the automatic sync service to stop
     /// </summary>
     /// <returns></returns>
-    [HttpPost("api/sync/serviceRestart")]
+    [HttpPost("api/sync/restart")]
     public async Task<ActionResult> RestartSyncService()
     {
         var hasAuthorization = _httpContextAccessor.HttpContext!.Request.Headers.TryGetValue("authorization", out StringValues authorization);

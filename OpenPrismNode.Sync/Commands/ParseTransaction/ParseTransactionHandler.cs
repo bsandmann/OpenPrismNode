@@ -106,7 +106,7 @@ public class ParseTransactionHandler : IRequestHandler<ParseTransactionRequest, 
 
         // TODO: Chekc if the DID already exists in the database. See spec
 
-        var didDocument = new DidDocument(didIdentifier, publicKeyParseResult.Value, serviceParseResult.Value, new List<string>());
+        var didDocument = new InternalDidDocument(didIdentifier, publicKeyParseResult.Value, serviceParseResult.Value, new List<string>());
         var operationResultWrapper = new OperationResultWrapper(OperationResultType.CreateDid, index, didDocument, signedWith);
         return Result.Ok(operationResultWrapper);
     }
@@ -145,10 +145,10 @@ public class ParseTransactionHandler : IRequestHandler<ParseTransactionRequest, 
                 {
                     //Check if the operation already exists
                     // case sensitive
-                    var existingKeyWithIdentialId = resolvedDid.DidDocument.PublicKeys.FirstOrDefault(p => p.KeyId.Equals(parsedPublicKey.Value.KeyId));
+                    var existingKeyWithIdentialId = resolvedDid.InternalDidDocument.PublicKeys.FirstOrDefault(p => p.KeyId.Equals(parsedPublicKey.Value.KeyId));
                     if (existingKeyWithIdentialId is not null && !UpdateStackEvaluation.UpdateActionStackLastKeyActionWasRemoveKey(updateActionResults, parsedPublicKey.Value.KeyId))
                     {
-                        return Result.Fail(ParserErrors.KeyAlreadyAdded + $": {existingKeyWithIdentialId.KeyId} for DID {resolvedDid.DidDocument.DidIdentifier}");
+                        return Result.Fail(ParserErrors.KeyAlreadyAdded + $": {existingKeyWithIdentialId.KeyId} for DID {resolvedDid.InternalDidDocument.DidIdentifier}");
                     }
 
                     // Adding the same key multiple times is not allowed
@@ -170,13 +170,13 @@ public class ParseTransactionHandler : IRequestHandler<ParseTransactionRequest, 
                 var removedKeyId = action.RemoveKey.KeyId;
 
                 // case sensitive
-                var keyIsExisting = resolvedDid.DidDocument.PublicKeys.FirstOrDefault(p => p.KeyId.Equals(removedKeyId));
+                var keyIsExisting = resolvedDid.InternalDidDocument.PublicKeys.FirstOrDefault(p => p.KeyId.Equals(removedKeyId));
                 if (keyIsExisting is null && !UpdateStackEvaluation.UpdateActionStackLastKeyActionWasAddKey(updateActionResults, removedKeyId))
                 {
-                    return Result.Fail(ParserErrors.KeyToBeRemovedNotFound + $": {removedKeyId} for DID {resolvedDid.DidDocument.DidIdentifier}");
+                    return Result.Fail(ParserErrors.KeyToBeRemovedNotFound + $": {removedKeyId} for DID {resolvedDid.InternalDidDocument.DidIdentifier}");
                 }
 
-                List<PrismPublicKey> existingMasterKeys = resolvedDid.DidDocument.PublicKeys.Where(p => p.KeyUsage == PrismKeyUsage.MasterKey).ToList();
+                List<PrismPublicKey> existingMasterKeys = resolvedDid.InternalDidDocument.PublicKeys.Where(p => p.KeyUsage == PrismKeyUsage.MasterKey).ToList();
 
                 // Removing the same key multiple times is not allowed
                 // Key-Fragments can be case-sensitive!
@@ -201,12 +201,12 @@ public class ParseTransactionHandler : IRequestHandler<ParseTransactionRequest, 
             else if (action.ActionCase == UpdateDIDAction.ActionOneofCase.AddService)
             {
                 // case sensitive!
-                var existingServiceWithIdenticalId = resolvedDid.DidDocument.PrismServices.FirstOrDefault(p => p.ServiceId.Equals(action.AddService.Service.Id));
+                var existingServiceWithIdenticalId = resolvedDid.InternalDidDocument.PrismServices.FirstOrDefault(p => p.ServiceId.Equals(action.AddService.Service.Id));
                 if (existingServiceWithIdenticalId is not null && (UpdateStackEvaluation.UpdateActionStackLastServiceActionWasAddService(updateActionResults, action.AddService.Service.Id) ||
                                                                    UpdateStackEvaluation.UpdateActionStackLastServiceActionWasUpdateService(updateActionResults, action.AddService.Service.Id)) ||
                     (existingServiceWithIdenticalId is not null && !UpdateStackEvaluation.UpdateActionStackContainsServiceId(updateActionResults, action.AddService.Service.Id)))
                 {
-                    return Result.Fail(ParserErrors.ServiceAlreadyAdded + $": {existingServiceWithIdenticalId.ServiceId} for DID {resolvedDid.DidDocument.DidIdentifier}");
+                    return Result.Fail(ParserErrors.ServiceAlreadyAdded + $": {existingServiceWithIdenticalId.ServiceId} for DID {resolvedDid.InternalDidDocument.DidIdentifier}");
                 }
 
                 if (UpdateStackEvaluation.UpdateActionStackLastServiceActionWasAddService(updateActionResults, action.AddService.Service.Id) || UpdateStackEvaluation.UpdateActionStackLastServiceActionWasUpdateService(updateActionResults, action.AddService.Service.Id))
@@ -227,11 +227,11 @@ public class ParseTransactionHandler : IRequestHandler<ParseTransactionRequest, 
                 var removedServiceId = action.RemoveService.ServiceId;
 
                 // case sensitive!
-                var serviceIsExisting = resolvedDid.DidDocument.PrismServices.FirstOrDefault(p => p.ServiceId.Equals(removedServiceId));
+                var serviceIsExisting = resolvedDid.InternalDidDocument.PrismServices.FirstOrDefault(p => p.ServiceId.Equals(removedServiceId));
                 if (serviceIsExisting is null && UpdateStackEvaluation.UpdateActionStackLastServiceActionWasRemoveService(updateActionResults, removedServiceId) ||
                     (serviceIsExisting is null && !UpdateStackEvaluation.UpdateActionStackContainsServiceId(updateActionResults, removedServiceId)))
                 {
-                    return Result.Fail(ParserErrors.ServiceToBeRemovedNotFound + $": {removedServiceId} for DID {resolvedDid.DidDocument.DidIdentifier}");
+                    return Result.Fail(ParserErrors.ServiceToBeRemovedNotFound + $": {removedServiceId} for DID {resolvedDid.InternalDidDocument.DidIdentifier}");
                 }
 
                 if (UpdateStackEvaluation.UpdateActionStackLastServiceActionWasRemoveService(updateActionResults, removedServiceId))
@@ -246,10 +246,10 @@ public class ParseTransactionHandler : IRequestHandler<ParseTransactionRequest, 
                 var updatedServiceId = action.UpdateService.ServiceId;
 
                 // case sensitive!
-                var serviceIsExisting = resolvedDid.DidDocument.PrismServices.FirstOrDefault(p => p.ServiceId.Equals(updatedServiceId));
+                var serviceIsExisting = resolvedDid.InternalDidDocument.PrismServices.FirstOrDefault(p => p.ServiceId.Equals(updatedServiceId));
                 if (serviceIsExisting is null && UpdateStackEvaluation.UpdateActionStackLastServiceActionWasRemoveService(updateActionResults, updatedServiceId))
                 {
-                    return Result.Fail(ParserErrors.ServiceToBeUpdatedNotFound + $": {updatedServiceId} for DID {resolvedDid.DidDocument.DidIdentifier}");
+                    return Result.Fail(ParserErrors.ServiceToBeUpdatedNotFound + $": {updatedServiceId} for DID {resolvedDid.InternalDidDocument.DidIdentifier}");
                 }
 
                 if (UpdateStackEvaluation.UpdateActionStackLastServiceActionWasRemoveService(updateActionResults, updatedServiceId))
@@ -288,19 +288,19 @@ public class ParseTransactionHandler : IRequestHandler<ParseTransactionRequest, 
 
         // Postoperation validation. See SPEC:
         // After all operations finshied, there must be at least one master key
-        if (UpdateStackEvaluation.GetNumberOfMasterKeys(updateActionResults, resolvedDid.DidDocument.PublicKeys.Where(p => p.KeyUsage == PrismKeyUsage.MasterKey).Select(p => p.KeyId).ToList()) < 1)
+        if (UpdateStackEvaluation.GetNumberOfMasterKeys(updateActionResults, resolvedDid.InternalDidDocument.PublicKeys.Where(p => p.KeyUsage == PrismKeyUsage.MasterKey).Select(p => p.KeyId).ToList()) < 1)
         {
             return Result.Fail(ParserErrors.NoMasterKey);
         }
 
         // Service number must not exceed the maximum allowed number of services according to the global PrismParameters
-        if (UpdateStackEvaluation.GetNumberOfServices(updateActionResults, resolvedDid.DidDocument.PrismServices.Select(p => p.ServiceId).ToList()) > PrismParameters.MaxServiceNumber)
+        if (UpdateStackEvaluation.GetNumberOfServices(updateActionResults, resolvedDid.InternalDidDocument.PrismServices.Select(p => p.ServiceId).ToList()) > PrismParameters.MaxServiceNumber)
         {
             return Result.Fail(ParserErrors.MaxServiceNumber);
         }
 
         // VerificationKeys number must not exceed the maximum allowed number of verification methods according to the global PrismParameters
-        if (UpdateStackEvaluation.GetNumberOfVerificationMethods(updateActionResults, resolvedDid.DidDocument.PublicKeys.Select(p => p.KeyId).ToList()) > PrismParameters.MaxVerifiactionMethodNumber)
+        if (UpdateStackEvaluation.GetNumberOfVerificationMethods(updateActionResults, resolvedDid.InternalDidDocument.PublicKeys.Select(p => p.KeyId).ToList()) > PrismParameters.MaxVerifiactionMethodNumber)
         {
             return Result.Fail(ParserErrors.MaxVerifiactionMethodNumber);
         }
@@ -654,12 +654,12 @@ public class ParseTransactionHandler : IRequestHandler<ParseTransactionRequest, 
             signedAtalaOperation.Operation.OperationCase == AtalaOperation.OperationOneofCase.UpdateDid ||
             signedAtalaOperation.Operation.OperationCase == AtalaOperation.OperationOneofCase.DeactivateDid)
         {
-            publicKey = resolved.Value.DidDocument.PublicKeys.FirstOrDefault(p => p.KeyId.Equals(signedWith) && p.KeyUsage == PrismKeyUsage.MasterKey);
+            publicKey = resolved.Value.InternalDidDocument.PublicKeys.FirstOrDefault(p => p.KeyId.Equals(signedWith) && p.KeyUsage == PrismKeyUsage.MasterKey);
         }
         else if (signedAtalaOperation.Operation.OperationCase == AtalaOperation.OperationOneofCase.ProtocolVersionUpdate)
         {
             // TODO Unclear . Read spec
-            publicKey = resolved.Value.DidDocument.PublicKeys.FirstOrDefault(p => p.KeyId.Equals(signedWith, StringComparison.InvariantCultureIgnoreCase));
+            publicKey = resolved.Value.InternalDidDocument.PublicKeys.FirstOrDefault(p => p.KeyId.Equals(signedWith, StringComparison.InvariantCultureIgnoreCase));
         }
         else
         {

@@ -101,6 +101,7 @@ public static class PrismEncoding
 
             var x = hexAsBytes.Take(32).ToArray();
             var y = hexAsBytes.Skip(32).Take(32).ToArray();
+
             return Result.Ok((x, y));
         }
 

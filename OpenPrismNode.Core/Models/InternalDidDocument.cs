@@ -1,6 +1,6 @@
 ﻿namespace OpenPrismNode.Core.Models;
 
-public sealed record DidDocument
+public sealed record InternalDidDocument
 {
     /// <summary>
     /// Simplified representation of a DID Document focus on PRISM related information
@@ -9,7 +9,7 @@ public sealed record DidDocument
     /// <param name="publicKeys"></param>
     /// <param name="prismServices"></param>
     /// <param name="contexts"></param>
-    public DidDocument(string didIdentifierIdentifier, List<PrismPublicKey> publicKeys, List<PrismService> prismServices, List<string> contexts)
+    public InternalDidDocument(string didIdentifierIdentifier, List<PrismPublicKey> publicKeys, List<PrismService> prismServices, List<string> contexts)
     {
         DidIdentifier = didIdentifierIdentifier;
         PublicKeys = publicKeys;

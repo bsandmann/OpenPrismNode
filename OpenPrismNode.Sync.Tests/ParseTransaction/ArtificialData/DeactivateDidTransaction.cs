@@ -55,7 +55,7 @@ public class DeactivateDidTransaction
         );
 
         _mediatorMock.Setup(p => p.Send(It.IsAny<ResolveDidRequest>(), It.IsAny<CancellationToken>()))
-            .Returns(Task.FromResult(Result.Ok(new ResolveDidResponse(new DidDocument("did:prism:someDid", new List<PrismPublicKey>()
+            .Returns(Task.FromResult(Result.Ok(new ResolveDidResponse(new InternalDidDocument("did:prism:someDid", new List<PrismPublicKey>()
             {
                 new PrismPublicKey(PrismKeyUsage.MasterKey, "master0", "secp256k1", new byte[32], new byte[32]),
             }, new List<PrismService>(), new List<string>()), Hash.CreateFrom(previousOperationHash.ToByteArray())))));

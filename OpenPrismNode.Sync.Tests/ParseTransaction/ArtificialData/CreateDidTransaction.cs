@@ -1,6 +1,7 @@
 namespace OpenPrismNode.Sync.Tests.ParseTransaction.ArtificialData;
 
 using Core.Common;
+using Core.Models.DidDocument;
 using FluentResults.Extensions.FluentAssertions;
 using MediatR;
 using Microsoft.Extensions.Logging;
@@ -8,6 +9,7 @@ using Moq;
 using OpenPrismNode.Core.Crypto;
 using OpenPrismNode.Core.Models;
 using OpenPrismNode.Sync.Commands.ParseTransaction;
+using Service = OpenPrismNode.Service;
 
 public class CreateDidTransaction
 {

@@ -4,16 +4,16 @@ using Models;
 
 public class ResolveDidResponse
 {
-    public ResolveDidResponse(DidDocument didDocument, Hash lastOperationHash)
+    public ResolveDidResponse(InternalDidDocument internalDidDocument, Hash lastOperationHash)
     {
-        DidDocument = didDocument;
+        InternalDidDocument = internalDidDocument;
         LastOperationHash = lastOperationHash;
     }
 
     /// <summary>
     /// The result of the resolving operationg
     /// </summary>
-    public DidDocument DidDocument { get; }
+    public InternalDidDocument InternalDidDocument { get; }
 
     /// <summary>
     /// The last operationHash of the last valid updateOperation or

@@ -7,16 +7,16 @@ public class OperationResultWrapper
     /// </summary>
     /// <param name="operationResultType"></param>
     /// <param name="operationSequenceNumber"></param>
-    /// <param name="didDocument"></param>
+    /// <param name="internalDidDocument"></param>
     /// <param name="signingKeyId"></param>
     /// <exception cref="ArgumentException"></exception>
-    public OperationResultWrapper(OperationResultType operationResultType, int operationSequenceNumber, DidDocument didDocument, string signingKeyId)
+    public OperationResultWrapper(OperationResultType operationResultType, int operationSequenceNumber, InternalDidDocument internalDidDocument, string signingKeyId)
     {
         if (operationResultType == OperationResultType.CreateDid)
         {
             OperationSequenceNumber = operationSequenceNumber;
             OperationResultType = operationResultType;
-            DidDocument = didDocument;
+            InternalDidDocument = internalDidDocument;
             SigningKeyId = signingKeyId;
         }
         else
@@ -117,7 +117,7 @@ public class OperationResultWrapper
 
     public OperationResultType OperationResultType { get; }
     public int OperationSequenceNumber { get; }
-    private DidDocument? DidDocument { get; }
+    private InternalDidDocument? InternalDidDocument { get; }
     private string? DidIdentifer { get; }
     
     private Hash? PreviousOperationHash { get; }
@@ -142,9 +142,9 @@ public class OperationResultWrapper
     
     private ProtocolVersionUpdate? ProtocolVersionUpdate { get; }
     
-    public (DidDocument didDocument, string signingKeyId) AsCreateDid()
+    public (InternalDidDocument didDocument, string signingKeyId) AsCreateDid()
     {
-        return (DidDocument!, SigningKeyId);
+        return (InternalDidDocument!, SigningKeyId);
         
     }
     public (string didIdentifier, Hash previousOperationHash, List<UpdateDidActionResult> updateDidActionResults, byte[] operationBytes, byte[] signature, string signingKeyId) AsUpdateDid()

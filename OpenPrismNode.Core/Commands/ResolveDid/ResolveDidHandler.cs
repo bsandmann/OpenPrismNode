@@ -34,7 +34,16 @@ public class ResolveDidHandler : IRequestHandler<ResolveDidRequest, Result<Resol
     /// <returns></returns>
     public async Task<Result<ResolveDidResponse>> Handle(ResolveDidRequest request, CancellationToken cancellationToken)
     {
-        var didKey = PrismEncoding.HexToByteArray(request.DidIdentifier);
+        byte[] didKey;
+        try
+        {
+            didKey = PrismEncoding.HexToByteArray(request.DidIdentifier);
+        }
+        catch (Exception e)
+        {
+            return Result.Fail("The didIdentifier is not valid");
+        }
+
         CreateDidResult? createDidResult;
         if (request.BlockHeight == null)
         {
@@ -274,8 +283,7 @@ public class ResolveDidHandler : IRequestHandler<ResolveDidRequest, Result<Resol
                                 keyId: addKeyAction.KeyId!,
                                 curve: addKeyAction.Curve,
                                 keyX: keyX,
-                                keyY:
-                                keyY
+                                keyY: keyY.Length == 0 ? null : keyY
                             ));
                         }
                     }
@@ -375,9 +383,9 @@ public class ResolveDidHandler : IRequestHandler<ResolveDidRequest, Result<Resol
         return Result.Ok(resolveDidResponse);
     }
 
-    private static DidDocument ResolveCreateDidOperation(ResolveDidRequest request, CreateDidResult createDidResult)
+    private static InternalDidDocument ResolveCreateDidOperation(ResolveDidRequest request, CreateDidResult createDidResult)
     {
-        var returnDocument = new DidDocument(
+        var returnDocument = new InternalDidDocument(
             request.DidIdentifier,
             publicKeys: new List<PrismPublicKey>(),
             prismServices: new List<PrismService>(),
@@ -396,7 +404,7 @@ public class ResolveDidHandler : IRequestHandler<ResolveDidRequest, Result<Resol
                 keyId: keyId!,
                 curve: prismPublicKeyEntity.Curve,
                 keyX: keyX,
-                keyY: keyY
+                keyY: keyY.Length == 0 ? null : keyY
             ));
         }
 

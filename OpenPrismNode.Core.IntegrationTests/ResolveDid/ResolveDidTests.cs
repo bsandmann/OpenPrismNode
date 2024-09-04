@@ -64,7 +64,7 @@ public partial class IntegrationTests
         result.IsSuccess.Should().BeTrue();
         result.Value.Should().NotBeNull();
 
-        var resolvedDidDocument = result.Value.DidDocument;
+        var resolvedDidDocument = result.Value.InternalDidDocument;
         resolvedDidDocument.Should().NotBeNull();
         resolvedDidDocument.DidIdentifier.Should().Be(did);
 
@@ -181,7 +181,7 @@ public partial class IntegrationTests
         result.IsSuccess.Should().BeTrue();
         result.Value.Should().NotBeNull();
 
-        var resolvedDidDocument = result.Value.DidDocument;
+        var resolvedDidDocument = result.Value.InternalDidDocument;
         resolvedDidDocument.Should().NotBeNull();
         resolvedDidDocument.DidIdentifier.Should().Be(did);
 
@@ -286,7 +286,7 @@ public partial class IntegrationTests
         result.IsSuccess.Should().BeTrue();
         result.Value.Should().NotBeNull();
 
-        var resolvedDidDocument = result.Value.DidDocument;
+        var resolvedDidDocument = result.Value.InternalDidDocument;
         resolvedDidDocument.Should().NotBeNull();
         resolvedDidDocument.DidIdentifier.Should().Be(did);
 
@@ -416,7 +416,7 @@ public partial class IntegrationTests
         result.IsSuccess.Should().BeTrue();
         result.Value.Should().NotBeNull();
 
-        var resolvedDidDocument = result.Value.DidDocument;
+        var resolvedDidDocument = result.Value.InternalDidDocument;
         resolvedDidDocument.Should().NotBeNull();
         resolvedDidDocument.DidIdentifier.Should().Be(did);
 

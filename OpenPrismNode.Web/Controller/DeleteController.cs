@@ -2,6 +2,7 @@
 
 using Core.Commands.DeleteBlock;
 using Core.Commands.DeletedOrphanedAddresses;
+using Core.Commands.DeleteEmptyEpoch;
 using Core.Commands.DeleteEpoch;
 using Core.Commands.GetMostRecentBlock;
 using FluentResults;

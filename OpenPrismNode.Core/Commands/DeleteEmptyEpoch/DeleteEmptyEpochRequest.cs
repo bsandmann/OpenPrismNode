@@ -1,8 +1,8 @@
-﻿namespace OpenPrismNode.Core.Commands.DeleteEpoch;
+﻿namespace OpenPrismNode.Core.Commands.DeleteEmptyEpoch;
 
 using FluentResults;
 using MediatR;
-using Models;
+using OpenPrismNode.Core.Models;
 
 public class DeleteEmptyEpochRequest : IRequest<Result>
 {

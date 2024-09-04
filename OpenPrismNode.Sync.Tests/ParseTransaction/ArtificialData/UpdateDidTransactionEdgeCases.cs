@@ -2,6 +2,7 @@ namespace OpenPrismNode.Sync.Tests.ParseTransaction.ArtificialData;
 
 using Core.Commands.ResolveDid;
 using Core.Common;
+using Core.Models.DidDocument;
 using FluentResults;
 using FluentResults.Extensions.FluentAssertions;
 using MediatR;
@@ -92,7 +93,7 @@ public class UpdateDidTransactionEdgeCases
 
         // Resolve-Result of DID which should be updated
         _mediatorMock.Setup(p => p.Send(It.IsAny<ResolveDidRequest>(), It.IsAny<CancellationToken>()))
-            .Returns(Task.FromResult(Result.Ok(new ResolveDidResponse(new DidDocument("did:prism:someDid", new List<PrismPublicKey>()
+            .Returns(Task.FromResult(Result.Ok(new ResolveDidResponse(new InternalDidDocument("did:prism:someDid", new List<PrismPublicKey>()
             {
                 new PrismPublicKey(PrismKeyUsage.MasterKey, "master0", "secp256k1", new byte[32], new byte[32]),
             }, new List<PrismService>(), new List<string>()),Hash.CreateFrom(previousOperationHash.ToByteArray())))));
@@ -170,7 +171,7 @@ public class UpdateDidTransactionEdgeCases
 
         // Resolve-Result of DID which should be updated
         _mediatorMock.Setup(p => p.Send(It.IsAny<ResolveDidRequest>(), It.IsAny<CancellationToken>()))
-            .Returns(Task.FromResult(Result.Ok(new ResolveDidResponse(new DidDocument("did:prism:someDid", new List<PrismPublicKey>()
+            .Returns(Task.FromResult(Result.Ok(new ResolveDidResponse(new InternalDidDocument("did:prism:someDid", new List<PrismPublicKey>()
             {
                 new PrismPublicKey(PrismKeyUsage.MasterKey, "master0", "secp256k1", new byte[32], new byte[32]),
             }, new List<PrismService>(), new List<string>()), Hash.CreateFrom(previousOperationHash.ToByteArray())))));
@@ -239,7 +240,7 @@ public class UpdateDidTransactionEdgeCases
 
         // Resolve-Result of DID which should be updated
         _mediatorMock.Setup(p => p.Send(It.IsAny<ResolveDidRequest>(), It.IsAny<CancellationToken>()))
-            .Returns(Task.FromResult(Result.Ok(new ResolveDidResponse(new DidDocument("did:prism:someDid", new List<PrismPublicKey>()
+            .Returns(Task.FromResult(Result.Ok(new ResolveDidResponse(new InternalDidDocument("did:prism:someDid", new List<PrismPublicKey>()
             {
                 new PrismPublicKey(PrismKeyUsage.MasterKey, "master0", "secp256k1", new byte[32], new byte[32]),
             }, new List<PrismService>(), new List<string>()), Hash.CreateFrom(previousOperationHash.ToByteArray())))));
@@ -308,7 +309,7 @@ public class UpdateDidTransactionEdgeCases
 
         // Resolve-Result of DID which should be updated
         _mediatorMock.Setup(p => p.Send(It.IsAny<ResolveDidRequest>(), It.IsAny<CancellationToken>()))
-            .Returns(Task.FromResult(Result.Ok(new ResolveDidResponse(new DidDocument("did:prism:someDid", new List<PrismPublicKey>()
+            .Returns(Task.FromResult(Result.Ok(new ResolveDidResponse(new InternalDidDocument("did:prism:someDid", new List<PrismPublicKey>()
             {
                 new PrismPublicKey(PrismKeyUsage.MasterKey, "master0", "secp256k1", new byte[32], new byte[32]),
             }, new List<PrismService>(), new List<string>()), Hash.CreateFrom(previousOperationHash.ToByteArray())))));
@@ -367,7 +368,7 @@ public class UpdateDidTransactionEdgeCases
 
         // Resolve-Result of DID which should be updated
         _mediatorMock.Setup(p => p.Send(It.IsAny<ResolveDidRequest>(), It.IsAny<CancellationToken>()))
-            .Returns(Task.FromResult(Result.Ok(new ResolveDidResponse(new DidDocument("did:prism:someDid", new List<PrismPublicKey>()
+            .Returns(Task.FromResult(Result.Ok(new ResolveDidResponse(new InternalDidDocument("did:prism:someDid", new List<PrismPublicKey>()
             {
                 new PrismPublicKey(PrismKeyUsage.MasterKey, "master0", "secp256k1", new byte[32], new byte[32]),
                 new PrismPublicKey(PrismKeyUsage.IssuingKey, "key-1", "secp256k1", new byte[32], new byte[32]),
@@ -429,7 +430,7 @@ public class UpdateDidTransactionEdgeCases
 
         // Resolve-Result of DID which should be updated
         _mediatorMock.Setup(p => p.Send(It.IsAny<ResolveDidRequest>(), It.IsAny<CancellationToken>()))
-            .Returns(Task.FromResult(Result.Ok(new ResolveDidResponse(new DidDocument("did:prism:someDid", new List<PrismPublicKey>()
+            .Returns(Task.FromResult(Result.Ok(new ResolveDidResponse(new InternalDidDocument("did:prism:someDid", new List<PrismPublicKey>()
             {
                 new PrismPublicKey(PrismKeyUsage.MasterKey, "master0", "secp256k1", new byte[32], new byte[32]),
                 new PrismPublicKey(PrismKeyUsage.IssuingKey, "key-1", "secp256k1", new byte[32], new byte[32]),
@@ -507,7 +508,7 @@ public class UpdateDidTransactionEdgeCases
 
         // Resolve-Result of DID which should be updated
         _mediatorMock.Setup(p => p.Send(It.IsAny<ResolveDidRequest>(), It.IsAny<CancellationToken>()))
-            .Returns(Task.FromResult(Result.Ok(new ResolveDidResponse(new DidDocument("did:prism:someDid", new List<PrismPublicKey>()
+            .Returns(Task.FromResult(Result.Ok(new ResolveDidResponse(new InternalDidDocument("did:prism:someDid", new List<PrismPublicKey>()
             {
                 new PrismPublicKey(PrismKeyUsage.MasterKey, "master0", "secp256k1", new byte[32], new byte[32]),
                 new PrismPublicKey(PrismKeyUsage.IssuingKey, "key-1", "secp256k1", new byte[32], new byte[32]),
@@ -594,7 +595,7 @@ public class UpdateDidTransactionEdgeCases
 
         // Resolve-Result of DID which should be updated
         _mediatorMock.Setup(p => p.Send(It.IsAny<ResolveDidRequest>(), It.IsAny<CancellationToken>()))
-            .Returns(Task.FromResult(Result.Ok(new ResolveDidResponse(new DidDocument("did:prism:someDid", new List<PrismPublicKey>()
+            .Returns(Task.FromResult(Result.Ok(new ResolveDidResponse(new InternalDidDocument("did:prism:someDid", new List<PrismPublicKey>()
             {
                 new PrismPublicKey(PrismKeyUsage.MasterKey, "master0", "secp256k1", new byte[32], new byte[32]),
             }, new List<PrismService>(), new List<string>()), Hash.CreateFrom(previousOperationHash.ToByteArray())))));
@@ -648,7 +649,7 @@ public class UpdateDidTransactionEdgeCases
 
         // Resolve-Result of DID which should be updated
         _mediatorMock.Setup(p => p.Send(It.IsAny<ResolveDidRequest>(), It.IsAny<CancellationToken>()))
-            .Returns(Task.FromResult(Result.Ok(new ResolveDidResponse(new DidDocument("did:prism:someDid", new List<PrismPublicKey>()
+            .Returns(Task.FromResult(Result.Ok(new ResolveDidResponse(new InternalDidDocument("did:prism:someDid", new List<PrismPublicKey>()
             {
                 new PrismPublicKey(PrismKeyUsage.MasterKey, "master0", "secp256k1", new byte[32], new byte[32]),
             }, new List<PrismService>(), new List<string>()), Hash.CreateFrom(previousOperationHash.ToByteArray())))));
@@ -717,7 +718,7 @@ public class UpdateDidTransactionEdgeCases
 
         // Resolve-Result of DID which should be updated
         _mediatorMock.Setup(p => p.Send(It.IsAny<ResolveDidRequest>(), It.IsAny<CancellationToken>()))
-            .Returns(Task.FromResult(Result.Ok(new ResolveDidResponse(new DidDocument("did:prism:someDid", new List<PrismPublicKey>()
+            .Returns(Task.FromResult(Result.Ok(new ResolveDidResponse(new InternalDidDocument("did:prism:someDid", new List<PrismPublicKey>()
             {
                 new PrismPublicKey(PrismKeyUsage.MasterKey, "master0", "secp256k1", new byte[32], new byte[32]),
             }, new List<PrismService>(), new List<string>()), Hash.CreateFrom(previousOperationHash.ToByteArray())))));
@@ -786,7 +787,7 @@ public class UpdateDidTransactionEdgeCases
 
         // Resolve-Result of DID which should be updated
         _mediatorMock.Setup(p => p.Send(It.IsAny<ResolveDidRequest>(), It.IsAny<CancellationToken>()))
-            .Returns(Task.FromResult(Result.Ok(new ResolveDidResponse(new DidDocument("did:prism:someDid", new List<PrismPublicKey>()
+            .Returns(Task.FromResult(Result.Ok(new ResolveDidResponse(new InternalDidDocument("did:prism:someDid", new List<PrismPublicKey>()
             {
                 new PrismPublicKey(PrismKeyUsage.MasterKey, "master0", "secp256k1", new byte[32], new byte[32]),
             }, new List<PrismService>(), new List<string>()), Hash.CreateFrom(previousOperationHash.ToByteArray())))));
@@ -862,7 +863,7 @@ public class UpdateDidTransactionEdgeCases
 
         // Resolve-Result of DID which should be updated
         _mediatorMock.Setup(p => p.Send(It.IsAny<ResolveDidRequest>(), It.IsAny<CancellationToken>()))
-            .Returns(Task.FromResult(Result.Ok(new ResolveDidResponse(new DidDocument("did:prism:someDid", new List<PrismPublicKey>()
+            .Returns(Task.FromResult(Result.Ok(new ResolveDidResponse(new InternalDidDocument("did:prism:someDid", new List<PrismPublicKey>()
             {
                 new PrismPublicKey(PrismKeyUsage.MasterKey, "master0", "secp256k1", new byte[32], new byte[32]),
             }, new List<PrismService>(), new List<string>()),Hash.CreateFrom(previousOperationHash.ToByteArray())))));
@@ -954,7 +955,7 @@ public class UpdateDidTransactionEdgeCases
 
         // Resolve-Result of DID which should be updated
         _mediatorMock.Setup(p => p.Send(It.IsAny<ResolveDidRequest>(), It.IsAny<CancellationToken>()))
-            .Returns(Task.FromResult(Result.Ok(new ResolveDidResponse(new DidDocument("did:prism:someDid", new List<PrismPublicKey>()
+            .Returns(Task.FromResult(Result.Ok(new ResolveDidResponse(new InternalDidDocument("did:prism:someDid", new List<PrismPublicKey>()
             {
                 new PrismPublicKey(PrismKeyUsage.MasterKey, "master0", "secp256k1", new byte[32], new byte[32]),
             }, new List<PrismService>(), new List<string>()), Hash.CreateFrom(previousOperationHash.ToByteArray())))));
@@ -1024,7 +1025,7 @@ public class UpdateDidTransactionEdgeCases
 
         // Resolve-Result of DID which should be updated
         _mediatorMock.Setup(p => p.Send(It.IsAny<ResolveDidRequest>(), It.IsAny<CancellationToken>()))
-            .Returns(Task.FromResult(Result.Ok(new ResolveDidResponse(new DidDocument("did:prism:someDid", new List<PrismPublicKey>()
+            .Returns(Task.FromResult(Result.Ok(new ResolveDidResponse(new InternalDidDocument("did:prism:someDid", new List<PrismPublicKey>()
             {
                 new PrismPublicKey(PrismKeyUsage.MasterKey, "master0", "secp256k1", new byte[32], new byte[32]),
             }, new List<PrismService>(), new List<string>()), Hash.CreateFrom(previousOperationHash.ToByteArray())))));
@@ -1084,7 +1085,7 @@ public class UpdateDidTransactionEdgeCases
 
         // Resolve-Result of DID which should be updated
         _mediatorMock.Setup(p => p.Send(It.IsAny<ResolveDidRequest>(), It.IsAny<CancellationToken>()))
-            .Returns(Task.FromResult(Result.Ok(new ResolveDidResponse(new DidDocument("did:prism:someDid", new List<PrismPublicKey>()
+            .Returns(Task.FromResult(Result.Ok(new ResolveDidResponse(new InternalDidDocument("did:prism:someDid", new List<PrismPublicKey>()
                 {
                     new PrismPublicKey(PrismKeyUsage.MasterKey, "master0", "secp256k1", new byte[32], new byte[32]),
                 },
@@ -1154,7 +1155,7 @@ public class UpdateDidTransactionEdgeCases
 
         // Resolve-Result of DID which should be updated
         _mediatorMock.Setup(p => p.Send(It.IsAny<ResolveDidRequest>(), It.IsAny<CancellationToken>()))
-            .Returns(Task.FromResult(Result.Ok(new ResolveDidResponse(new DidDocument("did:prism:someDid", new List<PrismPublicKey>()
+            .Returns(Task.FromResult(Result.Ok(new ResolveDidResponse(new InternalDidDocument("did:prism:someDid", new List<PrismPublicKey>()
                 {
                     new PrismPublicKey(PrismKeyUsage.MasterKey, "master0", "secp256k1", new byte[32], new byte[32]),
                 },
@@ -1222,7 +1223,7 @@ public class UpdateDidTransactionEdgeCases
 
         // Resolve-Result of DID which should be updated
         _mediatorMock.Setup(p => p.Send(It.IsAny<ResolveDidRequest>(), It.IsAny<CancellationToken>()))
-            .Returns(Task.FromResult(Result.Ok(new ResolveDidResponse(new DidDocument("did:prism:someDid", new List<PrismPublicKey>()
+            .Returns(Task.FromResult(Result.Ok(new ResolveDidResponse(new InternalDidDocument("did:prism:someDid", new List<PrismPublicKey>()
                 {
                     new PrismPublicKey(PrismKeyUsage.MasterKey, "master0", "secp256k1", new byte[32], new byte[32]),
                 },
@@ -1293,7 +1294,7 @@ public class UpdateDidTransactionEdgeCases
 
         // Resolve-Result of DID which should be updated
         _mediatorMock.Setup(p => p.Send(It.IsAny<ResolveDidRequest>(), It.IsAny<CancellationToken>()))
-            .Returns(Task.FromResult(Result.Ok(new ResolveDidResponse(new DidDocument("did:prism:someDid", new List<PrismPublicKey>()
+            .Returns(Task.FromResult(Result.Ok(new ResolveDidResponse(new InternalDidDocument("did:prism:someDid", new List<PrismPublicKey>()
                 {
                     new PrismPublicKey(PrismKeyUsage.MasterKey, "master0", "secp256k1", new byte[32], new byte[32]),
                 },
@@ -1368,7 +1369,7 @@ public class UpdateDidTransactionEdgeCases
 
         // Resolve-Result of DID which should be updated
         _mediatorMock.Setup(p => p.Send(It.IsAny<ResolveDidRequest>(), It.IsAny<CancellationToken>()))
-            .Returns(Task.FromResult(Result.Ok(new ResolveDidResponse(new DidDocument("did:prism:someDid", new List<PrismPublicKey>()
+            .Returns(Task.FromResult(Result.Ok(new ResolveDidResponse(new InternalDidDocument("did:prism:someDid", new List<PrismPublicKey>()
                 {
                     new PrismPublicKey(PrismKeyUsage.MasterKey, "master0", "secp256k1", new byte[32], new byte[32]),
                 },

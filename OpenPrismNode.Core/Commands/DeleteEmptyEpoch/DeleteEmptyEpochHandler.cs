@@ -1,4 +1,4 @@
-﻿namespace OpenPrismNode.Core.Commands.DeleteEpoch;
+﻿namespace OpenPrismNode.Core.Commands.DeleteEmptyEpoch;
 
 using FluentResults;
 using MediatR;
