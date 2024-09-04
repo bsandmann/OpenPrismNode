@@ -21,6 +21,7 @@
     <ItemGroup>
       <PackageReference Include="BouncyCastle.NetCore" Version="2.2.1" />
       <PackageReference Include="Ensure.That" Version="10.1.0" />
+      <PackageReference Include="FluentResults" Version="3.16.0" />
       <PackageReference Include="LazyCache" Version="2.4.0" />
       <PackageReference Include="MediatR" Version="12.4.0" />
       <PackageReference Include="Microsoft.EntityFrameworkCore" Version="8.0.8" />
@@ -29,6 +30,10 @@
         <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       </PackageReference>
       <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="8.0.4" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\OpenPrismNode.Grpc\OpenPrismNode.Grpc.csproj" />
     </ItemGroup>
 
 </Project>

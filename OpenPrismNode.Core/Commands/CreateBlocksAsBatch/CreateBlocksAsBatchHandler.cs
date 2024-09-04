@@ -1,10 +1,10 @@
-using FluentResults;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using OpenPrismNode.Core.Entities;
 
 namespace OpenPrismNode.Core.Commands.CreateBlocksAsBatch
 {
+    using FluentResults;
     using Models;
 
     public class CreateBlocksAsBatchHandler : IRequestHandler<CreateBlocksAsBatchRequest, Result<Hash>>
