@@ -36,7 +36,7 @@ public class UpdateDidResult
     /// <summary>
     /// The sequenceNumber of the transaction inside the block
     /// </summary>
-    public long Index { get; set; }
+    public int Index { get; set; }
 
     /// <summary>
     /// The operationsequence inside the transaction
@@ -52,4 +52,5 @@ public class UpdateDidResult
     /// Time when the block was created on the blockchain
     /// </summary>
     public DateTime TimeUtc { get; set; }
+    
 }

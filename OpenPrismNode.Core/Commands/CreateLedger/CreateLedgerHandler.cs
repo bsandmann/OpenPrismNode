@@ -1,6 +1,5 @@
 ﻿namespace OpenPrismNode.Core.Commands.CreateLedger;
 
-using CreateLedger;
 using FluentResults;
 using MediatR;
 using Microsoft.EntityFrameworkCore;

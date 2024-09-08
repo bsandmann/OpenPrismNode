@@ -1,9 +1,5 @@
 ﻿namespace OpenPrismNode.Core.Commands.DeleteBlock;
 
-using FluentResults;
-using MediatR;
-using Models;
-
 public class DeleteBlockResponse
 {
     public DeleteBlockResponse(int previousBlockHeight, int previousBlockHashPrefix, int deletedBlockWasInEpoch)

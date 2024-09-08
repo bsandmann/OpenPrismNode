@@ -45,11 +45,11 @@ public class ParseTransactionHandler : IRequestHandler<ParseTransactionRequest, 
         }
         else if (request.SignedAtalaOperation.Operation.UpdateDid != null)
         {
-            return await ParseUpdateDidOperation(request.SignedAtalaOperation,   request.Ledger, request.Index, request.ResolveMode!);
+            return await ParseUpdateDidOperation(request.SignedAtalaOperation, request.Ledger, request.Index, request.ResolveMode!);
         }
         else if (request.SignedAtalaOperation.Operation.ProtocolVersionUpdate != null)
         {
-            return await ParseProtocolVersionUpdateOperation(request.SignedAtalaOperation,request.Ledger, request.Index, request.ResolveMode!);
+            return await ParseProtocolVersionUpdateOperation(request.SignedAtalaOperation, request.Ledger, request.Index, request.ResolveMode!);
         }
         else if (request.SignedAtalaOperation.Operation.DeactivateDid != null)
         {
@@ -106,7 +106,7 @@ public class ParseTransactionHandler : IRequestHandler<ParseTransactionRequest, 
 
         // TODO: Chekc if the DID already exists in the database. See spec
 
-        var didDocument = new InternalDidDocument(didIdentifier, publicKeyParseResult.Value, serviceParseResult.Value, new List<string>());
+        var didDocument = new InternalDidDocument(didIdentifier, publicKeyParseResult.Value, serviceParseResult.Value, new List<string>(), DateTime.UtcNow, String.Empty, 0, 0, String.Empty);
         var operationResultWrapper = new OperationResultWrapper(OperationResultType.CreateDid, index, didDocument, signedWith);
         return Result.Ok(operationResultWrapper);
     }
@@ -357,7 +357,7 @@ public class ParseTransactionHandler : IRequestHandler<ParseTransactionRequest, 
         return Result.Ok(operationResultWrapper);
     }
 
-    private async Task<Result<OperationResultWrapper>> ParseDeactivateDidOperation(SignedAtalaOperation signedAtalaOperation,LedgerType ledger, int index, ResolveMode resolveMode)
+    private async Task<Result<OperationResultWrapper>> ParseDeactivateDidOperation(SignedAtalaOperation signedAtalaOperation, LedgerType ledger, int index, ResolveMode resolveMode)
     {
         var signature = PrismEncoding.ByteStringToByteArray(signedAtalaOperation.Signature);
         var signedWith = signedAtalaOperation.SignedWith;

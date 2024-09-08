@@ -172,6 +172,7 @@ public class ResolveDidHandler : IRequestHandler<ResolveDidRequest, Result<Resol
                     PublicKeysToAdd = p.PrismPublicKeysToAdd.Select(q => new PublicKeyResult()
                     {
                         KeyId = q.KeyId,
+                        Curve = q.Curve,
                         PrismKeyUsage = q.PrismKeyUsage,
                         PublicKey = q.PublicKey,
                         UpdateOperationOrder = q.UpdateOperationOrder,
@@ -214,6 +215,7 @@ public class ResolveDidHandler : IRequestHandler<ResolveDidRequest, Result<Resol
                     PublicKeysToAdd = p.PrismPublicKeysToAdd.Select(q => new PublicKeyResult()
                     {
                         KeyId = q.KeyId,
+                        Curve = q.Curve,
                         PrismKeyUsage = q.PrismKeyUsage,
                         PublicKey = q.PublicKey,
                         UpdateOperationOrder = q.UpdateOperationOrder,
@@ -360,6 +362,12 @@ public class ResolveDidHandler : IRequestHandler<ResolveDidRequest, Result<Resol
                     {
                         throw new Exception("Operation index error in database");
                     }
+
+                    resolved.Updated = updateOperation.TimeUtc;
+                    resolved.VersionId = PrismEncoding.ByteArrayToBase64(updateOperation.OperationHash);
+                    resolved.CardanoTransactionPosition = updateOperation.Index;
+                    resolved.OperationPosition = updateOperation.OperationSequenceNumber;
+                    resolved.UpdateTxId = PrismEncoding.ByteArrayToBase64(updateOperation.TransactionHash);
                 }
             }
 
@@ -376,6 +384,13 @@ public class ResolveDidHandler : IRequestHandler<ResolveDidRequest, Result<Resol
             resolved.PublicKeys.Clear();
             resolved.PrismServices.Clear();
             resolved.Contexts.Clear();
+            resolved.Deactivated = true;
+            resolved.Updated = createDidResult.DeactivateDid.TimeUtc;
+            resolved.VersionId = PrismEncoding.ByteArrayToBase64(createDidResult.DeactivateDid.OperationHash);
+            resolved.CardanoTransactionPosition = createDidResult.DeactivateDid.Index;
+            resolved.OperationPosition = createDidResult.DeactivateDid.OperationSequenceNumber;
+            resolved.UpdateTxId = PrismEncoding.ByteArrayToBase64(createDidResult.DeactivateDid.TransactionHash);
+            resolved.DeactivateTxId = PrismEncoding.ByteArrayToBase64(createDidResult.DeactivateDid.TransactionHash);
         }
 
         var resolveDidResponse = new ResolveDidResponse(resolved, Hash.CreateFrom(lastOperationHash));
@@ -389,7 +404,16 @@ public class ResolveDidHandler : IRequestHandler<ResolveDidRequest, Result<Resol
             request.DidIdentifier,
             publicKeys: new List<PrismPublicKey>(),
             prismServices: new List<PrismService>(),
-            contexts: new List<string>() { PrismParameters.JsonLdDefaultContext });
+            contexts: new List<string>() { PrismParameters.JsonLdDefaultContext },
+            created: createDidResult.TimeUtc,
+            updated: null,
+            versionId: PrismEncoding.ByteArrayToBase64(createDidResult.OperationHash),
+            cardanoTransactionPosition: createDidResult.Index,
+            operationPosition: createDidResult.OperationSequenceNumber,
+            originTxId: PrismEncoding.ByteArrayToBase64(createDidResult.TransactionHash),
+            updateTxId: null,
+            deactivateTxId: null
+        );
         var prismPublicKeys = new List<PrismPublicKey>();
         var prismServices = new List<PrismService>();
         foreach (var prismPublicKeyEntity in createDidResult.PublicKeys)

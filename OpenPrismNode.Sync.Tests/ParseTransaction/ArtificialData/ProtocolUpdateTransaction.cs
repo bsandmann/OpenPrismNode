@@ -66,7 +66,7 @@ public class ProtocolUpdateTransaction
             .Returns(Task.FromResult(Result.Ok(new ResolveDidResponse(new InternalDidDocument("did:prism:someDid", new List<PrismPublicKey>()
             {
                 new PrismPublicKey(PrismKeyUsage.MasterKey, "master0", "secp256k1", new byte[32], new byte[32]),
-            }, new List<PrismService>(), new List<string>()), new Hash(_sha256Service))))); 
+            }, new List<PrismService>(), new List<string>(), DateTime.UtcNow, String.Empty, 0,0,String.Empty), new Hash(_sha256Service))))); 
 
         // Act
         _parseTransactionHandler = new ParseTransactionHandler(_mediatorMock.Object, _sha256Service, mockedEcService.Object, _logger);
@@ -113,7 +113,7 @@ public class ProtocolUpdateTransaction
             .Returns(Task.FromResult(Result.Ok(new ResolveDidResponse(new InternalDidDocument("did:prism:someDid", new List<PrismPublicKey>()
             {
                 new PrismPublicKey(PrismKeyUsage.MasterKey, "master0", "secp256k1", new byte[32], new byte[32]),
-            }, new List<PrismService>(), new List<string>()), new Hash(_sha256Service))))); 
+            }, new List<PrismService>(), new List<string>(), DateTime.UtcNow, String.Empty, 0,0,String.Empty), new Hash(_sha256Service))))); 
 
 
         // Act

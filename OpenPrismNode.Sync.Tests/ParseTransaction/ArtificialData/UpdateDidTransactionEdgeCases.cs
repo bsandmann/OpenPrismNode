@@ -96,7 +96,7 @@ public class UpdateDidTransactionEdgeCases
             .Returns(Task.FromResult(Result.Ok(new ResolveDidResponse(new InternalDidDocument("did:prism:someDid", new List<PrismPublicKey>()
             {
                 new PrismPublicKey(PrismKeyUsage.MasterKey, "master0", "secp256k1", new byte[32], new byte[32]),
-            }, new List<PrismService>(), new List<string>()),Hash.CreateFrom(previousOperationHash.ToByteArray())))));
+            }, new List<PrismService>(), new List<string>(), DateTime.UtcNow, String.Empty, 0,0,String.Empty),Hash.CreateFrom(previousOperationHash.ToByteArray())))));
 
         // Act
         _parseTransactionHandler = new ParseTransactionHandler(_mediatorMock.Object, _sha256Service, mockedEcService.Object, _logger);
@@ -174,7 +174,7 @@ public class UpdateDidTransactionEdgeCases
             .Returns(Task.FromResult(Result.Ok(new ResolveDidResponse(new InternalDidDocument("did:prism:someDid", new List<PrismPublicKey>()
             {
                 new PrismPublicKey(PrismKeyUsage.MasterKey, "master0", "secp256k1", new byte[32], new byte[32]),
-            }, new List<PrismService>(), new List<string>()), Hash.CreateFrom(previousOperationHash.ToByteArray())))));
+            }, new List<PrismService>(), new List<string>(), DateTime.UtcNow, String.Empty, 0,0,String.Empty), Hash.CreateFrom(previousOperationHash.ToByteArray())))));
 
         // Act
         _parseTransactionHandler = new ParseTransactionHandler(_mediatorMock.Object, _sha256Service, mockedEcService.Object, _logger);
@@ -243,7 +243,7 @@ public class UpdateDidTransactionEdgeCases
             .Returns(Task.FromResult(Result.Ok(new ResolveDidResponse(new InternalDidDocument("did:prism:someDid", new List<PrismPublicKey>()
             {
                 new PrismPublicKey(PrismKeyUsage.MasterKey, "master0", "secp256k1", new byte[32], new byte[32]),
-            }, new List<PrismService>(), new List<string>()), Hash.CreateFrom(previousOperationHash.ToByteArray())))));
+            }, new List<PrismService>(), new List<string>(), DateTime.UtcNow, String.Empty, 0,0,String.Empty), Hash.CreateFrom(previousOperationHash.ToByteArray())))));
 
         // Act
         _parseTransactionHandler = new ParseTransactionHandler(_mediatorMock.Object, _sha256Service, mockedEcService.Object, _logger);
@@ -312,7 +312,7 @@ public class UpdateDidTransactionEdgeCases
             .Returns(Task.FromResult(Result.Ok(new ResolveDidResponse(new InternalDidDocument("did:prism:someDid", new List<PrismPublicKey>()
             {
                 new PrismPublicKey(PrismKeyUsage.MasterKey, "master0", "secp256k1", new byte[32], new byte[32]),
-            }, new List<PrismService>(), new List<string>()), Hash.CreateFrom(previousOperationHash.ToByteArray())))));
+            }, new List<PrismService>(), new List<string>(), DateTime.UtcNow, String.Empty, 0,0,String.Empty), Hash.CreateFrom(previousOperationHash.ToByteArray())))));
 
         // Act
         _parseTransactionHandler = new ParseTransactionHandler(_mediatorMock.Object, _sha256Service, mockedEcService.Object, _logger);
@@ -373,7 +373,7 @@ public class UpdateDidTransactionEdgeCases
                 new PrismPublicKey(PrismKeyUsage.MasterKey, "master0", "secp256k1", new byte[32], new byte[32]),
                 new PrismPublicKey(PrismKeyUsage.IssuingKey, "key-1", "secp256k1", new byte[32], new byte[32]),
                 new PrismPublicKey(PrismKeyUsage.AuthenticationKey, "key-2", "secp256k1", new byte[32], new byte[32]),
-            }, new List<PrismService>(), new List<string>()), Hash.CreateFrom(previousOperationHash.ToByteArray())))));
+            }, new List<PrismService>(), new List<string>(), DateTime.UtcNow, String.Empty, 0,0,String.Empty), Hash.CreateFrom(previousOperationHash.ToByteArray())))));
 
 
         // Act
@@ -434,7 +434,7 @@ public class UpdateDidTransactionEdgeCases
             {
                 new PrismPublicKey(PrismKeyUsage.MasterKey, "master0", "secp256k1", new byte[32], new byte[32]),
                 new PrismPublicKey(PrismKeyUsage.IssuingKey, "key-1", "secp256k1", new byte[32], new byte[32]),
-            }, new List<PrismService>(), new List<string>()),Hash.CreateFrom(previousOperationHash.ToByteArray())))));
+            }, new List<PrismService>(), new List<string>(), DateTime.UtcNow, String.Empty, 0,0,String.Empty),Hash.CreateFrom(previousOperationHash.ToByteArray())))));
 
 
         // Act
@@ -512,7 +512,7 @@ public class UpdateDidTransactionEdgeCases
             {
                 new PrismPublicKey(PrismKeyUsage.MasterKey, "master0", "secp256k1", new byte[32], new byte[32]),
                 new PrismPublicKey(PrismKeyUsage.IssuingKey, "key-1", "secp256k1", new byte[32], new byte[32]),
-            }, new List<PrismService>(), new List<string>()), Hash.CreateFrom(previousOperationHash.ToByteArray())))));
+            }, new List<PrismService>(), new List<string>(), DateTime.UtcNow, String.Empty, 0,0,String.Empty), Hash.CreateFrom(previousOperationHash.ToByteArray())))));
 
 
         // Act
@@ -598,7 +598,7 @@ public class UpdateDidTransactionEdgeCases
             .Returns(Task.FromResult(Result.Ok(new ResolveDidResponse(new InternalDidDocument("did:prism:someDid", new List<PrismPublicKey>()
             {
                 new PrismPublicKey(PrismKeyUsage.MasterKey, "master0", "secp256k1", new byte[32], new byte[32]),
-            }, new List<PrismService>(), new List<string>()), Hash.CreateFrom(previousOperationHash.ToByteArray())))));
+            }, new List<PrismService>(), new List<string>(), DateTime.UtcNow, String.Empty, 0,0,String.Empty), Hash.CreateFrom(previousOperationHash.ToByteArray())))));
 
 
         // Act
@@ -652,7 +652,7 @@ public class UpdateDidTransactionEdgeCases
             .Returns(Task.FromResult(Result.Ok(new ResolveDidResponse(new InternalDidDocument("did:prism:someDid", new List<PrismPublicKey>()
             {
                 new PrismPublicKey(PrismKeyUsage.MasterKey, "master0", "secp256k1", new byte[32], new byte[32]),
-            }, new List<PrismService>(), new List<string>()), Hash.CreateFrom(previousOperationHash.ToByteArray())))));
+            }, new List<PrismService>(), new List<string>(), DateTime.UtcNow, String.Empty, 0,0,String.Empty), Hash.CreateFrom(previousOperationHash.ToByteArray())))));
 
         // Act
         _parseTransactionHandler = new ParseTransactionHandler(_mediatorMock.Object, _sha256Service, mockedEcService.Object, _logger);
@@ -721,7 +721,7 @@ public class UpdateDidTransactionEdgeCases
             .Returns(Task.FromResult(Result.Ok(new ResolveDidResponse(new InternalDidDocument("did:prism:someDid", new List<PrismPublicKey>()
             {
                 new PrismPublicKey(PrismKeyUsage.MasterKey, "master0", "secp256k1", new byte[32], new byte[32]),
-            }, new List<PrismService>(), new List<string>()), Hash.CreateFrom(previousOperationHash.ToByteArray())))));
+            }, new List<PrismService>(), new List<string>(), DateTime.UtcNow, String.Empty, 0,0,String.Empty), Hash.CreateFrom(previousOperationHash.ToByteArray())))));
 
         // Act
         _parseTransactionHandler = new ParseTransactionHandler(_mediatorMock.Object, _sha256Service, mockedEcService.Object, _logger);
@@ -790,7 +790,7 @@ public class UpdateDidTransactionEdgeCases
             .Returns(Task.FromResult(Result.Ok(new ResolveDidResponse(new InternalDidDocument("did:prism:someDid", new List<PrismPublicKey>()
             {
                 new PrismPublicKey(PrismKeyUsage.MasterKey, "master0", "secp256k1", new byte[32], new byte[32]),
-            }, new List<PrismService>(), new List<string>()), Hash.CreateFrom(previousOperationHash.ToByteArray())))));
+            }, new List<PrismService>(), new List<string>(), DateTime.UtcNow, String.Empty, 0,0,String.Empty), Hash.CreateFrom(previousOperationHash.ToByteArray())))));
 
         // Act
         _parseTransactionHandler = new ParseTransactionHandler(_mediatorMock.Object, _sha256Service, mockedEcService.Object, _logger);
@@ -866,7 +866,7 @@ public class UpdateDidTransactionEdgeCases
             .Returns(Task.FromResult(Result.Ok(new ResolveDidResponse(new InternalDidDocument("did:prism:someDid", new List<PrismPublicKey>()
             {
                 new PrismPublicKey(PrismKeyUsage.MasterKey, "master0", "secp256k1", new byte[32], new byte[32]),
-            }, new List<PrismService>(), new List<string>()),Hash.CreateFrom(previousOperationHash.ToByteArray())))));
+            }, new List<PrismService>(), new List<string>(), DateTime.UtcNow, String.Empty, 0,0,String.Empty),Hash.CreateFrom(previousOperationHash.ToByteArray())))));
 
         // Act
         _parseTransactionHandler = new ParseTransactionHandler(_mediatorMock.Object, _sha256Service, mockedEcService.Object, _logger);
@@ -958,7 +958,7 @@ public class UpdateDidTransactionEdgeCases
             .Returns(Task.FromResult(Result.Ok(new ResolveDidResponse(new InternalDidDocument("did:prism:someDid", new List<PrismPublicKey>()
             {
                 new PrismPublicKey(PrismKeyUsage.MasterKey, "master0", "secp256k1", new byte[32], new byte[32]),
-            }, new List<PrismService>(), new List<string>()), Hash.CreateFrom(previousOperationHash.ToByteArray())))));
+            }, new List<PrismService>(), new List<string>(), DateTime.UtcNow, String.Empty, 0,0,String.Empty), Hash.CreateFrom(previousOperationHash.ToByteArray())))));
 
         // Act
         _parseTransactionHandler = new ParseTransactionHandler(_mediatorMock.Object, _sha256Service, mockedEcService.Object, _logger);
@@ -1028,7 +1028,7 @@ public class UpdateDidTransactionEdgeCases
             .Returns(Task.FromResult(Result.Ok(new ResolveDidResponse(new InternalDidDocument("did:prism:someDid", new List<PrismPublicKey>()
             {
                 new PrismPublicKey(PrismKeyUsage.MasterKey, "master0", "secp256k1", new byte[32], new byte[32]),
-            }, new List<PrismService>(), new List<string>()), Hash.CreateFrom(previousOperationHash.ToByteArray())))));
+            }, new List<PrismService>(), new List<string>(), DateTime.UtcNow, String.Empty, 0,0,String.Empty), Hash.CreateFrom(previousOperationHash.ToByteArray())))));
 
         // Act
         _parseTransactionHandler = new ParseTransactionHandler(_mediatorMock.Object, _sha256Service, mockedEcService.Object, _logger);
@@ -1092,7 +1092,7 @@ public class UpdateDidTransactionEdgeCases
                 new List<PrismService>()
                 {
                     new PrismService("service0", "someType", new ServiceEndpoints())
-                }, new List<string>()), Hash.CreateFrom(previousOperationHash.ToByteArray())))));
+                }, new List<string>(), DateTime.UtcNow, String.Empty, 0,0,String.Empty), Hash.CreateFrom(previousOperationHash.ToByteArray())))));
 
         // Act
         _parseTransactionHandler = new ParseTransactionHandler(_mediatorMock.Object, _sha256Service, mockedEcService.Object, _logger);
@@ -1161,7 +1161,7 @@ public class UpdateDidTransactionEdgeCases
                 },
                 new List<PrismService>()
                 {
-                }, new List<string>()), Hash.CreateFrom(previousOperationHash.ToByteArray())))));
+                }, new List<string>(), DateTime.UtcNow, String.Empty, 0,0,String.Empty), Hash.CreateFrom(previousOperationHash.ToByteArray())))));
 
         // Act
         _parseTransactionHandler = new ParseTransactionHandler(_mediatorMock.Object, _sha256Service, mockedEcService.Object, _logger);
@@ -1230,7 +1230,7 @@ public class UpdateDidTransactionEdgeCases
                 new List<PrismService>()
                 {
                     new PrismService("service0", "someType", new ServiceEndpoints())
-                }, new List<string>()), Hash.CreateFrom(previousOperationHash.ToByteArray())))));
+                }, new List<string>(), DateTime.UtcNow, String.Empty, 0,0,String.Empty), Hash.CreateFrom(previousOperationHash.ToByteArray())))));
 
         // Act
         _parseTransactionHandler = new ParseTransactionHandler(_mediatorMock.Object, _sha256Service, mockedEcService.Object, _logger);
@@ -1298,7 +1298,7 @@ public class UpdateDidTransactionEdgeCases
                 {
                     new PrismPublicKey(PrismKeyUsage.MasterKey, "master0", "secp256k1", new byte[32], new byte[32]),
                 },
-                new List<PrismService>(), new List<string>()), Hash.CreateFrom(previousOperationHash.ToByteArray())))));
+                new List<PrismService>(), new List<string>(), DateTime.UtcNow, String.Empty, 0,0,String.Empty), Hash.CreateFrom(previousOperationHash.ToByteArray())))));
 
         // Act
         _parseTransactionHandler = new ParseTransactionHandler(_mediatorMock.Object, _sha256Service, mockedEcService.Object, _logger);
@@ -1373,7 +1373,7 @@ public class UpdateDidTransactionEdgeCases
                 {
                     new PrismPublicKey(PrismKeyUsage.MasterKey, "master0", "secp256k1", new byte[32], new byte[32]),
                 },
-                new List<PrismService>(), new List<string>()),Hash.CreateFrom(previousOperationHash.ToByteArray())))));
+                new List<PrismService>(), new List<string>(), DateTime.UtcNow, String.Empty, 0,0,String.Empty),Hash.CreateFrom(previousOperationHash.ToByteArray())))));
 
         // Act
         _parseTransactionHandler = new ParseTransactionHandler(_mediatorMock.Object, _sha256Service, mockedEcService.Object, _logger);
