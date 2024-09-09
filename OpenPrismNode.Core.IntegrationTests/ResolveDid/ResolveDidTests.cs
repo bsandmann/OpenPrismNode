@@ -26,8 +26,8 @@ public partial class IntegrationTests
 
         var publicKeys = new List<PrismPublicKey>
         {
-            new PrismPublicKey(PrismKeyUsage.MasterKey, signingKeyId, "secp256k1", new byte[] { 1, 2, 3 }, new byte[] { 4, 5, 6 }),
-            new PrismPublicKey(PrismKeyUsage.IssuingKey, signingKeyId, "secp256k1", new byte[] { 3, 2, 3 }, new byte[] { 8, 5, 6 })
+            new PrismPublicKey(PrismKeyUsage.MasterKey, signingKeyId, "secp256k1", new byte[] { 1, 2, 3, 1, 2, 3, 1, 2, 3, 1, 2, 3, 1, 2, 3, 1, 2, 3, 1, 2, 3, 1, 2, 3, 1, 2, 3, 1, 2, 3, 1, 2, 3, }, new byte[] { 4, 5, 6 }),
+            new PrismPublicKey(PrismKeyUsage.IssuingKey, signingKeyId, "secp256k1", new byte[] { 3, 2, 3, 1, 2, 3, 1, 2, 3, 1, 2, 3, 1, 2, 3, 1, 2, 3, 1, 2, 3, 1, 2, 3, 1, 2, 3, 1, 2, 3, 1, 2, 3, }, new byte[] { 8, 5, 6 })
         };
         var services = new List<PrismService>
         {
@@ -113,7 +113,7 @@ public partial class IntegrationTests
 
         var publicKeys = new List<PrismPublicKey>
         {
-            new PrismPublicKey(PrismKeyUsage.MasterKey, signingKeyId, "secp256k1", new byte[] { 1, 2, 3 }, new byte[] { 4, 5, 6 })
+            new PrismPublicKey(PrismKeyUsage.MasterKey, signingKeyId, "secp256k1", new byte[] { 1, 2, 3, 1, 2, 3, 1, 2, 3, 1, 2, 3, 1, 2, 3, 1, 2, 3, 1, 2, 3, 1, 2, 3, 1, 2, 3, 1, 2, 3, 1, 2, 3, }, new byte[] { 4, 5, 6 })
         };
         var services = new List<PrismService>
         {
@@ -149,7 +149,7 @@ public partial class IntegrationTests
 
         var updateActions = new List<UpdateDidActionResult>
         {
-            new UpdateDidActionResult(new PrismPublicKey(PrismKeyUsage.IssuingKey, newSigningKeyId, "secp256k1", new byte[] { 7, 8, 9 }, new byte[] { 10, 11, 12 })),
+            new UpdateDidActionResult(new PrismPublicKey(PrismKeyUsage.IssuingKey, newSigningKeyId, "secp256k1", new byte[] { 7, 8, 9, 3, 1, 2, 3, 1, 2, 3, 1, 2, 3, 1, 2, 3, 1, 2, 3, 1, 2, 3, 1, 2, 3, 1, 2, 3, 1, 2, 3, 1, 2, 3, }, new byte[] { 10, 11, 12 })),
             new UpdateDidActionResult("service1", "LinkedDomains", new ServiceEndpoints { Uri = new Uri("https://example.org") }),
             new UpdateDidActionResult(new List<string>() { "some new context", "some other new context" })
         };
@@ -215,7 +215,7 @@ public partial class IntegrationTests
 
         var publicKeys = new List<PrismPublicKey>
         {
-            new PrismPublicKey(PrismKeyUsage.MasterKey, signingKeyId, "secp256k1", new byte[] { 1, 2, 3 }, new byte[] { 4, 5, 3 })
+            new PrismPublicKey(PrismKeyUsage.MasterKey, signingKeyId, "secp256k1", new byte[] { 1, 2, 3, 1, 2, 3, 1, 2, 3, 1, 2, 3, 1, 2, 3, 1, 2, 3, 1, 2, 3, 1, 2, 3, 1, 2, 3, 1, 2, 3, 1, 2, 3, }, new byte[] { 4, 5, 3 })
         };
         var services = new List<PrismService>
         {
@@ -237,7 +237,7 @@ public partial class IntegrationTests
             utxos: new List<UtxoWrapper>(),
             prismPublicKeys: publicKeys,
             prismServices: services,
-            patchedContexts:context
+            patchedContexts: context
         );
 
         await _createTransactionCreateDidHandler.Handle(createDidRequest, CancellationToken.None);
@@ -253,9 +253,9 @@ public partial class IntegrationTests
 
         var updateActions = new List<UpdateDidActionResult>
         {
-            new UpdateDidActionResult(new PrismPublicKey(PrismKeyUsage.IssuingKey, newSigningKeyId, "secp256k1", new byte[] { 7, 8, 9 }, new byte[] { 10, 11, 12 })),
+            new UpdateDidActionResult(new PrismPublicKey(PrismKeyUsage.IssuingKey, newSigningKeyId, "secp256k1", new byte[] { 7, 8, 9, 1, 2, 3, 1, 2, 3, 1, 2, 3, 1, 2, 3, 1, 2, 3, 1, 2, 3, 1, 2, 3, 1, 2, 3, 1, 2, 3, 1, 2, 3, }, new byte[] { 10, 11, 12 })),
             new UpdateDidActionResult("service1", "LinkedDomains", new ServiceEndpoints { Uri = new Uri("https://example.org") }),
-            new UpdateDidActionResult(new List<string>() {}), // Should remove the inital contexts form the create operation contexts
+            new UpdateDidActionResult(new List<string>() { }), // Should remove the inital contexts form the create operation contexts
             new UpdateDidActionResult(new List<string>() { "some new context", "some other new context" })
         };
 
@@ -321,7 +321,7 @@ public partial class IntegrationTests
 
         var publicKeys = new List<PrismPublicKey>
         {
-            new PrismPublicKey(PrismKeyUsage.MasterKey, signingKeyId, "secp256k1", new byte[] { 1, 2, 3 }, new byte[] { 4, 5, 6 })
+            new PrismPublicKey(PrismKeyUsage.MasterKey, signingKeyId, "secp256k1", new byte[] { 1, 2, 3, 1, 2, 3, 1, 2, 3, 1, 2, 3, 1, 2, 3, 1, 2, 3, 1, 2, 3, 1, 2, 3, 1, 2, 3, 1, 2, 3, 1, 2, 3, }, new byte[] { 4, 5, 6 })
         };
         var services = new List<PrismService>
         {
@@ -359,7 +359,7 @@ public partial class IntegrationTests
 
         var updateActions = new List<UpdateDidActionResult>
         {
-            new UpdateDidActionResult(new PrismPublicKey(PrismKeyUsage.IssuingKey, newSigningKeyId, "secp256k1", new byte[] { 7, 8, 9 }, new byte[] { 10, 11, 12 })),
+            new UpdateDidActionResult(new PrismPublicKey(PrismKeyUsage.IssuingKey, newSigningKeyId, "secp256k1", new byte[] { 7, 8, 9, 1, 2, 3, 1, 2, 3, 1, 2, 3, 1, 2, 3, 1, 2, 3, 1, 2, 3, 1, 2, 3, 1, 2, 3, 1, 2, 3, 1, 2, 3, }, new byte[] { 10, 11, 12 })),
             new UpdateDidActionResult("service1", "LinkedDomains", new ServiceEndpoints { Uri = new Uri("https://example.org") }),
             new UpdateDidActionResult(new List<string>() { "some new context", "some other new context" })
         };
