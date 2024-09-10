@@ -40,7 +40,7 @@ public record DidResolutionMetadata
     /// <summary>
     /// Common property of universal resolvers. Not a standard, but used by many resolvers
     /// </summary>
-    public long Duration { get; init; }
+    public long? Duration { get; init; }
 
     /// <summary>
     /// Common property of universal resolvers. Not a standard, but used by many resolvers

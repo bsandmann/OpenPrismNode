@@ -23,6 +23,7 @@ public class DidResolutionResult
     /// See also the spec: https://www.w3.org/TR/did-spec-registries/#did-resolution-metadata
     /// Only used when running through a Universal Resolver
     /// </summary>
+    [JsonPropertyName("didResolutionMetadata")]
     public DidResolutionMetadata? DidResolutionMetadata { get; init; } = new();
 
     /// <summary>
@@ -30,5 +31,5 @@ public class DidResolutionResult
     /// See also the spec: https://www.w3.org/TR/did-spec-registries/#did-document-metadata
     /// </summary>
     [JsonPropertyName("didDocumentMetadata")]
-    public required DidDocumentMetadata DidDocumentMetadata { get; init; } = new(); 
+    public DidDocumentMetadata? DidDocumentMetadata { get; init; } = new(); 
 }

@@ -47,7 +47,9 @@ public class ResolveDidHandler : IRequestHandler<ResolveDidRequest, Result<Resol
         CreateDidResult? createDidResult;
         if (request.BlockHeight == null)
         {
-            createDidResult = await _context.CreateDidEntities.Select(p => new CreateDidResult()
+            createDidResult = await _context.CreateDidEntities
+                .Where(p => p.TransactionEntity.BlockEntity.EpochEntity.Ledger == request.Ledger)
+                .Select(p => new CreateDidResult()
                 {
                     OperationHash = p.OperationHash,
                     OperationSequenceNumber = p.OperationSequenceNumber,
@@ -90,7 +92,9 @@ public class ResolveDidHandler : IRequestHandler<ResolveDidRequest, Result<Resol
         }
         else
         {
-            createDidResult = await _context.CreateDidEntities.Select(p => new CreateDidResult()
+            createDidResult = await _context.CreateDidEntities
+                .Where(p => p.TransactionEntity.BlockEntity.EpochEntity.Ledger == request.Ledger)
+                .Select(p => new CreateDidResult()
                 {
                     OperationHash = p.OperationHash,
                     OperationSequenceNumber = p.OperationSequenceNumber,
@@ -137,7 +141,7 @@ public class ResolveDidHandler : IRequestHandler<ResolveDidRequest, Result<Resol
 
         if (createDidResult is null)
         {
-            return Result.Fail("Did could not be found on the blockchain");
+            return Result.Fail($"Did could not be found on the {request.Ledger} ledger");
         }
 
 
@@ -160,6 +164,7 @@ public class ResolveDidHandler : IRequestHandler<ResolveDidRequest, Result<Resol
         if (request.BlockHeight == null)
         {
             updateOperations = await _context.UpdateDidEntities
+                .Where(p => p.TransactionEntity.BlockEntity.EpochEntity.Ledger == request.Ledger)
                 .Select(p => new UpdateDidResult()
                 {
                     Did = p.Did,
@@ -203,6 +208,7 @@ public class ResolveDidHandler : IRequestHandler<ResolveDidRequest, Result<Resol
             // We don't need to restrict the query towards the lower bound, because an update DID operation always
             // requires an exisiting createDID operation, thus the update operation always comes after the createDid operation
             updateOperations = await _context.UpdateDidEntities
+                .Where(p => p.TransactionEntity.BlockEntity.EpochEntity.Ledger == request.Ledger)
                 .Select(p => new UpdateDidResult()
                 {
                     Did = p.Did,
@@ -363,7 +369,7 @@ public class ResolveDidHandler : IRequestHandler<ResolveDidRequest, Result<Resol
                         throw new Exception("Operation index error in database");
                     }
 
-                    resolved.Updated = updateOperation.TimeUtc;
+                    resolved.Updated = DateTime.SpecifyKind(updateOperation.TimeUtc, DateTimeKind.Utc);
                     resolved.VersionId = PrismEncoding.ByteArrayToBase64(updateOperation.OperationHash);
                     resolved.CardanoTransactionPosition = updateOperation.Index;
                     resolved.OperationPosition = updateOperation.OperationSequenceNumber;
@@ -385,7 +391,7 @@ public class ResolveDidHandler : IRequestHandler<ResolveDidRequest, Result<Resol
             resolved.PrismServices.Clear();
             resolved.Contexts.Clear();
             resolved.Deactivated = true;
-            resolved.Updated = createDidResult.DeactivateDid.TimeUtc;
+            resolved.Updated = DateTime.SpecifyKind(createDidResult.DeactivateDid.TimeUtc, DateTimeKind.Utc);
             resolved.VersionId = PrismEncoding.ByteArrayToBase64(createDidResult.DeactivateDid.OperationHash);
             resolved.CardanoTransactionPosition = createDidResult.DeactivateDid.Index;
             resolved.OperationPosition = createDidResult.DeactivateDid.OperationSequenceNumber;
@@ -405,7 +411,7 @@ public class ResolveDidHandler : IRequestHandler<ResolveDidRequest, Result<Resol
             publicKeys: new List<PrismPublicKey>(),
             prismServices: new List<PrismService>(),
             contexts: new List<string>() { PrismParameters.JsonLdDefaultContext },
-            created: createDidResult.TimeUtc,
+            created:  DateTime.SpecifyKind(createDidResult.TimeUtc, DateTimeKind.Utc),
             updated: null,
             versionId: PrismEncoding.ByteArrayToBase64(createDidResult.OperationHash),
             cardanoTransactionPosition: createDidResult.Index,

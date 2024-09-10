@@ -5,7 +5,7 @@ using Models.DidDocument;
 
 public static class TransformToDidDocumentMetadata
 {
-    public static DidDocumentMetadata Transform(InternalDidDocument internalDidDocument, LedgerType ledger, bool includeNetworkIdentifier)
+    public static DidDocumentMetadata Transform(InternalDidDocument internalDidDocument, LedgerType ledger, DateTime? nextUpdate, bool includeNetworkIdentifier)
     {
         var networkIdentifier = string.Empty;
         if (includeNetworkIdentifier)
@@ -30,7 +30,7 @@ public static class TransformToDidDocumentMetadata
             Updated = internalDidDocument.Updated,
             VersionId = internalDidDocument.VersionId,
             Deactivated = internalDidDocument.Deactivated == false ? null : internalDidDocument.Deactivated,
-            // TODO NextUpdate 
+            NextUpdate = nextUpdate,
             CardanoTransactionPosition = internalDidDocument.CardanoTransactionPosition,
             OperationPosition = internalDidDocument.OperationPosition,
             OriginTxId = internalDidDocument.OriginTxId,

@@ -22,15 +22,32 @@ namespace OpenPrismNode.Core.Commands.CreateBlocksAsBatch
             _context.ChangeTracker.AutoDetectChangesEnabled = false;
 
             // Check if the highest block in the database is exactly one less than the first block we're adding
-            var highestExistingBlock = await _context.BlockEntities
+            var highestExistingNonForkBlock = await _context.BlockEntities
                 .Include(p => p.EpochEntity)
                 .Where(b => b.IsFork == false && b.EpochEntity.Ledger == request.ledger)
                 .OrderByDescending(b => b.BlockHeight)
                 .FirstOrDefaultAsync(cancellationToken);
 
-            if (highestExistingBlock == null || highestExistingBlock.BlockHeight != request.Blocks.First().block_no - 1)
+            var highestExistingForkBlock = await _context.BlockEntities
+                .Include(p => p.EpochEntity)
+                .Where(b => b.IsFork == true && b.EpochEntity.Ledger == request.ledger)
+                .OrderByDescending(b => b.BlockHeight)
+                .FirstOrDefaultAsync(cancellationToken);
+
+            if (highestExistingNonForkBlock == null || highestExistingNonForkBlock.BlockHeight != request.Blocks.First().block_no - 1)
             {
                 return Result.Fail("The existing blocks in the database do not align with the new batch.");
+            }
+
+            if (highestExistingForkBlock is not null && highestExistingForkBlock.BlockHeight >= highestExistingNonForkBlock.BlockHeight)
+            {
+                // Special case, in which we restarted the sync process on a fork    
+                // We remove all the blocks that are part of the fork to avoid conflicts
+                var forkedBlocks = await _context.BlockEntities
+                    .Where(b => b.BlockHeight >= highestExistingForkBlock.BlockHeight && b.EpochEntity.Ledger == request.ledger && b.IsFork)
+                    .ToListAsync(cancellationToken: cancellationToken);
+                _context.RemoveRange(forkedBlocks);
+                await _context.SaveChangesAsync(cancellationToken);
             }
 
             var dateTimeNow = DateTime.SpecifyKind(DateTime.UtcNow, DateTimeKind.Unspecified);
@@ -39,7 +56,7 @@ namespace OpenPrismNode.Core.Commands.CreateBlocksAsBatch
             for (int i = 0; i < request.Blocks.Count; i++)
             {
                 var block = request.Blocks[i];
-                var previousBlock = i == 0 ? highestExistingBlock : newBlocks[i - 1];
+                var previousBlock = i == 0 ? highestExistingNonForkBlock : newBlocks[i - 1];
 
                 var blockEntity = new BlockEntity
                 {

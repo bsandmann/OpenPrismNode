@@ -1,6 +1,10 @@
 namespace OpenPrismNode.Web.Controller;
 
 using Asp.Versioning;
+using Core;
+using Core.Commands.GetMaxBlockHeightForDateTime;
+using Core.Commands.GetNextOperation;
+using Core.Commands.GetOperationLedgerTime;
 using Core.Commands.ResolveDid;
 using Core.Commands.ResolveDid.Transform;
 using Core.Models.DidDocument;
@@ -31,8 +35,7 @@ public class ResolveController : ControllerBase
 
     [HttpGet("api/v{version:apiVersion}/identifiers/{did}")]
     [ApiVersion("1.0")]
-    // public async Task<IActionResult> ResolveDid(string did, [FromQuery] ResolutionOptions? options, [FromQuery] string ledger)
-    public async Task<IActionResult> ResolveDid(string did, [FromQuery] string? ledger = null)
+    public async Task<IActionResult> ResolveDid(string did, [FromQuery] ResolutionOptions? options = null, [FromQuery] string? ledger = null)
     {
         try
         {
@@ -71,15 +74,58 @@ public class ResolveController : ControllerBase
                 }
             }
 
+
             // TODO Check for long form or short form did
 
             //TODO expand the network configuration to multiple networks -> Check if the network is supported then
+
+            if (options is not null)
+            {
+                if (!string.IsNullOrEmpty(options.VersionId) && options.VersionTime.HasValue)
+                {
+                    return BadRequest("VersionId and VersionTime are mutually exclusive.");
+                }
+            }
 
             string? acceptHeader = Request.Headers.Accept;
             var acceptedContentType = DidResolutionHeader.ParseAcceptHeader(acceptHeader);
 
             var stopWatch = System.Diagnostics.Stopwatch.StartNew();
-            var resolveResult = await _mediator.Send(new ResolveDidRequest(ledgerQueryType, parsedDid.MethodSpecificId, null, null, null));
+            int? maxBlockHeight = null;
+            int? maxBlockSequence = null;
+            int? maxOperationSequence = null;
+            if (options is not null && options.VersionTime.HasValue && options.VersionTime.Value < DateTime.UtcNow)
+            {
+                // VersionTime
+                var maxBlockHeightResult = await _mediator.Send(new GetMaxBlockHeightForDateTimeRequest(ledgerQueryType, options.VersionTime.Value));
+                if (maxBlockHeightResult.IsFailed)
+                {
+                    return StatusCode(500, maxBlockHeightResult.Errors.First().Message);
+                }
+
+                maxBlockHeight = maxBlockHeightResult.Value;
+                maxBlockSequence = 10_000;
+                maxOperationSequence = 10_000;
+            }
+            else if (options is not null && !string.IsNullOrWhiteSpace(options.VersionId))
+            {
+                var versionResult = await _mediator.Send(new GetOperationLedgerTimeRequest(options.VersionId, ledgerQueryType));
+                if (versionResult.IsFailed)
+                {
+                    if (acceptedContentType == AcceptedContentType.DidResolutionResult)
+                    {
+                        return NotFound(CreateDidResolutionResultWithError(versionResult.Errors.FirstOrDefault().Message));
+                    }
+
+                    return NotFound(versionResult.Errors.FirstOrDefault().Message);
+                }
+
+                maxBlockHeight = versionResult.Value.LedgerTimeBlockHeight;
+                maxBlockSequence = versionResult.Value.LedgerTimeBlockSequence;
+                maxOperationSequence = versionResult.Value.LedgerTimeOperationSequence + 1;
+            }
+
+            var resolveResult = await _mediator.Send(new ResolveDidRequest(ledgerQueryType, parsedDid.MethodSpecificId, maxBlockHeight, maxBlockSequence, maxOperationSequence));
             stopWatch.Stop();
             if (resolveResult.IsFailed)
             {
@@ -101,7 +147,7 @@ public class ResolveController : ControllerBase
 
                 return NotFound(new { error = "notFound" });
             }
-            
+
             var didDocument = TransformToDidDocument.Transform(resolveResult.Value.InternalDidDocument, ledgerQueryType, includeNetworkIdentifier: false, showMasterAndRevocationKeys: false);
 
             switch (acceptedContentType)
@@ -112,23 +158,40 @@ public class ResolveController : ControllerBase
                         (didDocument.Service is null || didDocument.Service is not null && !didDocument.Service.Any()))
                     {
                         // Deactivated
-                        return StatusCode(410);
+                        return StatusCode(410, new { error = "deactivated" });
                     }
 
                     return Ok(didDocument);
 
                 case AcceptedContentType.DidResolutionResult:
+                    DateTime? nextUpdate = null;
+                    if (options is not null && ((options.VersionTime.HasValue && options.VersionTime.Value < DateTime.Now) || !string.IsNullOrWhiteSpace(options.VersionId)))
+                    {
+                        var currentOperationHashString = resolveResult.Value.InternalDidDocument.VersionId;
+                        var currentOperationHash = PrismEncoding.Base64ToByteArray(currentOperationHashString);
+                        var nextOperation = await _mediator.Send(new GetNextOperationRequest(currentOperationHash, ledgerQueryType));
+                        if (nextOperation.IsFailed)
+                        {
+                            return StatusCode(500, new { error = "internalError", message = nextOperation.Errors.First().Message });
+                        }
+
+                        if (nextOperation.Value.HasValue)
+                        {
+                            nextUpdate = DateTime.SpecifyKind(nextOperation.Value.Value, DateTimeKind.Utc);
+                        }
+                    }
+
                     Response.ContentType = DidResolutionHeader.ApplicationLdJsonProfile;
                     var resolutionResult = new DidResolutionResult()
                     {
                         Context = DidResolutionResult.DidResolutionResultContext,
                         DidDocument = didDocument,
-                        DidDocumentMetadata = TransformToDidDocumentMetadata.Transform(resolveResult.Value.InternalDidDocument, ledgerQueryType, includeNetworkIdentifier: false),
+                        DidDocumentMetadata = TransformToDidDocumentMetadata.Transform(resolveResult.Value.InternalDidDocument, ledgerQueryType, nextUpdate, includeNetworkIdentifier: false),
                         DidResolutionMetadata = new DidResolutionMetadata()
                         {
                             ContentType = DidResolutionHeader.ApplicationLdJsonProfile,
                             Retrieved = DateTime.UtcNow,
-                            Duration = stopWatch.ElapsedMilliseconds
+                            Duration = stopWatch.ElapsedMilliseconds > 0 ? stopWatch.ElapsedMilliseconds : null
                         }
                     };
 
@@ -159,11 +222,11 @@ public class ResolveController : ControllerBase
         {
             Context = DidResolutionResult.DidResolutionResultContext,
             DidDocument = new DidDocument(),
-            DidDocumentMetadata = new DidDocumentMetadata(),
+            DidDocumentMetadata = null,
             DidResolutionMetadata = new DidResolutionMetadata()
             {
                 ContentType = DidResolutionHeader.ApplicationLdJsonProfile,
-                Error = error
+                Error = error,
             }
         };
     }
