@@ -13,19 +13,19 @@ public record ParsedDidUrl
     /// <summary>
     /// Identifer
     /// </summary>
-    public string MethodSpecificId { get; }
+    public string MethodSpecificId { get; set; }
 
     /// <summary>
     /// Network e.g. indy:sovrin or testnet, mainnet, cardano ...
     /// Optional
     /// </summary>
-    public string? Network { get; init; } = null;
+    public string? Network { get; set; } = null;
 
     /// <summary>
     /// SubNetwork e.g. staging, builder, etc. Not every method has this. It may then look like this:
     /// did:indy:sovrin:builder:123
     /// </summary>
-    public string? SubNetwork { get; init; } = null;
+    public string? SubNetwork { get; set; } = null;
 
     /// <summary>
     /// Optional path e.g "/foo/bar"
@@ -43,6 +43,8 @@ public record ParsedDidUrl
     /// Frgament to reference a specific verification Method
     /// </summary>
     public string? Fragment { get; }
+    
+    public string? PrismLongForm { get; set; }
 
     /// <summary>
     /// Parsed set of each query parameter

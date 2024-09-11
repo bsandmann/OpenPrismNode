@@ -67,7 +67,7 @@ public class ParseTransactionHandler : IRequestHandler<ParseTransactionRequest, 
         }
     }
 
-    private Result<OperationResultWrapper> ParseCreateDidOperation(SignedAtalaOperation signedAtalaOperation, int index)
+    public Result<OperationResultWrapper> ParseCreateDidOperation(SignedAtalaOperation signedAtalaOperation, int index)
     {
         var didData = signedAtalaOperation.Operation.CreateDid.DidData;
 
@@ -85,26 +85,30 @@ public class ParseTransactionHandler : IRequestHandler<ParseTransactionRequest, 
 
         var signature = PrismEncoding.ByteStringToByteArray(signedAtalaOperation.Signature);
         var signedWith = signedAtalaOperation.SignedWith;
-        // case sensitive
-        var publicKeyMaster = publicKeyParseResult.Value.SingleOrDefault(p => p.KeyId.Equals(signedWith));
-        if (publicKeyMaster is null || publicKeyMaster.KeyUsage != PrismKeyUsage.MasterKey)
-        {
-            return Result.Fail(ParserErrors.DataOfDidCreationCannotBeConfirmedDueToMissingKey);
-        }
-
         var encodedAtalaOperation = PrismEncoding.ByteStringToByteArray(signedAtalaOperation.Operation.ToByteString());
         var hashedAtalaOperation = new Hash(_sha256Service).Of(encodedAtalaOperation);
 
         // the did identifier is the hash of the intitial operation when creating the did
         var didIdentifier = PrismEncoding.ByteArrayToHex(hashedAtalaOperation.Value);
-
-        var verificationResult = _ecService.VerifyData(PrismEncoding.ByteStringToByteArray(signedAtalaOperation.Operation.ToByteString()), signature, publicKeyMaster.LongByteArray);
-        if (!verificationResult)
+        
+        // Only perform the signature verification if the operation is signed. Not possible for long-form DIDs
+        if (signedAtalaOperation.Signature != ByteString.Empty)
         {
-            return Result.Fail(ParserErrors.UnableToVerifySignature + $" for keyId: {publicKeyMaster.KeyId} on DID-Creation for did {didIdentifier}");
+            // case sensitive
+            var publicKeyMaster = publicKeyParseResult.Value.SingleOrDefault(p => p.KeyId.Equals(signedWith));
+            if (publicKeyMaster is null || publicKeyMaster.KeyUsage != PrismKeyUsage.MasterKey)
+            {
+                return Result.Fail(ParserErrors.DataOfDidCreationCannotBeConfirmedDueToMissingKey);
+            }
+
+            var verificationResult = _ecService.VerifyData(PrismEncoding.ByteStringToByteArray(signedAtalaOperation.Operation.ToByteString()), signature, publicKeyMaster.LongByteArray);
+            if (!verificationResult)
+            {
+                return Result.Fail(ParserErrors.UnableToVerifySignature + $" for keyId: {publicKeyMaster.KeyId} on DID-Creation for did {didIdentifier}");
+            }
         }
 
-        // TODO: Chekc if the DID already exists in the database. See spec
+        // TODO: Check if the DID already exists in the database. See spec. Do I still need to do that here?
 
         var didDocument = new InternalDidDocument(didIdentifier, publicKeyParseResult.Value, serviceParseResult.Value, new List<string>(), DateTime.UtcNow, String.Empty, 0, 0, String.Empty);
         var operationResultWrapper = new OperationResultWrapper(OperationResultType.CreateDid, index, didDocument, signedWith);

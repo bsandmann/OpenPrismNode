@@ -16,6 +16,7 @@ using Microsoft.Extensions.Primitives;
 using OpenPrismNode.Core.Common;
 using OpenPrismNode.Core.Models;
 using OpenPrismNode.Web;
+using Sync.Commands.ParseLongFormDid;
 
 /// <inheritdoc />
 [ApiController]
@@ -65,17 +66,31 @@ public class ResolveController : ControllerBase
                 var parsedDidLedger = Enum.TryParse<LedgerType>("cardano" + parsedDid.Network, ignoreCase: true, out var ledgerDidType);
                 if (!parsedDidLedger)
                 {
-                    return StatusCode(501, new { error = "methodNotSupported" });
-                }
-
-                if (ledgerDidType != ledgerQueryType)
+                    if (parsedDid.Network.Length == 64 && parsedDid.MethodSpecificId.Length > 64)
+                    {
+                        // We assume that the network is the did-identifier because of the long-form did
+                        // Rearranging the parsedDid to allow for longForm-DIDs
+                        parsedDid.PrismLongForm = parsedDid.MethodSpecificId;
+                        parsedDid.MethodSpecificId = parsedDid.Network;
+                        parsedDid.Network = null;
+                    }
+                    else
+                    {
+                        return StatusCode(501, new { error = "methodNotSupported" });
+                    }
+                }else if (ledgerDidType != ledgerQueryType)
                 {
                     return BadRequest("A valid network identifier (e.g. 'preprod', 'mainnet') must be provided either in the did, the ledger or the configuration");
                 }
+
+                // Rearranging the parsedDid to allow for longForm-DIDs
+                if (!string.IsNullOrWhiteSpace(parsedDid.SubNetwork))
+                {
+                    parsedDid.PrismLongForm = parsedDid.MethodSpecificId;
+                    parsedDid.MethodSpecificId = parsedDid.SubNetwork;
+                    parsedDid.SubNetwork = null;
+                }
             }
-
-
-            // TODO Check for long form or short form did
 
             //TODO expand the network configuration to multiple networks -> Check if the network is supported then
 
@@ -85,6 +100,18 @@ public class ResolveController : ControllerBase
                 {
                     return BadRequest("VersionId and VersionTime are mutually exclusive.");
                 }
+            }
+
+            InternalDidDocument? internalDidDocumentLongForm = null;
+            if (parsedDid.PrismLongForm is not null)
+            {
+                var longFormDidDocumentResult = await _mediator.Send(new ParseLongFormDidRequest(parsedDid));
+                if (longFormDidDocumentResult.IsFailed)
+                {
+                    return BadRequest(new { error = "invalidDid" });
+                }
+                
+                internalDidDocumentLongForm = longFormDidDocumentResult.Value;
             }
 
             string? acceptHeader = Request.Headers.Accept;
@@ -127,7 +154,7 @@ public class ResolveController : ControllerBase
 
             var resolveResult = await _mediator.Send(new ResolveDidRequest(ledgerQueryType, parsedDid.MethodSpecificId, maxBlockHeight, maxBlockSequence, maxOperationSequence));
             stopWatch.Stop();
-            if (resolveResult.IsFailed)
+            if (resolveResult.IsFailed && internalDidDocumentLongForm is null)
             {
                 _logger.LogError($"Unable to resolve did identifier '{parsedDid.MethodSpecificId}' for '{ledger}' ledger. Error: {resolveResult.Errors.FirstOrDefault()?.Message}");
                 if (acceptedContentType == AcceptedContentType.DidResolutionResult)
@@ -137,7 +164,7 @@ public class ResolveController : ControllerBase
 
                 return NotFound(resolveResult.Errors.FirstOrDefault().Message);
             }
-            else if (resolveResult.Value is null)
+            else if ( internalDidDocumentLongForm is null && resolveResult.ValueOrDefault is null)
             {
                 // Not found
                 if (acceptedContentType == AcceptedContentType.DidResolutionResult)
@@ -148,13 +175,14 @@ public class ResolveController : ControllerBase
                 return NotFound(new { error = "notFound" });
             }
 
-            var includeNetWorkIdentifier = _appSettings.Value.PrismLedger.IncludeNetworkIdentifier;
-            if (options is not null && options.IncludeNetworkIdentifier is not null && options.IncludeNetworkIdentifier != includeNetWorkIdentifier)
+            var includeNetworkIdentifier = _appSettings.Value.PrismLedger.IncludeNetworkIdentifier;
+            if (options is not null && options.IncludeNetworkIdentifier is not null && options.IncludeNetworkIdentifier != includeNetworkIdentifier)
             {
-                includeNetWorkIdentifier = options.IncludeNetworkIdentifier.Value;
+                includeNetworkIdentifier = options.IncludeNetworkIdentifier.Value;
             }
-
-            var didDocument = TransformToDidDocument.Transform(resolveResult.Value.InternalDidDocument, ledgerQueryType, includeNetWorkIdentifier, showMasterAndRevocationKeys: false);
+            
+            var internalDidDocument = resolveResult.ValueOrDefault != null ? resolveResult.Value.InternalDidDocument : internalDidDocumentLongForm;
+            var didDocument = TransformToDidDocument.Transform(internalDidDocument!, ledgerQueryType, includeNetworkIdentifier, showMasterAndRevocationKeys: false);
 
             switch (acceptedContentType)
             {
@@ -185,7 +213,7 @@ public class ResolveController : ControllerBase
                     DateTime? nextUpdate = null;
                     if (options is not null && ((options.VersionTime.HasValue && options.VersionTime.Value < DateTime.Now) || !string.IsNullOrWhiteSpace(options.VersionId)))
                     {
-                        var currentOperationHashString = resolveResult.Value.InternalDidDocument.VersionId;
+                        var currentOperationHashString =internalDidDocument!.VersionId;
                         var currentOperationHash = PrismEncoding.Base64ToByteArray(currentOperationHashString);
                         var nextOperation = await _mediator.Send(new GetNextOperationRequest(currentOperationHash, ledgerQueryType));
                         if (nextOperation.IsFailed)
@@ -205,7 +233,7 @@ public class ResolveController : ControllerBase
                     {
                         Context = DidResolutionResult.DidResolutionResultContext,
                         DidDocument = didDocument,
-                        DidDocumentMetadata = TransformToDidDocumentMetadata.Transform(resolveResult.Value.InternalDidDocument, ledgerQueryType, nextUpdate, includeNetWorkIdentifier),
+                        DidDocumentMetadata = TransformToDidDocumentMetadata.Transform(internalDidDocument!, ledgerQueryType, nextUpdate, includeNetworkIdentifier, internalDidDocumentLongForm != null),
                         DidResolutionMetadata = new DidResolutionMetadata()
                         {
                             ContentType = DidResolutionHeader.ApplicationLdJsonProfile,

@@ -22,7 +22,7 @@ public class GetOperationLedgerTimeHandler : IRequestHandler<GetOperationLedgerT
         byte[] versionIdBytes;
         try
         {
-            versionIdBytes = PrismEncoding.Base64ToByteArray(request.VersionId);
+            versionIdBytes = PrismEncoding.HexToByteArray(request.VersionId);
         }
         catch (Exception e)
         {

@@ -370,10 +370,10 @@ public class ResolveDidHandler : IRequestHandler<ResolveDidRequest, Result<Resol
                     }
 
                     resolved.Updated = DateTime.SpecifyKind(updateOperation.TimeUtc, DateTimeKind.Utc);
-                    resolved.VersionId = PrismEncoding.ByteArrayToBase64(updateOperation.OperationHash);
+                    resolved.VersionId = PrismEncoding.ByteArrayToHex(updateOperation.OperationHash);
                     resolved.CardanoTransactionPosition = updateOperation.Index;
                     resolved.OperationPosition = updateOperation.OperationSequenceNumber;
-                    resolved.UpdateTxId = PrismEncoding.ByteArrayToBase64(updateOperation.TransactionHash);
+                    resolved.UpdateTxId = PrismEncoding.ByteArrayToHex(updateOperation.TransactionHash);
                 }
             }
 
@@ -392,11 +392,11 @@ public class ResolveDidHandler : IRequestHandler<ResolveDidRequest, Result<Resol
             resolved.Contexts.Clear();
             resolved.Deactivated = true;
             resolved.Updated = DateTime.SpecifyKind(createDidResult.DeactivateDid.TimeUtc, DateTimeKind.Utc);
-            resolved.VersionId = PrismEncoding.ByteArrayToBase64(createDidResult.DeactivateDid.OperationHash);
+            resolved.VersionId = PrismEncoding.ByteArrayToHex(createDidResult.DeactivateDid.OperationHash);
             resolved.CardanoTransactionPosition = createDidResult.DeactivateDid.Index;
             resolved.OperationPosition = createDidResult.DeactivateDid.OperationSequenceNumber;
-            resolved.UpdateTxId = PrismEncoding.ByteArrayToBase64(createDidResult.DeactivateDid.TransactionHash);
-            resolved.DeactivateTxId = PrismEncoding.ByteArrayToBase64(createDidResult.DeactivateDid.TransactionHash);
+            resolved.UpdateTxId = PrismEncoding.ByteArrayToHex(createDidResult.DeactivateDid.TransactionHash);
+            resolved.DeactivateTxId = PrismEncoding.ByteArrayToHex(createDidResult.DeactivateDid.TransactionHash);
         }
 
         var resolveDidResponse = new ResolveDidResponse(resolved, Hash.CreateFrom(lastOperationHash));
@@ -413,10 +413,10 @@ public class ResolveDidHandler : IRequestHandler<ResolveDidRequest, Result<Resol
             contexts: new List<string>() { PrismParameters.JsonLdDefaultContext },
             created:  DateTime.SpecifyKind(createDidResult.TimeUtc, DateTimeKind.Utc),
             updated: null,
-            versionId: PrismEncoding.ByteArrayToBase64(createDidResult.OperationHash),
+            versionId: PrismEncoding.ByteArrayToHex(createDidResult.OperationHash),
             cardanoTransactionPosition: createDidResult.Index,
             operationPosition: createDidResult.OperationSequenceNumber,
-            originTxId: PrismEncoding.ByteArrayToBase64(createDidResult.TransactionHash),
+            originTxId: PrismEncoding.ByteArrayToHex(createDidResult.TransactionHash),
             updateTxId: null,
             deactivateTxId: null
         );

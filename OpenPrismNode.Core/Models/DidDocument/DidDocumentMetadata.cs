@@ -55,19 +55,19 @@ public record DidDocumentMetadata
     /// Optional property specific to Cardano which describes the postion of the Crdano transaction in the block (block sequence number)
     /// </summary>
     [JsonPropertyName("cardanoTransactionPosition")]
-    public int CardanoTransactionPosition { get; init; }
+    public int? CardanoTransactionPosition { get; init; }
 
     /// <summary>
     /// Optional property specific to Cardano which describies the position of the SignedAtalaOperation in an AtalaBLock
     /// </summary>
     [JsonPropertyName("operationPosition")]
-    public int OperationPosition { get; init; }
+    public int? OperationPosition { get; init; }
 
     /// <summary>
     /// Optional property specific to Cardano which describes the transactionId of the Cardano transaction that created the DidDocument
     /// </summary>
     [JsonPropertyName("originTxId")]
-    public string OriginTxId { get; init; } = string.Empty;
+    public string? OriginTxId { get; init; } = string.Empty;
 
     /// <summary>
     /// Optional property specific to Cardano which describes the transactionId of the Cardano transaction that updated the DidDocument last
