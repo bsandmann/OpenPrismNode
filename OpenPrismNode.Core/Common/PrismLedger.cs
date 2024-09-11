@@ -11,7 +11,7 @@ public class PrismLedger
     /// Connection-String of the database which holds the PRISM data
     /// </summary>
     public string PrismPostgresConnectionString { get; set; }
-    
+
     /// <summary>
     /// Connectionstring to the Postgres-DB, on which the dbSync is putting the PRISM data
     /// </summary>
@@ -23,4 +23,8 @@ public class PrismLedger
     /// </summary>
     public int StartAtEpochNumber { get; set; } = 0;
 
+    /// <summary>
+    /// Shows the network-identifier in the DID-Document e.g. did:prism:mainnet:123
+    /// </summary>
+    public bool IncludeNetworkIdentifier { get; set; }
 }

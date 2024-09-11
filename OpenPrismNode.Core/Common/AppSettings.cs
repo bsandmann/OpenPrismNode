@@ -29,4 +29,5 @@ public class AppSettings
     /// </summary>
     public string AuthorizationKey { get; set; }
     
+    
 }

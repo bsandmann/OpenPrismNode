@@ -18,5 +18,11 @@ namespace OpenPrismNode.Core.Models
         /// The timestamp of the specific version of the DID document to resolve.
         /// </summary>
         public DateTime? VersionTime { get; set; }
+        
+        /// <summary>
+        /// Shows the network-identifier in the DID-Document e.g. did:prism:mainnet:123
+        /// Overwrites the default setting of ledger 
+        /// </summary>
+        public bool? IncludeNetworkIdentifier { get; set; }
     }
 }

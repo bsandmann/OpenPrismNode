@@ -32,6 +32,7 @@ public class ResolveController : ControllerBase
         _logger = logger;
         _appSettings = appSettings;
     }
+
     [HttpGet("api/v{version:apiVersion}/identifiers/{did}")]
     [ApiVersion("1.0")]
     public async Task<IActionResult> ResolveDid(string did, [FromQuery] ResolutionOptions? options = null, [FromQuery] string? ledger = null)
@@ -128,7 +129,7 @@ public class ResolveController : ControllerBase
             stopWatch.Stop();
             if (resolveResult.IsFailed)
             {
-                _logger.LogError($"Unable to resolver {parsedDid.MethodSpecificId} for ledger {ledger}. Error: {resolveResult.Errors.FirstOrDefault()?.Message}");
+                _logger.LogError($"Unable to resolve did identifier '{parsedDid.MethodSpecificId}' for '{ledger}' ledger. Error: {resolveResult.Errors.FirstOrDefault()?.Message}");
                 if (acceptedContentType == AcceptedContentType.DidResolutionResult)
                 {
                     return NotFound(CreateDidResolutionResultWithError(resolveResult.Errors.FirstOrDefault().Message));
@@ -147,7 +148,13 @@ public class ResolveController : ControllerBase
                 return NotFound(new { error = "notFound" });
             }
 
-            var didDocument = TransformToDidDocument.Transform(resolveResult.Value.InternalDidDocument, ledgerQueryType, includeNetworkIdentifier: false, showMasterAndRevocationKeys: false);
+            var includeNetWorkIdentifier = _appSettings.Value.PrismLedger.IncludeNetworkIdentifier;
+            if (options is not null && options.IncludeNetworkIdentifier is not null && options.IncludeNetworkIdentifier != includeNetWorkIdentifier)
+            {
+                includeNetWorkIdentifier = options.IncludeNetworkIdentifier.Value;
+            }
+
+            var didDocument = TransformToDidDocument.Transform(resolveResult.Value.InternalDidDocument, ledgerQueryType, includeNetWorkIdentifier, showMasterAndRevocationKeys: false);
 
             switch (acceptedContentType)
             {
@@ -161,7 +168,7 @@ public class ResolveController : ControllerBase
                     }
 
                     return Ok(didDocument);
-                
+
                 case AcceptedContentType.DidDocumentJson:
                     Response.ContentType = DidResolutionHeader.ApplicationDidJson;
                     if ((didDocument.VerificationMethod is null || didDocument.VerificationMethod is not null && !didDocument.VerificationMethod.Any()) &&
@@ -192,12 +199,13 @@ public class ResolveController : ControllerBase
                         }
                     }
 
+
                     Response.ContentType = DidResolutionHeader.ApplicationLdJsonProfile;
                     var resolutionResult = new DidResolutionResult()
                     {
                         Context = DidResolutionResult.DidResolutionResultContext,
                         DidDocument = didDocument,
-                        DidDocumentMetadata = TransformToDidDocumentMetadata.Transform(resolveResult.Value.InternalDidDocument, ledgerQueryType, nextUpdate, includeNetworkIdentifier: false),
+                        DidDocumentMetadata = TransformToDidDocumentMetadata.Transform(resolveResult.Value.InternalDidDocument, ledgerQueryType, nextUpdate, includeNetWorkIdentifier),
                         DidResolutionMetadata = new DidResolutionMetadata()
                         {
                             ContentType = DidResolutionHeader.ApplicationLdJsonProfile,
