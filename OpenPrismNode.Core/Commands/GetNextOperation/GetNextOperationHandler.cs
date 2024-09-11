@@ -1,7 +1,6 @@
-namespace OpenPrismNode.Core.Commands.GetMaxBlockHeightForDateTime;
+namespace OpenPrismNode.Core.Commands.GetNextOperation;
 
 using FluentResults;
-using GetNextOperation;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 

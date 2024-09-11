@@ -1,6 +1,7 @@
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using OpenPrismNode.Core.Models.DidDocument;
+
+namespace OpenPrismNode.Core.Models.DidDocument;
 
 public class ServiceEndpointConverter : JsonConverter<DidDocumentService>
 {

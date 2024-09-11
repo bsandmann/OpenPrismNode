@@ -5,6 +5,7 @@ using Microsoft.OpenApi.Models;
 using OpenPrismNode.Core;
 using OpenPrismNode.Core.Common;
 using OpenPrismNode.Core.Crypto;
+using OpenPrismNode.Core.Models.DidDocument;
 using OpenPrismNode.Core.Services;
 using OpenPrismNode.Sync.Services;
 using OpenPrismNode.Web;

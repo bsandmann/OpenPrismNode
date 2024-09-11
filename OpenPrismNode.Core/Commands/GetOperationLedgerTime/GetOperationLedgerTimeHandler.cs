@@ -1,11 +1,9 @@
-namespace OpenPrismNode.Core.Commands.GetMaxBlockHeightForDateTime;
+namespace OpenPrismNode.Core.Commands.GetOperationLedgerTime;
 
-using Common;
 using FluentResults;
-using GetNextOperation;
-using GetOperationLedgerTime;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
+using OpenPrismNode.Core.Common;
 
 public class GetOperationLedgerTimeHandler : IRequestHandler<GetOperationLedgerTimeRequest, Result<GetOperationLedgerTimeResponse>>
 {
