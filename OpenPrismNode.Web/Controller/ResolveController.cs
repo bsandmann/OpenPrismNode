@@ -32,7 +32,6 @@ public class ResolveController : ControllerBase
         _logger = logger;
         _appSettings = appSettings;
     }
-
     [HttpGet("api/v{version:apiVersion}/identifiers/{did}")]
     [ApiVersion("1.0")]
     public async Task<IActionResult> ResolveDid(string did, [FromQuery] ResolutionOptions? options = null, [FromQuery] string? ledger = null)
@@ -152,7 +151,7 @@ public class ResolveController : ControllerBase
 
             switch (acceptedContentType)
             {
-                case AcceptedContentType.DidDocument:
+                case AcceptedContentType.DidDocumentJsonLd:
                     Response.ContentType = DidResolutionHeader.ApplicationDidLdJson;
                     if ((didDocument.VerificationMethod is null || didDocument.VerificationMethod is not null && !didDocument.VerificationMethod.Any()) &&
                         (didDocument.Service is null || didDocument.Service is not null && !didDocument.Service.Any()))
@@ -161,6 +160,18 @@ public class ResolveController : ControllerBase
                         return StatusCode(410, new { error = "deactivated" });
                     }
 
+                    return Ok(didDocument);
+                
+                case AcceptedContentType.DidDocumentJson:
+                    Response.ContentType = DidResolutionHeader.ApplicationDidJson;
+                    if ((didDocument.VerificationMethod is null || didDocument.VerificationMethod is not null && !didDocument.VerificationMethod.Any()) &&
+                        (didDocument.Service is null || didDocument.Service is not null && !didDocument.Service.Any()))
+                    {
+                        // Deactivated
+                        return StatusCode(410, new { error = "deactivated" });
+                    }
+
+                    didDocument.Context = null;
                     return Ok(didDocument);
 
                 case AcceptedContentType.DidResolutionResult:

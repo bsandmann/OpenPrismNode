@@ -4,6 +4,7 @@ public static class DidResolutionHeader
 {
     public static readonly string DefaultHeader = "*/*";
     public static readonly string ApplicationDidLdJson = "application/did+ld+json";
+    public static readonly string ApplicationDidJson = "application/did+json";
     public static readonly string ApplicationLdJsonProfile = "application/ld+json;profile=\"https://w3id.org/did-resolution\"";
 
     public static AcceptedContentType ParseAcceptHeader(string? acceptHeader)
@@ -16,7 +17,12 @@ public static class DidResolutionHeader
         else if (string.IsNullOrEmpty(acceptHeader) ||
                  acceptHeader.Contains(ApplicationDidLdJson, StringComparison.InvariantCultureIgnoreCase))
         {
-            return AcceptedContentType.DidDocument;
+            return AcceptedContentType.DidDocumentJsonLd;
+        }
+        else if (string.IsNullOrEmpty(acceptHeader) ||
+                 acceptHeader.Contains(ApplicationDidJson, StringComparison.InvariantCultureIgnoreCase))
+        {
+            return AcceptedContentType.DidDocumentJson;
         }
         else if (acceptHeader.Contains(ApplicationLdJsonProfile, StringComparison.InvariantCultureIgnoreCase))
         {

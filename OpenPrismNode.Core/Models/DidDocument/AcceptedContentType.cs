@@ -2,7 +2,8 @@ namespace OpenPrismNode.Core.Models.DidDocument;
 
 public enum AcceptedContentType
 {
-    DidDocument,
+    DidDocumentJsonLd,
+    DidDocumentJson,
     DidResolutionResult,
     Other 
 }
