@@ -1,5 +1,7 @@
 ﻿namespace OpenPrismNode.Web.Controller;
 
+using Asp.Versioning;
+using Common;
 using Core.Commands.DeleteBlock;
 using Core.Commands.DeletedOrphanedAddresses;
 using Core.Commands.DeleteEmptyEpoch;
@@ -36,19 +38,29 @@ public class DeleteController : ControllerBase
     }
 
     /// <summary>
-    /// Deletes the complete Ledger (but not the full database) 
-    /// Any automatic syncing or the execution of other tasks is diabled in the meantime
+    /// Deletes the complete ledger for a specified network.
     /// </summary>
-    /// <returns></returns>
-    [HttpDelete("api/delete/ledger")]
+    /// <remarks>
+    /// This operation deletes the ledger data but not the full database.
+    /// Any automatic syncing or execution of other tasks is disabled during the deletion process.
+    /// Depending on the ledger size, this process may take a few seconds to complete.
+    /// The sync service will need to be manually restarted after the deletion if required.
+    /// </remarks>
+    /// <param name="ledger">The ledger to delete: 'preprod', 'mainnet', or 'inmemory'</param>
+    /// <returns>An ActionResult indicating the result of the operation</returns>
+    /// <response code="200">The ledger has been successfully deleted</response>
+    /// <response code="400">Bad request, due to missing or invalid ledger value</response>
+    /// <response code="401">Unauthorized request</response>
+    [ApiKeyAuthorization]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [HttpDelete("api/v{version:apiVersion=1.0}/delete/ledger")]
+    [ApiVersion("1.0")]
+    [Consumes("application/json")]
+    [Produces("application/json")]
     public async Task<ActionResult> DeleteLedger([FromQuery] string ledger)
     {
-        var hasAuthorization = _httpContextAccessor.HttpContext!.Request.Headers.TryGetValue("authorization", out StringValues authorization);
-        if (!hasAuthorization || authorization.FirstOrDefault() == null || string.IsNullOrWhiteSpace(authorization) || !authorization.First()!.Equals(_appSettings.AuthorizationKey, StringComparison.InvariantCultureIgnoreCase))
-        {
-            return StatusCode(401);
-        }
-
         if (string.IsNullOrEmpty(ledger))
         {
             return BadRequest("The ledger must be provided, e.g 'preprod' or 'mainnet'");
@@ -89,20 +101,31 @@ public class DeleteController : ControllerBase
     }
 
     /// <summary>
-    /// Deletes a range of block beginninning from the tip down to a specific block height (not included in the delete)
-    /// That means the block with the provided blockheight will be the new tip of the chain
-    /// Any automatic syncing or the execution of other tasks is diabled in the meantime
+    /// Deletes a range of blocks from the tip down to a specified block height.
     /// </summary>
-    /// <returns></returns>
-    [HttpDelete("api/delete/block")]
+    /// <remarks>
+    /// This operation deletes blocks from the tip of the chain down to, but not including, the specified block height.
+    /// The block at the specified height becomes the new tip of the chain.
+    /// Automatic syncing and other tasks are disabled during this operation.
+    /// It is not recommended to use this endpoint to delete a large number of blocks, as the process operates on each block individually.
+    /// If no block height is specified, only the tip block is deleted.
+    /// </remarks>
+    /// <param name="blockHeight">The block height to delete up to (not included). If omitted, only the tip block is deleted.</param>
+    /// <param name="ledger">The ledger to delete blocks from: 'preprod', 'mainnet', or 'inmemory'.</param>
+    /// <returns>An ActionResult indicating the result of the operation</returns>
+    /// <response code="200">Blocks have been successfully deleted and the new tip has been set</response>
+    /// <response code="400">Bad request due to missing or invalid block height or ledger value</response>
+    /// <response code="401">Unauthorized request</response>
+    [ApiKeyAuthorization]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [HttpDelete("api/v{version:apiVersion=1.0}/delete/block")]
+    [ApiVersion("1.0")]
+    [Consumes("application/json")]
+    [Produces("application/json")]
     public async Task<ActionResult> DeleteBlock([FromQuery] int? blockHeight, string ledger)
     {
-        var hasAuthorization = _httpContextAccessor.HttpContext!.Request.Headers.TryGetValue("authorization", out StringValues authorization);
-        if (!hasAuthorization || authorization.FirstOrDefault() == null || string.IsNullOrWhiteSpace(authorization) || !authorization.First()!.Equals(_appSettings.AuthorizationKey, StringComparison.InvariantCultureIgnoreCase))
-        {
-            return StatusCode(401);
-        }
-
         if (string.IsNullOrEmpty(ledger))
         {
             return BadRequest("The ledger must be provided, e.g 'preprod' or 'mainnet'");
@@ -244,20 +267,31 @@ public class DeleteController : ControllerBase
     }
 
     /// <summary>
-    /// Deletes a range of epoch beginninning from the tip down to a specific epoch-number (not included in the delete)
-    /// That means the last block of the provided epoch will be the new tip of the chain
-    /// Any automatic syncing or the execution of other tasks is diabled in the meantime
+    /// Deletes a range of epochs from the tip down to a specified epoch number.
     /// </summary>
-    /// <returns></returns>
-    [HttpDelete("api/delete/epoch")]
+    /// <remarks>
+    /// This operation deletes epochs from the tip of the chain down to, but not including, the specified epoch number.
+    /// The last block of the provided epoch becomes the new tip of the chain.
+    /// Automatic syncing and other tasks are disabled during this operation.
+    /// If no epoch number is specified, only the most recent epoch is deleted.
+    /// This operation also includes cleaning up orphaned addresses after epoch deletion.
+    /// </remarks>
+    /// <param name="epochNumber">The epoch number to delete up to (not included). If omitted, only the most recent epoch is deleted.</param>
+    /// <param name="ledger">The ledger to delete epochs from: 'preprod', 'mainnet', or 'inmemory'.</param>
+    /// <returns>An ActionResult indicating the result of the operation</returns>
+    /// <response code="200">Epochs have been successfully deleted, orphaned addresses cleaned up, and the new tip has been set</response>
+    /// <response code="400">Bad request due to missing or invalid epoch number or ledger value</response>
+    /// <response code="401">Unauthorized request</response>
+    [ApiKeyAuthorization]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [HttpDelete("api/v{version:apiVersion=1.0}/delete/epoch")]
+    [ApiVersion("1.0")]
+    [Consumes("application/json")]
+    [Produces("application/json")]
     public async Task<ActionResult> DeleteEpoch([FromQuery] int? epochNumber, string ledger)
     {
-        var hasAuthorization = _httpContextAccessor.HttpContext!.Request.Headers.TryGetValue("authorization", out StringValues authorization);
-        if (!hasAuthorization || authorization.FirstOrDefault() == null || string.IsNullOrWhiteSpace(authorization) || !authorization.First()!.Equals(_appSettings.AuthorizationKey, StringComparison.InvariantCultureIgnoreCase))
-        {
-            return StatusCode(401);
-        }
-
         if (string.IsNullOrEmpty(ledger))
         {
             return BadRequest("The ledger must be provided, e.g 'preprod' or 'mainnet'");
