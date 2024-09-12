@@ -1,7 +1,9 @@
 namespace OpenPrismNode.Sync.IntegrationTests.GetTransactionsWithPrismMetadataForBlockId;
 
+using Core.Common;
 using FluentAssertions;
 using FluentResults.Extensions.FluentAssertions;
+using Microsoft.Extensions.Options;
 using OpenPrismNode.Sync.Commands.GetTransactionsWithPrismMetadataForBlockId;
 using OpenPrismNode.Core.Models;
 
@@ -10,12 +12,13 @@ public class GetTransactionsWithPrismMetadataForBlockIdTests
     private readonly TestNpgsqlConnectionFactory _testFactory;
     private readonly GetTransactionsWithPrismMetadataForBlockIdHandler _handler;
     private const int TestBlockId = 190363; // ! This is the block if of a block with PRISM metadata. THis number might be different with a new databas!
-    
 
     public GetTransactionsWithPrismMetadataForBlockIdTests()
     {
+        var appSettings = new AppSettings();
+        var options = Microsoft.Extensions.Options.Options.Create(appSettings);
         _testFactory = new TestNpgsqlConnectionFactory(TestSetup.PostgreSqlConnectionString);
-        _handler = new GetTransactionsWithPrismMetadataForBlockIdHandler(_testFactory);
+        _handler = new GetTransactionsWithPrismMetadataForBlockIdHandler(_testFactory, options);
     }
 
     [Fact]

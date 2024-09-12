@@ -5,7 +5,7 @@ using System.Text.RegularExpressions;
 public static class DidUrlParser
 {
     /// <summary>
-    /// This code is crap! TODO rewrite.
+    /// Legacy URL parser. The code is actually somewhat problematic
     /// </summary>
     /// <param name="didUrl"></param>
     /// <param name="result"></param>

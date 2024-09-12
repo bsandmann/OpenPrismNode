@@ -73,45 +73,6 @@ public partial class IntegrationTests
         Assert.Equal(2, result.Value.BlockHeight);
     }
 
-    //TODO -> ROllback
-    // [Fact]
-    // public async Task CreateBlock_Fails_For_Duplicate_BlockHeight()
-    // {
-    //     // Arrange
-    //     await _createLedgerHandler.Handle(new CreateLedgerRequest(LedgerType.CardanoPreprod), CancellationToken.None);
-    //     await _createEpochHandler.Handle(new CreateEpochRequest(LedgerType.CardanoPreprod, 1), CancellationToken.None);
-    //
-    //     var firstBlockRequest = new CreateBlockRequest(
-    //         ledgerType: LedgerType.CardanoPreprod,
-    //         blockHash: Hash.CreateFrom(new byte[] { 1, 2, 3, 4 }),
-    //         previousBlockHash: null,
-    //         blockHeight: 1,
-    //         previousBlockHeight: null,
-    //         epochNumber: 1,
-    //         timeUtc: DateTime.UtcNow,
-    //         txCount: 0
-    //     );
-    //     await _createBlockHandler.Handle(firstBlockRequest, CancellationToken.None);
-    //
-    //     var duplicateBlockRequest = new CreateBlockRequest(
-    //         ledgerType: LedgerType.CardanoPreprod,
-    //         blockHash: Hash.CreateFrom(new byte[] { 5, 6, 7, 8 }),
-    //         previousBlockHash: null,
-    //         blockHeight: 1, // Same block height
-    //         previousBlockHeight: null,
-    //         epochNumber: 1,
-    //         timeUtc: DateTime.UtcNow.AddMinutes(1),
-    //         txCount: 1
-    //     );
-    //
-    //     // Act
-    //     var result = await _createBlockHandler.Handle(duplicateBlockRequest, CancellationToken.None);
-    //
-    //     // Assert
-    //     Assert.True(result.IsFailed);
-    //     Assert.Contains("Block with this height already exists", result.Errors.First().Message);
-    // }
-
     [Fact]
     public async Task CreateBlock_Fails_For_Invalid_PreviousBlockHash()
     {

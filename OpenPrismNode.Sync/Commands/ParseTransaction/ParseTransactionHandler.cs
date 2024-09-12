@@ -271,7 +271,7 @@ public class ParseTransactionHandler : IRequestHandler<ParseTransactionRequest, 
             }
             else if (action.ActionCase == UpdateDIDAction.ActionOneofCase.PatchContext)
             {
-                // TODO verify against on-chain data if available
+                // TODO verify against on-chain data if available: See on master
 
                 if (action.PatchContext.Context.Any())
                 {
@@ -315,7 +315,7 @@ public class ParseTransactionHandler : IRequestHandler<ParseTransactionRequest, 
 
     private async Task<Result<OperationResultWrapper>> ParseProtocolVersionUpdateOperation(SignedAtalaOperation signedAtalaOperation, LedgerType ledger, int index, ResolveMode resolveMode)
     {
-        // TODO verify against on-chain data if available
+        // TODO verify against on-chain data if available: See on master
 
         var update = signedAtalaOperation.Operation.ProtocolVersionUpdate;
         var signature = PrismEncoding.ByteStringToByteArray(signedAtalaOperation.Signature);

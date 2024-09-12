@@ -13,6 +13,7 @@ using OpenPrismNode.Core.Commands.GetBlockByBlockHash;
 using OpenPrismNode.Core.Commands.GetEpoch;
 using OpenPrismNode.Core.Commands.GetMostRecentBlock;
 using OpenPrismNode.Core.Commands.SwitchBranch;
+using OpenPrismNode.Core.Common;
 using OpenPrismNode.Core.DbSyncModels;
 using OpenPrismNode.Core.Entities;
 using OpenPrismNode.Core.Models;
@@ -95,7 +96,7 @@ public partial class IntegrationTests
             }));
 
         // Act
-        var syncResult = await SyncService.RunSync(_mediatorMock.Object, logger.Object, "preprod", new CancellationToken(), 10, false);
+        var syncResult = await SyncService.RunSync(_mediatorMock.Object, new AppSettings() { FastSyncBlockDistanceRequirement = 150 }, logger.Object, "preprod", new CancellationToken(), 10, false);
 
         // Assert
         syncResult.IsSuccess.Should().BeTrue();
@@ -169,7 +170,7 @@ public partial class IntegrationTests
             }));
 
         // Act
-        var syncResult = await SyncService.RunSync(_mediatorMock.Object, logger.Object, "preprod", new CancellationToken(), 10, false);
+        var syncResult = await SyncService.RunSync(_mediatorMock.Object,new AppSettings() { FastSyncBlockDistanceRequirement = 150 }, logger.Object, "preprod", new CancellationToken(), 10, false);
 
         // Assert
         syncResult.IsSuccess.Should().BeTrue();
@@ -206,7 +207,7 @@ public partial class IntegrationTests
                 previous_id = 100
             }));
 
-        var syncResult2 = await SyncService.RunSync(_mediatorMock.Object, logger.Object, "preprod", new CancellationToken(), 10, false);
+        var syncResult2 = await SyncService.RunSync(_mediatorMock.Object,new AppSettings() { FastSyncBlockDistanceRequirement = 150 }, logger.Object, "preprod", new CancellationToken(), 10, false);
 
         // Assert
         syncResult2.IsSuccess.Should().BeTrue();
@@ -274,7 +275,7 @@ public partial class IntegrationTests
             }));
 
         // Act 1
-        var syncResult = await SyncService.RunSync(_mediatorMock.Object, logger.Object, "preprod", new CancellationToken(), 10, false);
+        var syncResult = await SyncService.RunSync(_mediatorMock.Object,new AppSettings() { FastSyncBlockDistanceRequirement = 150 }, logger.Object, "preprod", new CancellationToken(), 10, false);
 
         // Assert
         syncResult.IsSuccess.Should().BeTrue();
@@ -326,7 +327,7 @@ public partial class IntegrationTests
                 previous_id = 90
             }));
 
-        var syncResult2 = await SyncService.RunSync(_mediatorMock.Object, logger.Object, "preprod", new CancellationToken(), 10, false);
+        var syncResult2 = await SyncService.RunSync(_mediatorMock.Object,new AppSettings() { FastSyncBlockDistanceRequirement = 150 }, logger.Object, "preprod", new CancellationToken(), 10, false);
 
         // Assert
         syncResult2.IsSuccess.Should().BeTrue();
@@ -407,7 +408,7 @@ public partial class IntegrationTests
             }));
 
         // Act 1
-        var syncResult = await SyncService.RunSync(_mediatorMock.Object, logger.Object, "preprod", new CancellationToken(), 10, false);
+        var syncResult = await SyncService.RunSync(_mediatorMock.Object,new AppSettings() { FastSyncBlockDistanceRequirement = 150 }, logger.Object, "preprod", new CancellationToken(), 10, false);
 
         // Assert
         syncResult.IsSuccess.Should().BeTrue();
@@ -477,7 +478,7 @@ public partial class IntegrationTests
                 previous_id = 90
             }));
 
-        var syncResult2 = await SyncService.RunSync(_mediatorMock.Object, logger.Object, "preprod", new CancellationToken(), 10, false);
+        var syncResult2 = await SyncService.RunSync(_mediatorMock.Object,new AppSettings() { FastSyncBlockDistanceRequirement = 150 }, logger.Object, "preprod", new CancellationToken(), 10, false);
 
         // Assert
         syncResult2.IsSuccess.Should().BeTrue();
@@ -543,7 +544,7 @@ public partial class IntegrationTests
             }));
 
         // Act 1
-        var syncResult = await SyncService.RunSync(_mediatorMock.Object, logger.Object, "preprod", new CancellationToken(), 10, false);
+        var syncResult = await SyncService.RunSync(_mediatorMock.Object,new AppSettings() { FastSyncBlockDistanceRequirement = 150 }, logger.Object, "preprod", new CancellationToken(), 10, false);
 
         // Assert
         syncResult.IsSuccess.Should().BeTrue();
@@ -594,7 +595,7 @@ public partial class IntegrationTests
                 previous_id = 90
             }));
 
-        var syncResult2 = await SyncService.RunSync(_mediatorMock.Object, logger.Object, "preprod", new CancellationToken(), 10, false);
+        var syncResult2 = await SyncService.RunSync(_mediatorMock.Object,new AppSettings() { FastSyncBlockDistanceRequirement = 150 }, logger.Object, "preprod", new CancellationToken(), 10, false);
 
         // Assert
         syncResult2.IsSuccess.Should().BeTrue();
@@ -740,7 +741,7 @@ public partial class IntegrationTests
             }));
 
         // Act 1
-        var syncResult = await SyncService.RunSync(_mediatorMock.Object, logger.Object, "preprod", new CancellationToken(), 10, false);
+        var syncResult = await SyncService.RunSync(_mediatorMock.Object,new AppSettings() { FastSyncBlockDistanceRequirement = 150 }, logger.Object, "preprod", new CancellationToken(), 10, false);
 
         // Assert
         syncResult.IsSuccess.Should().BeTrue();
@@ -791,7 +792,7 @@ public partial class IntegrationTests
                 previous_id = 90
             }));
 
-        var syncResult2 = await SyncService.RunSync(_mediatorMock.Object, logger.Object, "preprod", new CancellationToken(), 10, false);
+        var syncResult2 = await SyncService.RunSync(_mediatorMock.Object,new AppSettings() { FastSyncBlockDistanceRequirement = 150 }, logger.Object, "preprod", new CancellationToken(), 10, false);
 
         // Assert
         syncResult2.IsSuccess.Should().BeTrue();
@@ -803,7 +804,7 @@ public partial class IntegrationTests
         blocksforked.Count.Should().Be(1);
         blocksforked.Single().BlockHeight.Should().Be(11);
         blocksforked.Single().BlockHashPrefix.Should().Be(BlockEntity.CalculateBlockHashPrefix(new byte[] { 11, 1, 1, 1 }));
-        
+
         // Initiall a CreateDID operations gets added to the database.
         // Thorugh the switching of the branch, the CreateDID operation is then removed.
         // but since the mock is setup in a way that it again returns the same block, the CreateDID operation is added again
@@ -879,7 +880,7 @@ public partial class IntegrationTests
             }));
 
         // Act 1
-        var syncResult = await SyncService.RunSync(_mediatorMock.Object, logger.Object, "preprod", new CancellationToken(), 10, false);
+        var syncResult = await SyncService.RunSync(_mediatorMock.Object,new AppSettings() { FastSyncBlockDistanceRequirement = 150 }, logger.Object, "preprod", new CancellationToken(), 10, false);
 
         // Assert
         syncResult.IsSuccess.Should().BeTrue();
@@ -954,7 +955,7 @@ public partial class IntegrationTests
                 previousHash = new byte[] { 9, 1, 1, 1 }
             }));
 
-        var syncResult2 = await SyncService.RunSync(_mediatorMock.Object, logger.Object, "preprod", new CancellationToken(), 10, false);
+        var syncResult2 = await SyncService.RunSync(_mediatorMock.Object,new AppSettings() { FastSyncBlockDistanceRequirement = 150 }, logger.Object, "preprod", new CancellationToken(), 10, false);
 
         // Assert
         syncResult2.IsSuccess.Should().BeTrue();
@@ -1034,7 +1035,7 @@ public partial class IntegrationTests
             }));
 
         // Act 1
-        var syncResult = await SyncService.RunSync(_mediatorMock.Object, logger.Object, "preprod", new CancellationToken(), 10, false);
+        var syncResult = await SyncService.RunSync(_mediatorMock.Object,new AppSettings() { FastSyncBlockDistanceRequirement = 150 }, logger.Object, "preprod", new CancellationToken(), 10, false);
 
         // Assert
         syncResult.IsSuccess.Should().BeTrue();
@@ -1109,7 +1110,7 @@ public partial class IntegrationTests
                 previousHash = new byte[] { 9, 1, 1, 1 }
             }));
 
-        var syncResult2 = await SyncService.RunSync(_mediatorMock.Object, logger.Object, "preprod", new CancellationToken(), 10, false);
+        var syncResult2 = await SyncService.RunSync(_mediatorMock.Object,new AppSettings() { FastSyncBlockDistanceRequirement = 150 }, logger.Object, "preprod", new CancellationToken(), 10, false);
 
         // Assert
         syncResult2.IsSuccess.Should().BeTrue();
@@ -1148,7 +1149,7 @@ public partial class IntegrationTests
                 previousHash = new byte[] { 12, 12, 12, 12 }
             }));
 
-        var syncResult3 = await SyncService.RunSync(_mediatorMock.Object, logger.Object, "preprod", new CancellationToken(), 10, false);
+        var syncResult3 = await SyncService.RunSync(_mediatorMock.Object,new AppSettings() { FastSyncBlockDistanceRequirement = 150 }, logger.Object, "preprod", new CancellationToken(), 10, false);
         syncResult3.IsSuccess.Should().BeTrue();
         var blocksNotforked = await _context.BlockEntities.Where(p => !p.IsFork).ToListAsync();
         blocksNotforked.Should().Contain(p => p.BlockHeight == 13);
@@ -1222,7 +1223,7 @@ public partial class IntegrationTests
             }));
 
         // Act 1
-        var syncResult = await SyncService.RunSync(_mediatorMock.Object, logger.Object, "preprod", new CancellationToken(), 10, false);
+        var syncResult = await SyncService.RunSync(_mediatorMock.Object,new AppSettings() { FastSyncBlockDistanceRequirement = 150 }, logger.Object, "preprod", new CancellationToken(), 10, false);
 
         // Assert
         syncResult.IsSuccess.Should().BeTrue();
@@ -1295,7 +1296,7 @@ public partial class IntegrationTests
                 previous_id = 90
             }));
 
-        var syncResult2 = await SyncService.RunSync(_mediatorMock.Object, logger.Object, "preprod", new CancellationToken(), 10, false);
+        var syncResult2 = await SyncService.RunSync(_mediatorMock.Object,new AppSettings() { FastSyncBlockDistanceRequirement = 150 }, logger.Object, "preprod", new CancellationToken(), 10, false);
 
         // Assert
         syncResult2.IsSuccess.Should().BeTrue();
@@ -1359,7 +1360,7 @@ public partial class IntegrationTests
                 previousHash = new byte[] { 11, 1, 1, 1 }
             }));
 
-        var syncResult3 = await SyncService.RunSync(_mediatorMock.Object, logger.Object, "preprod", new CancellationToken(), 10, false);
+        var syncResult3 = await SyncService.RunSync(_mediatorMock.Object,new AppSettings() { FastSyncBlockDistanceRequirement = 150 }, logger.Object, "preprod", new CancellationToken(), 10, false);
         var blocksNotforked = await _context.BlockEntities.Where(p => !p.IsFork).ToListAsync();
         blocksNotforked.Should().Contain(p => p.BlockHeight == 13);
         blocksNotforked.FirstOrDefault(p => p.BlockHeight == 13).PreviousBlockHashPrefix.Should().Be(16843020);
@@ -1432,7 +1433,7 @@ public partial class IntegrationTests
             }));
 
         // Act 1
-        var syncResult = await SyncService.RunSync(_mediatorMock.Object, logger.Object, "preprod", new CancellationToken(), 10, false);
+        var syncResult = await SyncService.RunSync(_mediatorMock.Object,new AppSettings() { FastSyncBlockDistanceRequirement = 150 }, logger.Object, "preprod", new CancellationToken(), 10, false);
 
         // Assert
         syncResult.IsSuccess.Should().BeTrue();
@@ -1536,7 +1537,7 @@ public partial class IntegrationTests
                 previousHash = new byte[] { 9, 1, 1, 1 }
             }));
 
-        var syncResult2 = await SyncService.RunSync(_mediatorMock.Object, logger.Object, "preprod", new CancellationToken(), 10, false);
+        var syncResult2 = await SyncService.RunSync(_mediatorMock.Object,new AppSettings() { FastSyncBlockDistanceRequirement = 150 }, logger.Object, "preprod", new CancellationToken(), 10, false);
 
         // Assert
         syncResult2.IsSuccess.Should().BeTrue();

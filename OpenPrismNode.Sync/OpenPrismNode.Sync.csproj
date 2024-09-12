@@ -17,7 +17,6 @@
 
     <ItemGroup>
       <ProjectReference Include="..\OpenPrismNode.Core\OpenPrismNode.Core.csproj" />
-      <ProjectReference Include="..\OpenPrismNode.Grpc\OpenPrismNode.Grpc.csproj" />
     </ItemGroup>
 
 </Project>

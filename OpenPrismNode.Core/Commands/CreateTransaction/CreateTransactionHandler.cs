@@ -94,7 +94,6 @@ public class CreateTransactionHandler : IRequestHandler<CreateTransactionRequest
                 return Result.Fail(result.Errors);
             }
         }
-
         //TODO procotol version update?
         else
         {

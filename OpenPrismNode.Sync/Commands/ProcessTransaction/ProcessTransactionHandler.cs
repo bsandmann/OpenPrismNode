@@ -3,6 +3,7 @@ namespace OpenPrismNode.Sync.Commands.ProcessTransaction;
 using Core;
 using Core.Commands.CreateAddresses;
 using Core.Commands.CreateTransaction;
+using Core.Common;
 using Core.Models;
 using DecodeTransaction;
 using FluentResults;
@@ -10,6 +11,7 @@ using GetMetadataFromTransaction;
 using GetPaymentDataFromTransaction;
 using MediatR;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using Models;
 using ParseTransaction;
 
@@ -17,17 +19,18 @@ public class ProcessTransactionHandler : IRequestHandler<ProcessTransactionReque
 {
     private readonly IMediator _mediator;
     private readonly ILogger<ProcessTransactionHandler> _logger;
+    private readonly AppSettings _appSettings;
 
-    public ProcessTransactionHandler(IMediator mediator, ILogger<ProcessTransactionHandler> logger)
+    public ProcessTransactionHandler(IMediator mediator, ILogger<ProcessTransactionHandler> logger, IOptions<AppSettings> appSettings)
     {
         _mediator = mediator;
         _logger = logger;
+        _appSettings = appSettings.Value;
     }
-
 
     public async Task<Result> Handle(ProcessTransactionRequest request, CancellationToken cancellationToken)
     {
-        var metadata = await _mediator.Send(new GetMetadataFromTransactionRequest(request.Transaction.id, PrismParameters.MetadataKey), cancellationToken);
+        var metadata = await _mediator.Send(new GetMetadataFromTransactionRequest(request.Transaction.id, _appSettings.MetadataKey), cancellationToken);
         if (metadata.IsFailed)
         {
             _logger.LogError($"Failed while reading metadata of transaction # {request.Transaction.block_index} in block # {request.Block.block_no}: {metadata.Errors.First().Message}");

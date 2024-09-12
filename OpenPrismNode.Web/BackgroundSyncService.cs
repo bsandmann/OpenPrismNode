@@ -42,7 +42,7 @@ public class BackgroundSyncService : BackgroundService
         {
             _logger.LogWarning("The automatic sync service is locked due to an ongoing operations. Wait or restart the node.");
         }
-        
+
         _isRunning = true;
         using (IServiceScope scope = _serviceScopeFactory.CreateScope())
         {
@@ -72,7 +72,7 @@ public class BackgroundSyncService : BackgroundService
 
                     _logger.LogInformation($"Sync running for {_appSettings.PrismLedger.Name}");
 
-                    var syncResult = await SyncService.RunSync(mediator, _logger, _appSettings.PrismLedger.Name, _cts.Token, _appSettings.PrismLedger.StartAtEpochNumber, isInitialStartup);
+                    var syncResult = await SyncService.RunSync(mediator, _appSettings, _logger, _appSettings.PrismLedger.Name, _cts.Token, _appSettings.PrismLedger.StartAtEpochNumber, isInitialStartup);
                     if (syncResult.IsFailed)
                     {
                         _logger.LogCritical($"Sync failed for {_appSettings.PrismLedger.Name}: {syncResult.Errors.SingleOrDefault()}");
@@ -115,12 +115,12 @@ public class BackgroundSyncService : BackgroundService
         _cts = new CancellationTokenSource();
         await this.StartAsync(_cts.Token);
     }
-    
+
     public void Lock()
     {
         _isLocked = true;
     }
-    
+
     public void Unlock()
     {
         _isLocked = false;

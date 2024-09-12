@@ -16,6 +16,7 @@ using Core.Commands.GetBlockByBlockHeight;
 using Core.Commands.GetEpoch;
 using Core.Commands.GetMostRecentBlock;
 using Core.Commands.SwitchBranch;
+using Core.Common;
 using Core.DbSyncModels;
 using Core.Entities;
 using Core.Models;
@@ -25,7 +26,7 @@ using Microsoft.Extensions.Logging;
 
 public static class SyncService
 {
-    public static async Task<Result> RunSync(IMediator mediator, ILogger logger, string ledger, CancellationToken cancellationToken, int startAtEpochNumber = 0, bool isInitialStartup = false)
+    public static async Task<Result> RunSync(IMediator mediator, AppSettings appsettings, ILogger logger, string ledger, CancellationToken cancellationToken, int startAtEpochNumber = 0, bool isInitialStartup = false)
     {
         LedgerType ledgerType;
         if (ledger.Equals("mainnet", StringComparison.InvariantCultureIgnoreCase))
@@ -141,12 +142,12 @@ public static class SyncService
                 return Result.Fail("Sync operation was cancelled");
             }
 
-            if (postgresBlockTipResult.Value.block_no - i - 1 > PrismParameters.FastSyncBlockDistanceRequirement)
+            if (postgresBlockTipResult.Value.block_no - i - 1 > appsettings.FastSyncBlockDistanceRequirement)
             {
                 // Fast Sync-Path
                 // We are at least 150 blocks behind (THe requirement is set in the PrismParameters)
                 // We find the next block with the PRISM metadata
-                var getNextBlockWithPrismMetadataResult = await mediator.Send(new GetNextBlockWithPrismMetadataRequest(i, PrismParameters.MetadataKey, postgresBlockTipResult.Value.block_no, ledgerType), cancellationToken);
+                var getNextBlockWithPrismMetadataResult = await mediator.Send(new GetNextBlockWithPrismMetadataRequest(i, appsettings.MetadataKey, postgresBlockTipResult.Value.block_no, ledgerType), cancellationToken);
                 if (getNextBlockWithPrismMetadataResult.IsFailed)
                 {
                     return Result.Fail(getNextBlockWithPrismMetadataResult.Errors.First().Message);
@@ -156,7 +157,7 @@ public static class SyncService
                 {
                     // No new PRISM block in front of the current block.
                     // We can fast-sync to the tip
-                    var fastSyncResult = await FastSyncTo(mediator, ledgerType, i, postgresBlockTipResult.Value.block_no - 1, lastEpochInDatabase);
+                    var fastSyncResult = await FastSyncTo(mediator, appsettings, ledgerType, i, postgresBlockTipResult.Value.block_no - 1, lastEpochInDatabase);
                     if (fastSyncResult.IsFailed)
                     {
                         logger.LogError(fastSyncResult.Errors.First().Message);
@@ -174,7 +175,7 @@ public static class SyncService
 
                     if (distanceToNextPrismBlock > 0)
                     {
-                        var fastSyncResult = await FastSyncTo(mediator, ledgerType, i, getNextBlockWithPrismMetadataResult.Value.BlockHeight!.Value - 1, lastEpochInDatabase);
+                        var fastSyncResult = await FastSyncTo(mediator, appsettings, ledgerType, i, getNextBlockWithPrismMetadataResult.Value.BlockHeight!.Value - 1, lastEpochInDatabase);
                         if (fastSyncResult.IsFailed)
                         {
                             logger.LogError(fastSyncResult.Errors.First().Message);
@@ -327,15 +328,14 @@ public static class SyncService
         return Result.Ok();
     }
 
-    private static async Task<Result<Hash>> FastSyncTo(IMediator mediator, LedgerType ledgerType, int firstBlockToRetrieve, int lastBlockToRetrieve, int lastEpochInDatabase)
+    private static async Task<Result<Hash>> FastSyncTo(IMediator mediator,AppSettings appSettings, LedgerType ledgerType, int firstBlockToRetrieve, int lastBlockToRetrieve, int lastEpochInDatabase)
     {
-        const int chunkSize = 1000;
         var currentBlockStart = firstBlockToRetrieve;
         Hash? lastProcessedBlockHash = null;
 
         while (currentBlockStart <= lastBlockToRetrieve)
         {
-            var currentChunkEnd = Math.Min(currentBlockStart + chunkSize - 1, lastBlockToRetrieve);
+            var currentChunkEnd = Math.Min(currentBlockStart + appSettings.FastSyncBatchSize - 1, lastBlockToRetrieve);
 
             var blocksFromPostgresResult = await mediator.Send(new GetPostgresBlocksByBlockNosRequest(currentBlockStart, currentChunkEnd - currentBlockStart + 1));
             if (blocksFromPostgresResult.IsFailed)

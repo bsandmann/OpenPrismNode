@@ -30,7 +30,7 @@ public class GetNextBlockWithPrismMetadataTests
     {
         // Arrange
         int startBlockHeight = 1;
-        int metadataKey = PrismParameters.MetadataKey;
+        int metadataKey = 21325;
         int maxBlockHeight = 1000;
         var request = new GetNextBlockWithPrismMetadataRequest(startBlockHeight, metadataKey, maxBlockHeight, LedgerType.CardanoPreprod);
 
@@ -49,7 +49,7 @@ public class GetNextBlockWithPrismMetadataTests
     {
         // Arrange
         int startBlockHeight = 1;
-        int metadataKey = PrismParameters.MetadataKey;
+        int metadataKey = 21325;
         int maxBlockHeight = 1000;
         var request = new GetNextBlockWithPrismMetadataRequest(startBlockHeight, metadataKey, maxBlockHeight, LedgerType.CardanoPreprod);
 

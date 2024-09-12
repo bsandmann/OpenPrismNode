@@ -174,8 +174,6 @@ public class TransactionSampleData
         }
         """;
 
-    //TODO get example with different operation numbers
-
     /// <summary>
     /// Real world example of a transaction <see cref="https://preprod.cexplorer.io/tx/ffce34f59446226a8011646cd7308017d3c4ac884b83678a032aa351e4189002/metadata#data"/>
     /// </summary>
