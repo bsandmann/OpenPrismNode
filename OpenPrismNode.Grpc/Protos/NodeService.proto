@@ -1,0 +1,147 @@
+syntax = "proto3";
+
+option csharp_namespace = "OpenPrismNodeService";
+
+import "google/protobuf/timestamp.proto";
+import "Protos/PrismDefinitions.proto";
+package io.iohk.atala.prism.protos;
+
+service NodeService {
+
+  rpc HealthCheck(HealthCheckRequest) returns (HealthCheckResponse) {}
+  
+  /**
+   * PUBLIC
+   *
+   * Retrieves a DID Document associated to a DID.
+   *
+   * Errors:
+   * - Invalid long form DID (INVALID_ARGUMENT)
+   * - DID format not supported (INVALID_ARGUMENT)
+   * - Invalid DID (INVALID_ARGUMENT)
+   * - Unknown DID (INVALID_ARGUMENT)
+   */
+  rpc GetDidDocument(GetDidDocumentRequest) returns (GetDidDocumentResponse) {}
+
+  /**
+   * PUBLIC
+   *
+   * Retrieves the status of an operation.
+   */
+  rpc GetOperationInfo(GetOperationInfoRequest) returns (GetOperationInfoResponse) {}
+
+  /**
+   * PUBLIC
+   *
+   * Schedules a list of operations for further publication.
+   */
+  rpc ScheduleOperations(ScheduleOperationsRequest) returns (ScheduleOperationsResponse) {}
+}
+
+message GetDidDocumentRequest {
+  string did = 1;
+}
+
+message GetDidDocumentResponse {
+  DIDData document = 1;
+  google.protobuf.Timestamp last_synced_block_timestamp = 5;
+  bytes last_update_operation = 6;
+}
+
+message GetOperationInfoRequest {
+  bytes operation_id = 1;
+}
+
+message GetOperationInfoResponse {
+  OperationStatus operation_status = 1;
+  string transaction_id = 3;
+  google.protobuf.Timestamp last_synced_block_timestamp = 2;
+  string details = 4;
+}
+
+message ScheduleOperationsRequest {
+  repeated SignedAtalaOperation signed_operations = 1;
+}
+
+message ScheduleOperationsResponse {
+  repeated OperationOutput outputs = 1;
+}
+
+message DIDData {
+  string id = 1;
+  repeated PublicKey public_keys = 2;
+  repeated Service services = 3;
+}
+
+message LedgerData {
+  string transaction_id = 1;
+  Ledger ledger = 2;
+  TimestampInfo timestamp_info = 3;
+}
+
+enum Ledger {
+  UNKNOWN_LEDGER = 0;
+  IN_MEMORY = 1;
+  CARDANO_TESTNET = 4;
+  CARDANO_MAINNET = 5;
+}
+
+message TimestampInfo {
+  uint32 block_sequence_number = 2;
+  uint32 operation_sequence_number = 3;
+  google.protobuf.Timestamp block_timestamp = 4;
+}
+
+enum OperationStatus {
+  UNKNOWN_OPERATION = 0;
+  PENDING_SUBMISSION = 1;
+  AWAIT_CONFIRMATION = 2;
+  CONFIRMED_AND_APPLIED = 3;
+  CONFIRMED_AND_REJECTED = 4;
+}
+
+// Used to encode the responses of the operations issued in an AtalaBlock.
+message OperationOutput {
+  oneof result {
+    // Represents the response provided by IssueCredentialBatchOperation.
+    IssueCredentialBatchOutput batch_output = 1;
+    // Represents the response provided by CreateDIDOperation.
+    CreateDIDOutput create_did_output = 2;
+    // Represents the response provided by UpdateDIDOperation.
+    UpdateDIDOutput update_did_output = 3;
+    // Represents the response provided by RevokeCredentialOperation.
+    RevokeCredentialsOutput revoke_credentials_output = 4;
+    // Represents the response provided by ProtocolVersionUpdateOperation.
+    ProtocolVersionUpdateOutput protocol_version_update_output = 7;
+    DeactivateDIDOutput deactivate_did_output = 8;
+  }
+  oneof operation_maybe {
+    bytes operation_id = 5; // Operation identifier.
+    string error = 6; // Error description if PRISM Node service haven't scheduled the operation.
+  }
+}
+
+message IssueCredentialBatchOutput {
+  string batch_id = 1;
+}
+message CreateDIDOutput {
+  string did_suffix = 1;
+}
+message UpdateDIDOutput {}
+message RevokeCredentialsOutput {}
+message ProtocolVersionUpdateOutput {}
+message DeactivateDIDOutput {}
+
+
+/**
+ * A request that can be used to check service health.
+ * All PRISM services expose an RPC that accepts this message as request.
+ */
+message HealthCheckRequest {}
+
+/**
+ * A response that represents service health.
+ * Status code 0 with empty response represents a healthy and reachable service,
+ * while all other status codes represent issues with the service.
+ */
+message HealthCheckResponse {}

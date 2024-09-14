@@ -1,8 +1,11 @@
+using System.Net;
 using System.Reflection;
 using System.Text.Json.Serialization;
 using Asp.Versioning;
+using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
+using OpenPrismNode;
 using OpenPrismNode.Core;
 using OpenPrismNode.Core.Common;
 using OpenPrismNode.Core.Crypto;
@@ -10,6 +13,7 @@ using OpenPrismNode.Core.Models.DidDocument;
 using OpenPrismNode.Core.Services;
 using OpenPrismNode.Sync.Services;
 using OpenPrismNode.Web;
+using NodeService = OpenPrismNode.Web.Services.NodeService;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -21,6 +25,7 @@ builder.Services.AddControllers()
         options.JsonSerializerOptions.DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull;
         options.JsonSerializerOptions.Converters.Add(new ServiceEndpointConverter());
     });
+
 
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddHttpContextAccessor();
@@ -66,6 +71,27 @@ builder.Services.AddApiVersioning(options =>
     options.ApiVersionReader = new UrlSegmentApiVersionReader();
 });
 
+builder.WebHost.ConfigureKestrel(options =>
+{
+   // Listen for REST endpoints over HTTPS
+    options.Listen(IPAddress.Any, 5001, listenOptions =>
+    {
+        listenOptions.UseHttps(); // Enforce HTTPS
+        listenOptions.Protocols = HttpProtocols.Http1AndHttp2;
+    });
+
+    // Listen for gRPC services over HTTP/2 without TLS
+    options.Listen(IPAddress.Any, 50053, listenOptions =>
+    {
+        listenOptions.Protocols = HttpProtocols.Http2;
+    });
+});
+
+builder.Services.AddGrpc(options =>
+{
+    options.EnableDetailedErrors = true;
+});
+
 var appSettingsSection = builder.Configuration.GetSection("AppSettings");
 builder.Services.Configure<AppSettings>(appSettingsSection);
 var appSettings = appSettingsSection.Get<AppSettings>();
@@ -99,17 +125,18 @@ builder.Services.AddLogging(p =>
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
+// Enable authorization if needed
+app.UseAuthorization();
+
+// Map gRPC service and controllers
+app.MapGrpcService<OpenPrismNode.Web.Services.NodeService>();
+app.MapControllers();
+
+// Enable Swagger in development
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
     app.UseSwaggerUI();
 }
-
-app.UseHttpsRedirection();
-
-app.UseAuthorization();
-
-app.MapControllers();
 
 app.Run();

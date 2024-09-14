@@ -13,9 +13,9 @@
       <Reference Include="Google.Protobuf">
         <HintPath>..\..\..\.nuget\packages\google.protobuf\3.26.1\lib\net5.0\Google.Protobuf.dll</HintPath>
       </Reference>
-      <Reference Include="OpenPrismNode.Sync">
-        <HintPath>..\OpenPrismNode.Sync.Tests\bin\Debug\net8.0\OpenPrismNode.Sync.dll</HintPath>
-      </Reference>
+<!--      <Reference Include="OpenPrismNode.Sync">-->
+<!--        <HintPath>..\OpenPrismNode.Sync.Tests\bin\Debug\net8.0\OpenPrismNode.Sync.dll</HintPath>-->
+<!--      </Reference>-->
     </ItemGroup>
 
     <ItemGroup>
