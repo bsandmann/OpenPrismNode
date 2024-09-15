@@ -27,4 +27,9 @@ public class DeactivateDidEntity : BaseOperationEntity
     /// </summary>
     [Column(TypeName = "bytea")]
     public byte[] Did { get; set; }
+    
+    /// <summary>
+    /// FK
+    /// </summary>
+    // public OperationStatusEntity? OperationStatus { get; set; }
 }

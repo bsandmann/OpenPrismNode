@@ -168,6 +168,32 @@ namespace OpenPrismNode.Web.Migrations
                     b.ToTable("LedgerEntities");
                 });
 
+            modelBuilder.Entity("OpenPrismNode.Core.Entities.OperationStatusEntity", b =>
+                {
+                    b.Property<byte[]>("OperationStatusId")
+                        .HasColumnType("bytea");
+
+                    b.Property<DateTime>("CreatedUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime?>("LastUpdatedUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<byte[]>("OperationHash")
+                        .IsRequired()
+                        .HasColumnType("bytea");
+
+                    b.Property<int>("OperationType")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("integer");
+
+                    b.HasKey("OperationStatusId");
+
+                    b.ToTable("OperationStatusEntities");
+                });
+
             modelBuilder.Entity("OpenPrismNode.Core.Entities.PatchedContextEntity", b =>
                 {
                     b.Property<int>("PatchedContextEntityId")

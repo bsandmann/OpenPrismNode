@@ -28,6 +28,7 @@ public class DataContext : DbContext
     public DbSet<PrismServiceEntity> PrismServiceEntities { get; set; }
     public List<PatchedContextEntity> PatchedContexts { get; set; }
     public DbSet<DeactivateDidEntity> DeactivateDidEntities { get; set; }
+    public DbSet<OperationStatusEntity> OperationStatusEntities { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -231,5 +232,26 @@ public class DataContext : DbContext
 
         modelBuilder.Entity<PrismPublicKeyEntity>()
             .HasIndex(p => p.UpdateDidEntityOperationHash);
+        
+        modelBuilder.Entity<OperationStatusEntity>()
+            .HasKey(p=>p.OperationStatusId);
+
+        // modelBuilder.Entity<OperationStatusEntity>()
+        //     .HasOne(os => os.CreateDidEntity)
+        //     .WithOne(cd => cd.OperationStatus)
+        //     .HasForeignKey<OperationStatusEntity>(os => os.OperationHash)
+        //     .IsRequired(false);
+        //
+        // modelBuilder.Entity<OperationStatusEntity>()
+        //     .HasOne(os => os.UpdateDidEntity)
+        //     .WithOne(ud => ud.OperationStatus)
+        //     .HasForeignKey<OperationStatusEntity>(os => os.OperationHash)
+        //     .IsRequired(false);
+        //
+        // modelBuilder.Entity<OperationStatusEntity>()
+        //     .HasOne(os => os.DeactivateDidEntity)
+        //     .WithOne(dd => dd.OperationStatus)
+        //     .HasForeignKey<OperationStatusEntity>(os => os.OperationHash)
+        //     .IsRequired(false);
     }
 }

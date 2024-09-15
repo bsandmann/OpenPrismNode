@@ -37,4 +37,9 @@ public class CreateDidEntity : BaseOperationEntity
     /// Reference to possible Deactivation
     /// </summary>
     public DeactivateDidEntity? DidDeactivation { get; set; }
+    
+    /// <summary>
+    /// FK
+    /// </summary>
+    // public OperationStatusEntity? OperationStatus { get; set; }
 }

@@ -43,7 +43,7 @@ public class CreateTransactionCreateDidHandler : IRequestHandler<CreateTransacti
                     .AnyAsync(p => p.OperationHash == PrismEncoding.HexToByteArray(request.Did), cancellationToken: cancellationToken);
                 if (existingDid)
                 {
-                    _logger.LogWarning($"CreateDid-Operation for {request.Did} already exists in the database. This is a problem with the integrety of the ledger. TransactionHash: {request.TransactionHash.Value} Block: {request.BlockHeight}");
+                    _logger.LogWarning($"CreateDid-Operation for {request.Did} already exists in the database. This is a problem with the integrety of the ledger. TransactionHash: {PrismEncoding.ByteArrayToBase64(request.TransactionHash.Value)} Block: {request.BlockHeight}");
                     return Result.Ok();
                 }
 

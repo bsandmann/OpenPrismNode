@@ -1,0 +1,126 @@
+namespace OpenPrismNode.Core.Commands.ResolveDid.Transform;
+
+using System.Text.Json;
+using Common;
+using Google.Protobuf;
+using Google.Protobuf.Collections;
+using Google.Protobuf.WellKnownTypes;
+using Models;
+using Models.DidDocument;
+using OpenPrismNodeService;
+
+public class TransformToPrismGrpcResponse
+{
+    public static GetDidDocumentResponse Transform(InternalDidDocument internalDidDocument)
+    {
+        var didData = TransformToDidData(internalDidDocument.DidIdentifier, internalDidDocument.PublicKeys, internalDidDocument.PrismServices);
+        var response = new GetDidDocumentResponse
+        {
+            Document = new DIDData()
+            {
+                Id =  didData.Id,
+                PublicKeys = { didData.PublicKeys },
+                Services = { didData.Services }
+            },
+            // the versionId contians the hex-encoded operationHash of the last operation effecting the DID
+            LastUpdateOperation = PrismEncoding.HexToByteString(internalDidDocument.VersionId),
+            LastSyncedBlockTimestamp = Timestamp.FromDateTime(internalDidDocument.Updated ?? internalDidDocument.Created),
+        };
+
+        return response;
+    }
+
+    private static DIDData TransformToDidData(string didIdentifier, List<PrismPublicKey> publicKeys, List<PrismService> services)
+    {
+        var didData = new DIDData();
+        didData.Id = didIdentifier;
+        // Add public keys
+        foreach (var prismPublicKey in publicKeys)
+        {
+            var publicKey = new PublicKey
+            {
+                Id = prismPublicKey.KeyId,
+                Usage = (KeyUsage)prismPublicKey.KeyUsage
+            };
+
+            if (prismPublicKey.Curve == PrismParameters.Secp256k1CurveName)
+            {
+                if (prismPublicKey.KeyY != null && prismPublicKey.KeyY.Length == 32)
+                {
+                    // Uncompressed key
+                    publicKey.EcKeyData = new ECKeyData()
+                    {
+                        Curve = prismPublicKey.Curve,
+                        X = ByteString.CopyFrom(prismPublicKey.KeyX),
+                        Y = ByteString.CopyFrom(prismPublicKey.KeyY)
+                    };
+                }
+                else
+                {
+                    // Compressed key
+                    publicKey.CompressedEcKeyData = new CompressedECKeyData()
+                    {
+                        Curve = prismPublicKey.Curve,
+                        Data = ByteString.CopyFrom(prismPublicKey.KeyX)
+                    };
+                }
+            }
+            else if (prismPublicKey.Curve == PrismParameters.Ed25519CurveName ||
+                     prismPublicKey.Curve == PrismParameters.X25519CurveName)
+            {
+                publicKey.EcKeyData = new ECKeyData
+                {
+                    Curve = prismPublicKey.Curve,
+                    X = ByteString.CopyFrom(prismPublicKey.KeyX)
+                    // Y is not used for these curves
+                };
+            }
+            else
+            {
+                throw new Exception($"Unsupported curve: {prismPublicKey.Curve}");
+            }
+
+            didData.PublicKeys.Add(publicKey);
+        }
+
+
+        // Add services
+        foreach (var prismService in services)
+        {
+            var service = new Service
+            {
+                Id = prismService.ServiceId,
+                Type = prismService.Type,
+                ServiceEndpoint = SerializeServiceEndpoints(prismService.ServiceEndpoints)
+            };
+
+            didData.Services.Add(service);
+        }
+
+        return didData;
+    }
+
+    private static string SerializeServiceEndpoints(ServiceEndpoints serviceEndpoints)
+    {
+        if (serviceEndpoints.Uri != null)
+        {
+            // Single URI
+            return serviceEndpoints.Uri.AbsoluteUri;
+        }
+        else if (serviceEndpoints.ListOfUris != null)
+        {
+            // List of URIs
+            var uriStrings = serviceEndpoints.ListOfUris.Select(uri => uri.AbsoluteUri).ToList();
+            return JsonSerializer.Serialize(uriStrings);
+        }
+        else if (serviceEndpoints.Json != null)
+        {
+            // JSON object
+            return JsonSerializer.Serialize(serviceEndpoints.Json);
+        }
+        else
+        {
+            throw new Exception("Invalid ServiceEndpoints: No data to serialize.");
+        }
+    }
+}

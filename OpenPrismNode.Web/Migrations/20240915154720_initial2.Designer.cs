@@ -12,8 +12,8 @@ using OpenPrismNode.Core;
 namespace OpenPrismNode.Web.Migrations
 {
     [DbContext(typeof(DataContext))]
-    [Migration("20240826170142_initial")]
-    partial class initial
+    [Migration("20240915154720_initial2")]
+    partial class initial2
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -169,6 +169,32 @@ namespace OpenPrismNode.Web.Migrations
                     b.HasKey("Ledger");
 
                     b.ToTable("LedgerEntities");
+                });
+
+            modelBuilder.Entity("OpenPrismNode.Core.Entities.OperationStatusEntity", b =>
+                {
+                    b.Property<byte[]>("OperationStatusId")
+                        .HasColumnType("bytea");
+
+                    b.Property<DateTime>("CreatedUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime?>("LastUpdatedUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<byte[]>("OperationHash")
+                        .IsRequired()
+                        .HasColumnType("bytea");
+
+                    b.Property<int>("OperationType")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("integer");
+
+                    b.HasKey("OperationStatusId");
+
+                    b.ToTable("OperationStatusEntities");
                 });
 
             modelBuilder.Entity("OpenPrismNode.Core.Entities.PatchedContextEntity", b =>

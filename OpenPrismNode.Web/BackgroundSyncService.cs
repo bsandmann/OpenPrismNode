@@ -1,5 +1,11 @@
 ﻿namespace OpenPrismNode.Web;
 
+using Core.Commands.CreateBlock;
+using Core.Commands.CreateEpoch;
+using Core.Commands.CreateLedger;
+using Core.Commands.GetMostRecentBlock;
+using Core.Models;
+using FluentResults;
 using MediatR;
 using Microsoft.Extensions.Options;
 using OpenPrismNode.Core.Common;
@@ -16,18 +22,16 @@ public class BackgroundSyncService : BackgroundService
     private readonly AppSettings _appSettings;
     private readonly IServiceScopeFactory _serviceScopeFactory;
     private CancellationTokenSource _cts;
-    private readonly IMediator _mediator;
     private bool _isRunning = false;
     private bool _isLocked = false;
 
     /// <inheritdoc />
-    public BackgroundSyncService(IOptions<AppSettings> appSettings, ILogger<BackgroundSyncService> logger, IServiceScopeFactory serviceScopeFactory, IMediator mediator)
+    public BackgroundSyncService(IOptions<AppSettings> appSettings, ILogger<BackgroundSyncService> logger, IServiceScopeFactory serviceScopeFactory)
     {
         _logger = logger;
         _appSettings = appSettings.Value;
         _serviceScopeFactory = serviceScopeFactory;
         _cts = new CancellationTokenSource();
-        _mediator = mediator;
     }
 
     /// <inheritdoc />
@@ -38,9 +42,45 @@ public class BackgroundSyncService : BackgroundService
             return;
         }
 
+        if (_appSettings.PrismLedger.Name.Equals("inMemory", StringComparison.InvariantCultureIgnoreCase))
+        {
+            _logger.LogInformation("In-memory ledger detected. Skipping automatic sync service");
+            using (IServiceScope scope = _serviceScopeFactory.CreateScope())
+            {
+                var mediator = scope.ServiceProvider.GetRequiredService<IMediator>();
+                var mostRecentInMemoryBlock = await mediator.Send(new GetMostRecentBlockRequest(LedgerType.InMemory), new CancellationToken());
+                if (mostRecentInMemoryBlock.IsFailed)
+                {
+                    _logger.LogInformation("In-memory ledger detected. Generating genesis block.");
+                    // If we don't have any blocks in the in-memory ledger, we need to create the genesis block, and maybe even the ledger and  epoch
+                    var ledgerResult = await mediator.Send(new CreateLedgerRequest(LedgerType.InMemory), CancellationToken.None);
+                    if (ledgerResult.IsFailed)
+                    {
+                        _logger.LogCritical("Failed to create the in-memory ledger in the database");
+                    }
+                    
+                    var createStartingEpochResult = await mediator.Send(new CreateEpochRequest(LedgerType.InMemory, 1), CancellationToken.None);
+                    if (createStartingEpochResult.IsFailed)
+                    {
+                        _logger.LogCritical("Failed to create the starting epoch for the in-memory ledger");
+                        return;
+                    }
+
+                    var genesisBlock = await mediator.Send(new CreateBlockRequest(LedgerType.InMemory, Hash.CreateRandom(), null, 1, null, 1, DateTime.UtcNow, 0, false), CancellationToken.None);
+                    if (genesisBlock.IsFailed)
+                    {
+                        _logger.LogCritical("Failed to create the genesis block for the in-memory ledger");
+                        return;
+                    }
+                }
+            }
+
+            return;
+        }
+
         if (_isLocked)
         {
-            _logger.LogWarning("The automatic sync service is locked due to an ongoing operations. Wait or restart the node.");
+            _logger.LogWarning("The automatic sync service is locked due to an ongoing operations. Wait or restart the node");
         }
 
         _isRunning = true;

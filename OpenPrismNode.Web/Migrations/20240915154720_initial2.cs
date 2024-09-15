@@ -7,7 +7,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace OpenPrismNode.Web.Migrations
 {
     /// <inheritdoc />
-    public partial class initial : Migration
+    public partial class initial2 : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -22,6 +22,22 @@ namespace OpenPrismNode.Web.Migrations
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_LedgerEntities", x => x.Ledger);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "OperationStatusEntities",
+                columns: table => new
+                {
+                    OperationStatusId = table.Column<byte[]>(type: "bytea", nullable: false),
+                    OperationHash = table.Column<byte[]>(type: "bytea", nullable: false),
+                    CreatedUtc = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    LastUpdatedUtc = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    Status = table.Column<int>(type: "integer", nullable: false),
+                    OperationType = table.Column<int>(type: "integer", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_OperationStatusEntities", x => x.OperationStatusId);
                 });
 
             migrationBuilder.CreateTable(
@@ -472,6 +488,9 @@ namespace OpenPrismNode.Web.Migrations
         {
             migrationBuilder.DropTable(
                 name: "DeactivateDidEntities");
+
+            migrationBuilder.DropTable(
+                name: "OperationStatusEntities");
 
             migrationBuilder.DropTable(
                 name: "PatchedContextEntity");

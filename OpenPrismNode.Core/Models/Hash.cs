@@ -1,13 +1,14 @@
 namespace OpenPrismNode.Core.Models;
 
 using System.Diagnostics;
+using System.Security.Cryptography;
 using Crypto;
 
 public sealed class Hash
 {
     // TODO refactor or remove the Hash implemantion?
-    
-     private static ISha256Service _sha256Service;
+
+    private static ISha256Service _sha256Service;
 
     public byte[] Value { get; private set; }
 
@@ -29,6 +30,7 @@ public sealed class Hash
         Debug.Assert(sha256Service != null);
         _sha256Service = sha256Service;
     }
+
     //
     public Hash Of(byte[] value)
     {
@@ -37,6 +39,7 @@ public sealed class Hash
         this.Value = hash;
         return this;
     }
+
     //
     /// <summary>
     /// Takes the provided data and wrappes it in this hash-class without hashing it
@@ -47,5 +50,10 @@ public sealed class Hash
     {
         // Ensure.That(value.Length).Is(32);
         return new Hash(value);
+    }
+
+    public static Hash CreateRandom()
+    {
+        return new Hash(RandomNumberGenerator.GetBytes(32));
     }
 }

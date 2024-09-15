@@ -1,42 +1,100 @@
 namespace OpenPrismNode.Web.Services
 {
+    using Core.Commands.CreateBlock;
+    using Core.Commands.CreateOperationsStatus;
+    using Core.Commands.CreateTransaction;
+    using Core.Commands.GetMostRecentBlock;
+    using Core.Commands.GetOperationStatus;
+    using Core.Common;
+    using Core.Crypto;
+    using Core.Models;
+    using FluentResults;
     using global::Grpc.Core;
     using Google.Protobuf;
     using Google.Protobuf.WellKnownTypes;
+    using MediatR;
+    using Microsoft.Extensions.Options;
     using OpenPrismNodeService;
+    using Sync;
+    using Sync.Commands.ParseTransaction;
+    using System;
+    using Core.Commands.ResolveDid;
+    using Core.Commands.ResolveDid.Transform;
+    using Core.Parser;
+    using Enum = System.Enum;
 
-    public class NodeService: OpenPrismNodeService.NodeService.NodeServiceBase
+    public class NodeService : OpenPrismNodeService.NodeService.NodeServiceBase
     {
+        private readonly IMediator _mediator;
         private readonly ILogger<NodeService> _logger;
+        private readonly ISha256Service _sha256Service;
+        private readonly IOptions<AppSettings> _appSettings;
 
-        public NodeService(ILogger<NodeService> logger)
+        public NodeService(IMediator mediator, ILogger<NodeService> logger, ISha256Service sha256Service, IOptions<AppSettings> appSettings)
         {
             _logger = logger;
+            _mediator = mediator;
+            _sha256Service = sha256Service;
+            _appSettings = appSettings;
         }
-        
+
         public override Task<HealthCheckResponse> HealthCheck(HealthCheckRequest request, ServerCallContext context)
         {
             return Task.FromResult(new HealthCheckResponse());
         }
-        
-        public override Task<GetDidDocumentResponse> GetDidDocument(GetDidDocumentRequest request, ServerCallContext context)
+
+        public override async Task<GetDidDocumentResponse> GetDidDocument(GetDidDocumentRequest request, ServerCallContext context)
         {
-            // Implement the logic to retrieve and return the DID document
-            throw new RpcException(new Status(StatusCode.InvalidArgument, "Method not implemented."));
+            var did = request.Did;
+            var ledger = _appSettings.Value.PrismLedger.Name;
+            var isParseableLedger = Enum.TryParse<LedgerType>(ledger.Equals("inmemory",StringComparison.InvariantCultureIgnoreCase)?"inmemory": "cardano" + ledger, ignoreCase: true, out var ledgerQueryType);
+            if (!isParseableLedger)
+            {
+                return new GetDidDocumentResponse();
+            }
+
+            if (!DidUrlParser.TryParse(did, out var parsedDid))
+            {
+                return new GetDidDocumentResponse();
+            }
+
+            var resolveResult = await _mediator.Send(new ResolveDidRequest(ledgerQueryType, parsedDid.MethodSpecificId, null, null, null));
+            if (resolveResult.IsFailed)
+            {
+                return new GetDidDocumentResponse();
+            }
+
+            var transformedResult = TransformToPrismGrpcResponse.Transform(resolveResult.Value.InternalDidDocument);
+            return transformedResult;
         }
 
-        public override Task<GetOperationInfoResponse> GetOperationInfo(GetOperationInfoRequest request, ServerCallContext context)
+        public override async Task<GetOperationInfoResponse> GetOperationInfo(GetOperationInfoRequest request, ServerCallContext context)
         {
             if (request.OperationId != null)
             {
-                var response = new GetOperationInfoResponse()
+                var operationStatusId = PrismEncoding.ByteStringToByteArray(request.OperationId);
+
+                var operationIdResult = await _mediator.Send(new GetOperationStatusRequest(operationStatusId));
+                if (operationIdResult.IsFailed)
+                {
+                    return new GetOperationInfoResponse()
+                    {
+                        Details = "Operation could not be found",
+                        //TODO should be an error!
+                        OperationStatus = OperationStatus.ConfirmedAndApplied,
+                        TransactionId = "123",
+                        LastSyncedBlockTimestamp = new Timestamp() { Seconds = 30, Nanos = 1 }
+                    };
+                }
+
+                return new GetOperationInfoResponse()
                 {
                     Details = "some details",
-                    OperationStatus = OperationStatus.ConfirmedAndApplied,
+                    OperationStatus = MapOperationStatus(operationIdResult.Value!.Status),
+                    //TODO: Get the transaction id from the transaction table
                     TransactionId = "123",
-                    LastSyncedBlockTimestamp = new Timestamp() { Seconds = 123, Nanos = 123 }
+                    LastSyncedBlockTimestamp = new Timestamp() { Seconds = 30, Nanos = 1 }
                 };
-                return Task.FromResult(response);
             }
             else
             {
@@ -44,42 +102,139 @@ namespace OpenPrismNode.Web.Services
             }
         }
 
-        public override Task<ScheduleOperationsResponse> ScheduleOperations(ScheduleOperationsRequest request, ServerCallContext context)
+        private OperationStatus MapOperationStatus(OperationStatusEnum status)
         {
-            throw new RpcException(new Status(StatusCode.InvalidArgument, "Operation not found"));
+            return status switch
+            {
+                OperationStatusEnum.UnknownOperation => OperationStatus.UnknownOperation,
+                OperationStatusEnum.PendingSubmission => OperationStatus.PendingSubmission,
+                OperationStatusEnum.AwaitConfirmation => OperationStatus.AwaitConfirmation,
+                OperationStatusEnum.ConfirmedAndApplied => OperationStatus.ConfirmedAndApplied,
+                OperationStatusEnum.ConfirmedAndRejected => OperationStatus.ConfirmedAndRejected,
+                _ => throw new NotImplementedException()
+            };
+        }
+
+        public override async Task<ScheduleOperationsResponse> ScheduleOperations(ScheduleOperationsRequest request, ServerCallContext context)
+        {
             if (request.SignedOperations.Count != 1)
             {
                 throw new Exception();
             }
 
-            if (request.SignedOperations[0].Operation.OperationCase == AtalaOperation.OperationOneofCase.CreateDid)
+            var operationStatusId = _sha256Service.HashData(request.SignedOperations[0].ToByteArray());
+            var parsingResult = await _mediator.Send(new ParseTransactionRequest(request.SignedOperations[0], LedgerType.InMemory, 0, new ResolveMode(null, null, null)));
+            if (parsingResult.IsFailed)
             {
-                // create
+                return GenerateScheduleOperationsErrorResponse(operationStatusId, parsingResult.Errors);
             }
-            else if (request.SignedOperations[0].Operation.OperationCase == AtalaOperation.OperationOneofCase.UpdateDid)
+
+            var mostRecentInMemoryBlock = await _mediator.Send(new GetMostRecentBlockRequest(LedgerType.InMemory));
+            if (mostRecentInMemoryBlock.IsFailed)
             {
-                // update
+                return GenerateScheduleOperationsErrorResponse(operationStatusId, mostRecentInMemoryBlock.Errors);
             }
-            else if (request.SignedOperations[0].Operation.OperationCase == AtalaOperation.OperationOneofCase.DeactivateDid)
+
+            var newBlock = await _mediator.Send(new CreateBlockRequest(LedgerType.InMemory, Hash.CreateRandom(), Hash.CreateFrom(mostRecentInMemoryBlock.Value.BlockHash), mostRecentInMemoryBlock.Value.BlockHeight + 1, mostRecentInMemoryBlock.Value.BlockHeight, 1, DateTime.UtcNow, 0, false),
+                CancellationToken.None);
+            if (newBlock.IsFailed)
             {
-                // deactivate
+                return GenerateScheduleOperationsErrorResponse(operationStatusId, newBlock.Errors);
+            }
+
+            var transactionRequest = new CreateTransactionRequest(
+                transactionHash: Hash.CreateRandom(),
+                blockHash: Hash.CreateFrom(newBlock.Value.BlockHash),
+                blockHeight: newBlock.Value.BlockHeight,
+                transactionFee: 0,
+                transactionSize: 0,
+                transactionIndex: 0,
+                parsingResult: parsingResult.Value,
+                utxos: new List<UtxoWrapper>()
+            );
+            var transactionResult = await _mediator.Send(transactionRequest, new CancellationToken());
+            if (transactionResult.IsFailed)
+            {
+                return GenerateScheduleOperationsErrorResponse(operationStatusId, transactionResult.Errors);
+            }
+
+            byte[]? operationHash = null;
+            OperationTypeEnum operationType = OperationTypeEnum.CreateDid;
+            if (parsingResult.Value.OperationResultType == OperationResultType.CreateDid)
+            {
+                operationHash = PrismEncoding.HexToByteArray(parsingResult.Value.AsCreateDid().didDocument.DidIdentifier);
+                operationType = OperationTypeEnum.CreateDid;
+            }
+            else if (parsingResult.Value.OperationResultType == OperationResultType.UpdateDid)
+            {
+                operationHash = parsingResult.Value.AsUpdateDid().operationBytes;
+                operationType = OperationTypeEnum.UpdateDid;
+            }
+            else if (parsingResult.Value.OperationResultType == OperationResultType.DeactivateDid)
+            {
+                operationHash = parsingResult.Value.AsDeactivateDid().operationBytes;
+                operationType = OperationTypeEnum.DeactivateDid;
             }
             else
             {
-                throw new ApplicationException();
+                throw new NotImplementedException();
             }
 
-            var response = new ScheduleOperationsResponse
+            var createOperationStatusResult = await _mediator.Send(new CreateOperationStatusRequest(
+                operationStatusId,
+                operationHash,
+                OperationStatusEnum.ConfirmedAndApplied,
+                operationType
+            ));
+            if (createOperationStatusResult.IsFailed)
+            {
+                return GenerateScheduleOperationsErrorResponse(operationStatusId, transactionResult.Errors);
+            }
+
+            operationStatusId = createOperationStatusResult.Value;
+
+            return new ScheduleOperationsResponse()
             {
                 Outputs =
                 {
                     new OperationOutput()
                     {
-                        OperationId = ByteString.FromBase64("asdf")
-                    },
-                },
+                        // TODO align format of the operation id with sandbox
+                        OperationId = PrismEncoding.ByteArrayToByteString(operationStatusId),
+                        CreateDidOutput = operationType == OperationTypeEnum.CreateDid
+                            ? new CreateDIDOutput()
+                            {
+                                DidSuffix = parsingResult.Value.AsCreateDid().didDocument.DidIdentifier
+                            }
+                            : null,
+                        UpdateDidOutput = operationType == OperationTypeEnum.UpdateDid
+                            ? new UpdateDIDOutput()
+                            {
+                            }
+                            : null,
+                        DeactivateDidOutput = operationType == OperationTypeEnum.DeactivateDid
+                            ? new DeactivateDIDOutput()
+                            {
+                            }
+                            : null
+                    }
+                }
             };
-            return Task.FromResult(response);
+        }
+
+        private ScheduleOperationsResponse GenerateScheduleOperationsErrorResponse(byte[] operationStatusId, List<IError> errors)
+        {
+            return new ScheduleOperationsResponse()
+            {
+                Outputs =
+                {
+                    new OperationOutput()
+                    {
+                        OperationId = PrismEncoding.ByteArrayToByteString(operationStatusId),
+                        Error = string.IsNullOrEmpty(errors.FirstOrDefault()?.Message) ? "Operation failed" : errors.FirstOrDefault().Message
+                    }
+                }
+            };
         }
     }
 }

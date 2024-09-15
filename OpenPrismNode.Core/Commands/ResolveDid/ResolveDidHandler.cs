@@ -303,6 +303,7 @@ public class ResolveDidHandler : IRequestHandler<ResolveDidRequest, Result<Resol
                             // should never happen
                             return Result.Fail("Fatal error. The key which should be removed does not exist");
                         }
+                        prismPublicKeys.Remove(keyToRemove);
                     }
                     else if (addServiceAction is not null)
                     {
@@ -349,6 +350,7 @@ public class ResolveDidHandler : IRequestHandler<ResolveDidRequest, Result<Resol
                             // should never happen
                             return Result.Fail("Fatal error. The service which should be removed does not exist");
                         }
+                        prismServices.Remove(serviceToRemove);
                     }
                     else if (patchedContextAction is not null)
                     {
@@ -411,7 +413,7 @@ public class ResolveDidHandler : IRequestHandler<ResolveDidRequest, Result<Resol
             publicKeys: new List<PrismPublicKey>(),
             prismServices: new List<PrismService>(),
             contexts: new List<string>() { PrismParameters.JsonLdDefaultContext },
-            created:  DateTime.SpecifyKind(createDidResult.TimeUtc, DateTimeKind.Utc),
+            created: DateTime.SpecifyKind(createDidResult.TimeUtc, DateTimeKind.Utc),
             updated: null,
             versionId: PrismEncoding.ByteArrayToHex(createDidResult.OperationHash),
             cardanoTransactionPosition: createDidResult.Index,

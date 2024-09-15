@@ -138,4 +138,60 @@ public static class PrismEncoding
                 throw new ArgumentOutOfRangeException(nameof(input), "Illegal base64url string!");
         }
     }
+    
+    public static string ByteStringToUtf8String(ByteString byteString)
+    {
+        return Encoding.UTF8.GetString(byteString.ToByteArray());
+    }
+
+    public static string ByteArrayToUtf8String(byte[] bytes)
+    {
+        return Encoding.UTF8.GetString(bytes);
+    }
+
+    public static string ByteStringToHex(ByteString byteString)
+    {
+        return ByteArrayToHex(byteString.ToByteArray());
+    }
+
+    public static string Utf8StringToHex(string utf8String)
+    {
+        var bytes = Utf8StringToByteArray(utf8String);
+        return ByteArrayToHex(bytes);
+    }
+
+    public static string HexToUtf8String(string hex)
+    {
+        var bytes = HexToByteArray(hex);
+        return ByteArrayToUtf8String(bytes);
+    }
+
+    public static string Utf8StringToBase64(string utf8String)
+    {
+        var bytes = Utf8StringToByteArray(utf8String);
+        return ByteArrayToBase64(bytes);
+    }
+
+    public static string ByteStringToBase64(ByteString byteString)
+    {
+        return ByteArrayToBase64(byteString.ToByteArray());
+    }
+
+    public static ByteString Base64ToByteString(string base64String)
+    {
+        var bytes = Base64ToByteArray(base64String);
+        return ByteString.CopyFrom(bytes);
+    }
+
+    public static string Base64ToHex(string base64String)
+    {
+        var bytes = Base64ToByteArray(base64String);
+        return ByteArrayToHex(bytes);
+    }
+
+    public static string HexToBase64(string hex)
+    {
+        var bytes = HexToByteArray(hex);
+        return ByteArrayToBase64(bytes);
+    }
 }

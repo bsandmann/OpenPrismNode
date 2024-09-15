@@ -82,6 +82,9 @@ public class ParseTransactionHandler : IRequestHandler<ParseTransactionRequest, 
         {
             return serviceParseResult.ToResult();
         }
+        
+        // TODO a createDID operation can also contains contexts -> see identus doc
+        // Still needs to be implemented and tested here
 
         var signature = PrismEncoding.ByteStringToByteArray(signedAtalaOperation.Signature);
         var signedWith = signedAtalaOperation.SignedWith;
