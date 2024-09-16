@@ -82,9 +82,8 @@ public class ParseTransactionHandler : IRequestHandler<ParseTransactionRequest, 
         {
             return serviceParseResult.ToResult();
         }
-        
-        // TODO a createDID operation can also contains contexts -> see identus doc
-        // Still needs to be implemented and tested here
+
+        var contextParseResult = ParseContext(didData);
 
         var signature = PrismEncoding.ByteStringToByteArray(signedAtalaOperation.Signature);
         var signedWith = signedAtalaOperation.SignedWith;
@@ -93,7 +92,7 @@ public class ParseTransactionHandler : IRequestHandler<ParseTransactionRequest, 
 
         // the did identifier is the hash of the intitial operation when creating the did
         var didIdentifier = PrismEncoding.ByteArrayToHex(hashedAtalaOperation.Value);
-        
+
         // Only perform the signature verification if the operation is signed. Not possible for long-form DIDs
         if (signedAtalaOperation.Signature != ByteString.Empty)
         {
@@ -113,7 +112,7 @@ public class ParseTransactionHandler : IRequestHandler<ParseTransactionRequest, 
 
         // TODO: Check if the DID already exists in the database. See spec. Do I still need to do that here?
 
-        var didDocument = new InternalDidDocument(didIdentifier, publicKeyParseResult.Value, serviceParseResult.Value, new List<string>(), DateTime.UtcNow, String.Empty, 0, 0, String.Empty);
+        var didDocument = new InternalDidDocument(didIdentifier, publicKeyParseResult.Value, serviceParseResult.Value, contextParseResult.Value, DateTime.UtcNow, String.Empty, 0, 0, String.Empty);
         var operationResultWrapper = new OperationResultWrapper(OperationResultType.CreateDid, index, didDocument, signedWith);
         return Result.Ok(operationResultWrapper);
     }
@@ -551,6 +550,17 @@ public class ParseTransactionHandler : IRequestHandler<ParseTransactionRequest, 
         ));
     }
 
+    private Result<List<string>> ParseContext(CreateDIDOperation.Types.DIDCreationData didData)
+    {
+        var contexts = new List<string>();
+
+        if (!didData.Context.Any())
+        {
+            return contexts;
+        }
+
+        return didData.Context.ToList();
+    }
 
     private Result<List<PrismService>> ParseService(CreateDIDOperation.Types.DIDCreationData didData)
     {

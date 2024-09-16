@@ -13,14 +13,15 @@ public class TransformToPrismGrpcResponse
 {
     public static GetDidDocumentResponse Transform(InternalDidDocument internalDidDocument)
     {
-        var didData = TransformToDidData(internalDidDocument.DidIdentifier, internalDidDocument.PublicKeys, internalDidDocument.PrismServices);
+        var didData = TransformToDidData(internalDidDocument.DidIdentifier, internalDidDocument.PublicKeys, internalDidDocument.PrismServices, internalDidDocument.Contexts);
         var response = new GetDidDocumentResponse
         {
             Document = new DIDData()
             {
-                Id =  didData.Id,
+                Id = didData.Id,
                 PublicKeys = { didData.PublicKeys },
-                Services = { didData.Services }
+                Services = { didData.Services },
+                Context = { didData.Context }
             },
             // the versionId contians the hex-encoded operationHash of the last operation effecting the DID
             LastUpdateOperation = PrismEncoding.HexToByteString(internalDidDocument.VersionId),
@@ -30,7 +31,7 @@ public class TransformToPrismGrpcResponse
         return response;
     }
 
-    private static DIDData TransformToDidData(string didIdentifier, List<PrismPublicKey> publicKeys, List<PrismService> services)
+    private static DIDData TransformToDidData(string didIdentifier, List<PrismPublicKey> publicKeys, List<PrismService> services, List<string> contexts)
     {
         var didData = new DIDData();
         didData.Id = didIdentifier;
@@ -95,6 +96,17 @@ public class TransformToPrismGrpcResponse
             };
 
             didData.Services.Add(service);
+        }
+
+        foreach (var context in contexts)
+        {
+            if (!context.Equals(PrismParameters.JsonLdDefaultContext) &&
+                !context.Equals(PrismParameters.JsonLdJsonWebKey2020) &&
+                !context.Equals(PrismParameters.JsonLdDidCommMessaging) &&
+                !context.Equals(PrismParameters.JsonLdLinkedDomains))
+            {
+                didData.Context.Add(context);
+            }
         }
 
         return didData;

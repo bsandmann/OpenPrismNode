@@ -71,6 +71,7 @@ message DIDData {
   string id = 1;
   repeated PublicKey public_keys = 2;
   repeated Service services = 3;
+  repeated string context = 4;
 }
 
 message LedgerData {

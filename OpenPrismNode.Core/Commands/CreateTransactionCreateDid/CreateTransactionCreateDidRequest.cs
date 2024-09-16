@@ -26,6 +26,7 @@ public class CreateTransactionCreateDidRequest : TransactionBaseRequest, IReques
     /// <param name="utxos"></param>
     /// <param name="prismPublicKeys"></param>
     /// <param name="prismServices"></param>
+    /// <param name="patchedContexts"></param>
     public CreateTransactionCreateDidRequest(Hash transactionHash, Hash blockHash, int blockHeight, int fees, int size, int index, Hash operationHash, string did, string signingKeyId,
         int operationSequenceNumber, List<UtxoWrapper> utxos, List<PrismPublicKey> prismPublicKeys, List<PrismService> prismServices, List<string>? patchedContexts = null)
         : base(transactionHash, blockHash, blockHeight, fees, size, index, utxos)

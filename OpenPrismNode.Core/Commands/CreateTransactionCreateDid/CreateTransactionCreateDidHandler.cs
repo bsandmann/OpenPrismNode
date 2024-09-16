@@ -127,7 +127,13 @@ public class CreateTransactionCreateDidHandler : IRequestHandler<CreateTransacti
                             Uri = p.ServiceEndpoints.Uri,
                             ListOfUris = p.ServiceEndpoints.ListOfUris,
                             JsonData = p.ServiceEndpoints.Json is not null ? JsonSerializer.Serialize(p.ServiceEndpoints.Json) : null
-                        }).ToList()
+                        }).ToList(),
+                        PatchedContext = request.PatchedContexts is not null
+                            ? new PatchedContextEntity()
+                            {
+                                ContextList = request.PatchedContexts,
+                            }
+                            : null
                     };
 
                 await _context.CreateDidEntities.AddAsync(createDidEntity, cancellationToken);

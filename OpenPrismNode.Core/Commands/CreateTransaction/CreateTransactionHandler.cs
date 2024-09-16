@@ -47,7 +47,9 @@ public class CreateTransactionHandler : IRequestHandler<CreateTransactionRequest
                 operationSequenceNumber: request.ParsingResult.OperationSequenceNumber,
                 utxos: request.Utxos,
                 prismPublicKeys: request.ParsingResult.AsCreateDid().didDocument.PublicKeys.ToList(),
-                prismServices: request.ParsingResult.AsCreateDid().didDocument.PrismServices.ToList()), cancellationToken);
+                prismServices: request.ParsingResult.AsCreateDid().didDocument.PrismServices.ToList(),
+                patchedContexts: request.ParsingResult.AsCreateDid().didDocument.Contexts.ToList()
+            ), cancellationToken);
             if (result.IsFailed)
             {
                 return Result.Fail(result.Errors);

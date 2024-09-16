@@ -80,10 +80,9 @@ namespace OpenPrismNode.Web.Services
                     return new GetOperationInfoResponse()
                     {
                         Details = "Operation could not be found",
-                        //TODO should be an error!
-                        OperationStatus = OperationStatus.ConfirmedAndApplied,
-                        TransactionId = "123",
-                        LastSyncedBlockTimestamp = new Timestamp() { Seconds = 30, Nanos = 1 }
+                        OperationStatus = OperationStatus.UnknownOperation,
+                        TransactionId = "0",
+                        LastSyncedBlockTimestamp = Timestamp.FromDateTime(DateTime.UtcNow)
                     };
                 }
 
@@ -92,8 +91,8 @@ namespace OpenPrismNode.Web.Services
                     Details = "some details",
                     OperationStatus = MapOperationStatus(operationIdResult.Value!.Status),
                     //TODO: Get the transaction id from the transaction table
-                    TransactionId = "123",
-                    LastSyncedBlockTimestamp = new Timestamp() { Seconds = 30, Nanos = 1 }
+                    TransactionId = "0",
+                    LastSyncedBlockTimestamp =Timestamp.FromDateTime(DateTime.UtcNow)
                 };
             }
             else
@@ -199,7 +198,6 @@ namespace OpenPrismNode.Web.Services
                 {
                     new OperationOutput()
                     {
-                        // TODO align format of the operation id with sandbox
                         OperationId = PrismEncoding.ByteArrayToByteString(operationStatusId),
                         CreateDidOutput = operationType == OperationTypeEnum.CreateDid
                             ? new CreateDIDOutput()
