@@ -1,0 +1,24 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Azure.Identity" Version="1.11.4" />
+    <PackageReference Include="JsonSubTypes" Version="2.0.1" />
+    <PackageReference Include="Microsoft.Kiota.Abstractions" Version="1.12.4" />
+    <PackageReference Include="Microsoft.Kiota.Authentication.Azure" Version="1.12.4" />
+    <PackageReference Include="Microsoft.Kiota.Http.HttpClientLibrary" Version="1.12.4" />
+    <PackageReference Include="Microsoft.Kiota.Serialization.Form" Version="1.12.4" />
+    <PackageReference Include="Microsoft.Kiota.Serialization.Json" Version="1.12.4" />
+    <PackageReference Include="Microsoft.Kiota.Serialization.Multipart" Version="1.12.4" />
+    <PackageReference Include="Microsoft.Kiota.Serialization.Text" Version="1.12.4" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
+    <PackageReference Include="Polly" Version="8.4.0" />
+    <PackageReference Include="RestSharp" Version="110.2.0" />
+  </ItemGroup>
+
+</Project>
