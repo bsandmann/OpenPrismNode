@@ -102,6 +102,10 @@ builder.Services.AddScoped<BackgroundSyncService>();
 builder.Services.AddSingleton<IWalletAddressCache>(new WalletAddressCache(appSettings!.WalletCacheSize));
 builder.Services.AddSingleton<IStakeAddressCache>(new StakeAddressCache(appSettings.WalletCacheSize));
 builder.Services.AddLazyCache();
+builder.Services.AddHttpClient("CardanoWalletApi", client =>
+{
+    client.BaseAddress = new Uri("10.10.20.104:8090");
+});
 builder.Services.AddSingleton<BackgroundSyncService>();
 builder.Services.AddHostedService(provider => provider.GetRequiredService<BackgroundSyncService>());
 builder.Services.AddMediatR(cfg => cfg.RegisterServicesFromAssemblies(AppDomain.CurrentDomain.GetAssemblies()));

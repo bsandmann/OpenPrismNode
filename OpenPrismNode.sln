@@ -1,27 +1,32 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OpenPrismNode.Web", "OpenPrismNode.Web\OpenPrismNode.Web.csproj", "{28B33B31-EA75-4F46-B03D-CF602458471E}"
+# Visual Studio Version 17
+VisualStudioVersion = 17.10.35004.147
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OpenPrismNode.Web", "OpenPrismNode.Web\OpenPrismNode.Web.csproj", "{28B33B31-EA75-4F46-B03D-CF602458471E}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OpenPrismNode.Core", "OpenPrismNode.Core\OpenPrismNode.Core.csproj", "{9472FA10-2CFE-459F-8EB5-BB5CCC3F5074}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OpenPrismNode.Core", "OpenPrismNode.Core\OpenPrismNode.Core.csproj", "{9472FA10-2CFE-459F-8EB5-BB5CCC3F5074}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OpenPrismNode.Grpc", "OpenPrismNode.Grpc\OpenPrismNode.Grpc.csproj", "{A06CC47C-4871-4C04-BFB8-861A60C5672E}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OpenPrismNode.Grpc", "OpenPrismNode.Grpc\OpenPrismNode.Grpc.csproj", "{A06CC47C-4871-4C04-BFB8-861A60C5672E}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OpenPrismNode.Sync", "OpenPrismNode.Sync\OpenPrismNode.Sync.csproj", "{54FDF66A-EE73-493C-B6BF-983E6E70EA79}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OpenPrismNode.Sync", "OpenPrismNode.Sync\OpenPrismNode.Sync.csproj", "{54FDF66A-EE73-493C-B6BF-983E6E70EA79}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{BC63DBFB-9321-4851-8A28-7B8A4397CF46}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OpenPrismNode.Sync.Tests", "OpenPrismNode.Sync.Tests\OpenPrismNode.Sync.Tests.csproj", "{09B6FFC6-090F-44D8-8F20-D6B1CC001CA4}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OpenPrismNode.Sync.Tests", "OpenPrismNode.Sync.Tests\OpenPrismNode.Sync.Tests.csproj", "{09B6FFC6-090F-44D8-8F20-D6B1CC001CA4}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OpenPrismNode.Sync.IntegrationTests", "OpenPrismNode.Sync.IntegrationTests\OpenPrismNode.Sync.IntegrationTests.csproj", "{C3C26DB5-F78C-4673-B4B8-0C8DBE5FE9D4}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OpenPrismNode.Sync.IntegrationTests", "OpenPrismNode.Sync.IntegrationTests\OpenPrismNode.Sync.IntegrationTests.csproj", "{C3C26DB5-F78C-4673-B4B8-0C8DBE5FE9D4}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OpenPrismNode.Core.IntegrationTests", "OpenPrismNode.Core.IntegrationTests\OpenPrismNode.Core.IntegrationTests.csproj", "{41C1B41B-D3E7-475A-894A-815FE7D56154}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OpenPrismNode.Core.IntegrationTests", "OpenPrismNode.Core.IntegrationTests\OpenPrismNode.Core.IntegrationTests.csproj", "{41C1B41B-D3E7-475A-894A-815FE7D56154}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Documents", "Documents", "{AF93072F-B3F2-43DF-ADCC-0CB6DF55F3A7}"
 	ProjectSection(SolutionItems) = preProject
 		Documents\development_m1.md = Documents\development_m1.md
-		Documents\Sync_pattern_OpenPrismNode_May_2024.pdf = Documents\Sync_pattern_OpenPrismNode_May_2024.pdf
 		Documents\development_m2.md = Documents\development_m2.md
+		Documents\Sync_pattern_OpenPrismNode_May_2024.pdf = Documents\Sync_pattern_OpenPrismNode_May_2024.pdf
 	EndProjectSection
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OpenPrismNode.CardanoWalletApi", "OpenPrismNode.CardanoWalletApi\OpenPrismNode.CardanoWalletApi.csproj", "{486BED7F-EF69-496C-9193-4EF041867591}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -57,6 +62,13 @@ Global
 		{41C1B41B-D3E7-475A-894A-815FE7D56154}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{41C1B41B-D3E7-475A-894A-815FE7D56154}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{41C1B41B-D3E7-475A-894A-815FE7D56154}.Release|Any CPU.Build.0 = Release|Any CPU
+		{486BED7F-EF69-496C-9193-4EF041867591}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{486BED7F-EF69-496C-9193-4EF041867591}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{486BED7F-EF69-496C-9193-4EF041867591}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{486BED7F-EF69-496C-9193-4EF041867591}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{09B6FFC6-090F-44D8-8F20-D6B1CC001CA4} = {BC63DBFB-9321-4851-8A28-7B8A4397CF46}

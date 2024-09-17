@@ -33,6 +33,7 @@
     </ItemGroup>
 
     <ItemGroup>
+      <ProjectReference Include="..\OpenPrismNode.CardanoWalletApi\OpenPrismNode.CardanoWalletApi.csproj" />
       <ProjectReference Include="..\OpenPrismNode.Grpc\OpenPrismNode.Grpc.csproj" />
     </ItemGroup>
 
