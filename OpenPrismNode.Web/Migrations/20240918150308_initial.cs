@@ -75,9 +75,9 @@ namespace OpenPrismNode.Web.Migrations
                     IsSyncedInitially = table.Column<bool>(type: "boolean", nullable: false),
                     SyncProgress = table.Column<int>(type: "integer", nullable: true),
                     IsInSync = table.Column<bool>(type: "boolean", nullable: true),
-                    LastKnownBalance = table.Column<long>(type: "bigint", nullable: false),
+                    LastKnownBalance = table.Column<long>(type: "bigint", nullable: true),
                     CreatedUtc = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
-                    LastSynced = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    LastSynced = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
                     FundingAddress = table.Column<string>(type: "text", nullable: true)
                 },
                 constraints: table =>

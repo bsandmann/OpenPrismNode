@@ -13,6 +13,9 @@
       <Reference Include="Google.Protobuf">
         <HintPath>..\..\..\.nuget\packages\google.protobuf\3.26.1\lib\net5.0\Google.Protobuf.dll</HintPath>
       </Reference>
+      <Reference Include="Microsoft.Extensions.Http">
+        <HintPath>..\..\..\..\..\usr\lib64\dotnet\shared\Microsoft.AspNetCore.App\8.0.8\Microsoft.Extensions.Http.dll</HintPath>
+      </Reference>
 <!--      <Reference Include="OpenPrismNode.Sync">-->
 <!--        <HintPath>..\OpenPrismNode.Sync.Tests\bin\Debug\net8.0\OpenPrismNode.Sync.dll</HintPath>-->
 <!--      </Reference>-->
@@ -20,6 +23,7 @@
 
     <ItemGroup>
       <PackageReference Include="BouncyCastle.NetCore" Version="2.2.1" />
+      <PackageReference Include="CardanoSharp.Wallet" Version="5.1.0" />
       <PackageReference Include="Ensure.That" Version="10.1.0" />
       <PackageReference Include="FluentResults" Version="3.16.0" />
       <PackageReference Include="LazyCache" Version="2.4.0" />
@@ -33,8 +37,12 @@
     </ItemGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\OpenPrismNode.CardanoWalletApi\OpenPrismNode.CardanoWalletApi.csproj" />
       <ProjectReference Include="..\OpenPrismNode.Grpc\OpenPrismNode.Grpc.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <Folder Include="Commands\RestoreWallet\" />
+      <Folder Include="Commands\WriteTransaction\" />
     </ItemGroup>
 
 </Project>

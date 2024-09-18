@@ -4,10 +4,15 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using FluentResults;
 
+namespace OpenPrismNode.Core.Services;
+
 public class CardanoWalletService : ICardanoWalletService
 {
     private readonly HttpClient _httpClient;
     private readonly JsonSerializerOptions _jsonOptions;
+    private static readonly Random _random = new Random();
+    private static readonly string _chars = "ABCDEFGHJKMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz123456789";
+
 
     public CardanoWalletService(IHttpClientFactory httpClientFactory)
     {
@@ -318,5 +323,17 @@ public class CardanoWalletService : ICardanoWalletService
         {
             return Result.Fail($"An unexpected error occurred: {ex.Message}");
         }
+    }
+    
+    public string GeneratePassphrase(int length = 24)
+    {
+        return new string(Enumerable.Repeat(_chars, length)
+            .Select(s => s[_random.Next(s.Length)]).ToArray());
+    }
+
+    public string GenerateMnemonic()
+    {
+        var nms = new CardanoSharp.Wallet.MnemonicService();
+        return nms.Generate(24).Words;
     }
 }

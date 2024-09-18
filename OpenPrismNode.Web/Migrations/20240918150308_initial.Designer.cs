@@ -12,7 +12,7 @@ using OpenPrismNode.Core;
 namespace OpenPrismNode.Web.Migrations
 {
     [DbContext(typeof(DataContext))]
-    [Migration("20240918125404_initial")]
+    [Migration("20240918150308_initial")]
     partial class initial
     {
         /// <inheritdoc />
@@ -510,10 +510,10 @@ namespace OpenPrismNode.Web.Migrations
                     b.Property<bool>("IsSyncedInitially")
                         .HasColumnType("boolean");
 
-                    b.Property<long>("LastKnownBalance")
+                    b.Property<long?>("LastKnownBalance")
                         .HasColumnType("bigint");
 
-                    b.Property<DateTime>("LastSynced")
+                    b.Property<DateTime?>("LastSynced")
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("Mnemonic")

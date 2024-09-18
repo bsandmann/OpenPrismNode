@@ -1,7 +1,6 @@
-using System.Text;
-using System.Text.Json;
-using System.Text.Json.Serialization;
 using FluentResults;
+
+namespace OpenPrismNode.Core.Services;
 
 public interface ICardanoWalletService
 {
@@ -16,6 +15,8 @@ public interface ICardanoWalletService
     public Task<Result<TransactionDetailsResponse>> GetTransactionDetailsAsync(string walletId, string transactionId);
 
     public Task<Result<NetworkInformationResponse>> GetNetworkInformationAsync();
+    
+    public string GeneratePassphrase(int length = 24);
+    public string GenerateMnemonic();
 
 }
-

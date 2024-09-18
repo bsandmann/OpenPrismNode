@@ -42,7 +42,7 @@ public class WalletEntity
     /// <summary>
     /// The last known balance of the wallet, after the last sync
     /// </summary>
-    public long LastKnownBalance { get; set; }
+    public long? LastKnownBalance { get; set; }
     
     /// <summary>
     /// Timestamp when the wallet was created
@@ -52,7 +52,7 @@ public class WalletEntity
     /// <summary>
     /// Timestamp when the wallet was last synced
     /// </summary>
-    public DateTime LastSynced { get; set; }
+    public DateTime? LastSynced { get; set; }
 
     /// <summary>
     /// The primary address of the wallet for funding and sending transactions

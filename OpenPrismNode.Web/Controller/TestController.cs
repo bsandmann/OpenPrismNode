@@ -1,6 +1,7 @@
 ﻿namespace OpenPrismNode.Web.Controller;
 
 using Asp.Versioning;
+using Core.Services;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
