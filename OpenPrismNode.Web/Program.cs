@@ -104,7 +104,7 @@ builder.Services.AddSingleton<IStakeAddressCache>(new StakeAddressCache(appSetti
 builder.Services.AddLazyCache();
 builder.Services.AddHttpClient("CardanoWalletApi", client =>
 {
-    client.BaseAddress = new Uri("10.10.20.104:8090");
+    client.BaseAddress = new Uri("http://10.10.20.104:8090/v2/");
 });
 builder.Services.AddSingleton<BackgroundSyncService>();
 builder.Services.AddHostedService(provider => provider.GetRequiredService<BackgroundSyncService>());

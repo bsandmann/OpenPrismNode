@@ -191,7 +191,7 @@ namespace OpenPrismNode.CardanoWalletApi
         /// </remarks>
         /// <returns>Created</returns>
         /// <exception cref="ApiException">A server side error occurred.</exception>
-        public virtual System.Threading.Tasks.Task<Response> PostWalletAsync(object body)
+        public virtual System.Threading.Tasks.Task<PostWalletResponse> PostWalletAsync(object body)
         {
             return PostWalletAsync(body, System.Threading.CancellationToken.None);
         }
@@ -207,7 +207,7 @@ namespace OpenPrismNode.CardanoWalletApi
         /// </remarks>
         /// <returns>Created</returns>
         /// <exception cref="ApiException">A server side error occurred.</exception>
-        public virtual async System.Threading.Tasks.Task<Response> PostWalletAsync(object body, System.Threading.CancellationToken cancellationToken)
+        public virtual async System.Threading.Tasks.Task<PostWalletResponse> PostWalletAsync(object body, System.Threading.CancellationToken cancellationToken)
         {
             if (body == null)
                 throw new System.ArgumentNullException("body");
@@ -255,7 +255,7 @@ namespace OpenPrismNode.CardanoWalletApi
                         var status_ = (int)response_.StatusCode;
                         if (status_ == 201)
                         {
-                            var objectResponse_ = await ReadObjectResponseAsync<Response>(response_, headers_, cancellationToken).ConfigureAwait(false);
+                            var objectResponse_ = await ReadObjectResponseAsync<PostWalletResponse>(response_, headers_, cancellationToken).ConfigureAwait(false);
                             if (objectResponse_.Object == null)
                             {
                                 throw new ApiException("Response was null which was not expected.", status_, objectResponse_.Text, headers_, null);
@@ -928,7 +928,7 @@ namespace OpenPrismNode.CardanoWalletApi
         /// </remarks>
         /// <returns>Ok</returns>
         /// <exception cref="ApiException">A server side error occurred.</exception>
-        public virtual System.Threading.Tasks.Task<Response6> GetWalletAsync(string walletId)
+        public virtual System.Threading.Tasks.Task<GetWalletResponse> GetWalletAsync(string walletId)
         {
             return GetWalletAsync(walletId, System.Threading.CancellationToken.None);
         }
@@ -942,7 +942,7 @@ namespace OpenPrismNode.CardanoWalletApi
         /// </remarks>
         /// <returns>Ok</returns>
         /// <exception cref="ApiException">A server side error occurred.</exception>
-        public virtual async System.Threading.Tasks.Task<Response6> GetWalletAsync(string walletId, System.Threading.CancellationToken cancellationToken)
+        public virtual async System.Threading.Tasks.Task<GetWalletResponse> GetWalletAsync(string walletId, System.Threading.CancellationToken cancellationToken)
         {
             if (walletId == null)
                 throw new System.ArgumentNullException("walletId");
@@ -987,7 +987,7 @@ namespace OpenPrismNode.CardanoWalletApi
                         var status_ = (int)response_.StatusCode;
                         if (status_ == 200)
                         {
-                            var objectResponse_ = await ReadObjectResponseAsync<Response6>(response_, headers_, cancellationToken).ConfigureAwait(false);
+                            var objectResponse_ = await ReadObjectResponseAsync<GetWalletResponse>(response_, headers_, cancellationToken).ConfigureAwait(false);
                             if (objectResponse_.Object == null)
                             {
                                 throw new ApiException("Response was null which was not expected.", status_, objectResponse_.Text, headers_, null);
@@ -2014,7 +2014,7 @@ namespace OpenPrismNode.CardanoWalletApi
         /// </remarks>
         /// <returns>Accepted</returns>
         /// <exception cref="ApiException">A server side error occurred.</exception>
-        public virtual System.Threading.Tasks.Task<Response12> ConstructTransactionAsync(string walletId, Body3 body)
+        public virtual System.Threading.Tasks.Task<ConstructedTransactionResult> ConstructTransactionAsync(string walletId, Body3 body)
         {
             return ConstructTransactionAsync(walletId, body, System.Threading.CancellationToken.None);
         }
@@ -2030,7 +2030,7 @@ namespace OpenPrismNode.CardanoWalletApi
         /// </remarks>
         /// <returns>Accepted</returns>
         /// <exception cref="ApiException">A server side error occurred.</exception>
-        public virtual async System.Threading.Tasks.Task<Response12> ConstructTransactionAsync(string walletId, Body3 body, System.Threading.CancellationToken cancellationToken)
+        public virtual async System.Threading.Tasks.Task<ConstructedTransactionResult> ConstructTransactionAsync(string walletId, Body3 body, System.Threading.CancellationToken cancellationToken)
         {
             if (walletId == null)
                 throw new System.ArgumentNullException("walletId");
@@ -2103,7 +2103,7 @@ namespace OpenPrismNode.CardanoWalletApi
                         else
                         if (status_ == 202)
                         {
-                            var objectResponse_ = await ReadObjectResponseAsync<Response12>(response_, headers_, cancellationToken).ConfigureAwait(false);
+                            var objectResponse_ = await ReadObjectResponseAsync<ConstructedTransactionResult>(response_, headers_, cancellationToken).ConfigureAwait(false);
                             if (objectResponse_.Object == null)
                             {
                                 throw new ApiException("Response was null which was not expected.", status_, objectResponse_.Text, headers_, null);
@@ -2493,7 +2493,7 @@ namespace OpenPrismNode.CardanoWalletApi
         /// <param name="state">An optional filter on the address state.</param>
         /// <returns>Ok</returns>
         /// <exception cref="ApiException">A server side error occurred.</exception>
-        public virtual System.Threading.Tasks.Task<System.Collections.Generic.ICollection<Anonymous4>> ListAddressesAsync(string walletId, State? state)
+        public virtual System.Threading.Tasks.Task<System.Collections.Generic.ICollection<AddressDetail>> ListAddressesAsync(string walletId, State? state)
         {
             return ListAddressesAsync(walletId, state, System.Threading.CancellationToken.None);
         }
@@ -2510,7 +2510,7 @@ namespace OpenPrismNode.CardanoWalletApi
         /// <param name="state">An optional filter on the address state.</param>
         /// <returns>Ok</returns>
         /// <exception cref="ApiException">A server side error occurred.</exception>
-        public virtual async System.Threading.Tasks.Task<System.Collections.Generic.ICollection<Anonymous4>> ListAddressesAsync(string walletId, State? state, System.Threading.CancellationToken cancellationToken)
+        public virtual async System.Threading.Tasks.Task<System.Collections.Generic.ICollection<AddressDetail>> ListAddressesAsync(string walletId, State? state, System.Threading.CancellationToken cancellationToken)
         {
             if (walletId == null)
                 throw new System.ArgumentNullException("walletId");
@@ -2562,7 +2562,7 @@ namespace OpenPrismNode.CardanoWalletApi
                         var status_ = (int)response_.StatusCode;
                         if (status_ == 200)
                         {
-                            var objectResponse_ = await ReadObjectResponseAsync<System.Collections.Generic.ICollection<Anonymous4>>(response_, headers_, cancellationToken).ConfigureAwait(false);
+                            var objectResponse_ = await ReadObjectResponseAsync<System.Collections.Generic.ICollection<AddressDetail>>(response_, headers_, cancellationToken).ConfigureAwait(false);
                             if (objectResponse_.Object == null)
                             {
                                 throw new ApiException("Response was null which was not expected.", status_, objectResponse_.Text, headers_, null);
@@ -18677,8 +18677,8 @@ namespace OpenPrismNode.CardanoWalletApi
         /// </summary>
 
         [System.Text.Json.Serialization.JsonPropertyName("withdrawal")]
-        [System.Text.Json.Serialization.JsonConverter(typeof(System.Text.Json.Serialization.JsonStringEnumConverter))]
-        public Body3Withdrawal Withdrawal { get; set; } = default!;
+        //[System.Text.Json.Serialization.JsonConverter(typeof(System.Text.Json.Serialization.JsonStringEnumConverter))]
+        public string? Withdrawal { get; set; } = default!;
 
         /// <summary>
         /// **⚠️ WARNING ⚠️**
@@ -18766,7 +18766,7 @@ namespace OpenPrismNode.CardanoWalletApi
         /// </summary>
 
         [System.Text.Json.Serialization.JsonPropertyName("vote")]
-        public Vote2 Vote { get; set; } = default!;
+        public Vote2? Vote { get; set; } = default!;
 
         /// <summary>
         /// &lt;p&gt;status: &lt;strong&gt;stable&lt;/strong&gt;&lt;/p&gt;
@@ -18817,8 +18817,8 @@ namespace OpenPrismNode.CardanoWalletApi
         /// </summary>
 
         [System.Text.Json.Serialization.JsonPropertyName("encoding")]
-        [System.Text.Json.Serialization.JsonConverter(typeof(System.Text.Json.Serialization.JsonStringEnumConverter))]
-        public Body3Encoding Encoding { get; set; } = default!;
+        //[System.Text.Json.Serialization.JsonConverter(typeof(System.Text.Json.Serialization.JsonStringEnumConverter))]
+        public string? Encoding { get; set; } = default!;
 
         private System.Collections.Generic.IDictionary<string, object>? _additionalProperties;
 
@@ -20421,7 +20421,7 @@ namespace OpenPrismNode.CardanoWalletApi
     }
 
     [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.1.0.0 (NJsonSchema v11.0.2.0 (Newtonsoft.Json v13.0.0.0))")]
-    public partial class Response
+    public partial class PostWalletResponse
     {
         /// <summary>
         /// A unique identifier for the wallet
@@ -20525,12 +20525,12 @@ namespace OpenPrismNode.CardanoWalletApi
             return System.Text.Json.JsonSerializer.Serialize(this, options);
 
         }
-        public static Response FromJson(string data)
+        public static PostWalletResponse FromJson(string data)
         {
 
             var options = new System.Text.Json.JsonSerializerOptions();
 
-            return System.Text.Json.JsonSerializer.Deserialize<Response>(data, options);
+            return System.Text.Json.JsonSerializer.Deserialize<PostWalletResponse>(data, options);
 
         }
 
@@ -21059,7 +21059,7 @@ namespace OpenPrismNode.CardanoWalletApi
     }
 
     [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.1.0.0 (NJsonSchema v11.0.2.0 (Newtonsoft.Json v13.0.0.0))")]
-    public partial class Response6
+    public partial class GetWalletResponse
     {
         /// <summary>
         /// A unique identifier for the wallet
@@ -21163,12 +21163,12 @@ namespace OpenPrismNode.CardanoWalletApi
             return System.Text.Json.JsonSerializer.Serialize(this, options);
 
         }
-        public static Response6 FromJson(string data)
+        public static GetWalletResponse FromJson(string data)
         {
 
             var options = new System.Text.Json.JsonSerializerOptions();
 
-            return System.Text.Json.JsonSerializer.Deserialize<Response6>(data, options);
+            return System.Text.Json.JsonSerializer.Deserialize<GetWalletResponse>(data, options);
 
         }
 
@@ -22328,7 +22328,7 @@ namespace OpenPrismNode.CardanoWalletApi
     }
 
     [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.1.0.0 (NJsonSchema v11.0.2.0 (Newtonsoft.Json v13.0.0.0))")]
-    public partial class Response12
+    public partial class ConstructedTransactionResult
     {
         /// <summary>
         /// The CBOR-encoded transaction, represented in either hex or base64 encoding.
@@ -22370,12 +22370,12 @@ namespace OpenPrismNode.CardanoWalletApi
             return System.Text.Json.JsonSerializer.Serialize(this, options);
 
         }
-        public static Response12 FromJson(string data)
+        public static ConstructedTransactionResult FromJson(string data)
         {
 
             var options = new System.Text.Json.JsonSerializerOptions();
 
-            return System.Text.Json.JsonSerializer.Deserialize<Response12>(data, options);
+            return System.Text.Json.JsonSerializer.Deserialize<ConstructedTransactionResult>(data, options);
 
         }
 
@@ -22619,7 +22619,7 @@ namespace OpenPrismNode.CardanoWalletApi
     }
 
     [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.1.0.0 (NJsonSchema v11.0.2.0 (Newtonsoft.Json v13.0.0.0))")]
-    public partial class Anonymous4
+    public partial class AddressDetail
     {
         /// <summary>
         /// A sequence of characters that encodes (in Base58 or Bech32) a sequence of bytes
@@ -22668,12 +22668,12 @@ namespace OpenPrismNode.CardanoWalletApi
             return System.Text.Json.JsonSerializer.Serialize(this, options);
 
         }
-        public static Anonymous4 FromJson(string data)
+        public static AddressDetail FromJson(string data)
         {
 
             var options = new System.Text.Json.JsonSerializerOptions();
 
-            return System.Text.Json.JsonSerializer.Deserialize<Anonymous4>(data, options);
+            return System.Text.Json.JsonSerializer.Deserialize<AddressDetail>(data, options);
 
         }
 
@@ -50959,8 +50959,8 @@ namespace OpenPrismNode.CardanoWalletApi
 
         [System.Text.Json.Serialization.JsonPropertyName("unit")]
         [System.ComponentModel.DataAnnotations.Required(AllowEmptyStrings = true)]
-        [System.Text.Json.Serialization.JsonConverter(typeof(System.Text.Json.Serialization.JsonStringEnumConverter))]
-        public AmountUnit Unit { get; set; } = default!;
+        //[System.Text.Json.Serialization.JsonConverter(typeof(System.Text.Json.Serialization.JsonStringEnumConverter))]
+        public string Unit { get; set; } = default!;
 
         private System.Collections.Generic.IDictionary<string, object>? _additionalProperties;
 
@@ -51082,8 +51082,8 @@ namespace OpenPrismNode.CardanoWalletApi
 
         [System.Text.Json.Serialization.JsonPropertyName("unit")]
         [System.ComponentModel.DataAnnotations.Required(AllowEmptyStrings = true)]
-        [System.Text.Json.Serialization.JsonConverter(typeof(System.Text.Json.Serialization.JsonStringEnumConverter))]
-        public Amount2Unit Unit { get; set; } = default!;
+        //[System.Text.Json.Serialization.JsonConverter(typeof(System.Text.Json.Serialization.JsonStringEnumConverter))]
+        public string Unit { get; set; } = default!;
 
         private System.Collections.Generic.IDictionary<string, object>? _additionalProperties;
 
