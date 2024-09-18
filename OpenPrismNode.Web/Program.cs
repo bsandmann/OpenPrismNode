@@ -99,6 +99,7 @@ builder.Services.AddSingleton<IEcService, EcServiceBouncyCastle>();
 builder.Services.AddSingleton<ISha256Service, Sha256ServiceBouncyCastle>();
 builder.Services.AddScoped<INpgsqlConnectionFactory, NpgsqlConnectionFactory>();
 builder.Services.AddScoped<BackgroundSyncService>();
+builder.Services.AddScoped<ICardanoWalletService, CardanoWalletService>();
 builder.Services.AddSingleton<IWalletAddressCache>(new WalletAddressCache(appSettings!.WalletCacheSize));
 builder.Services.AddSingleton<IStakeAddressCache>(new StakeAddressCache(appSettings.WalletCacheSize));
 builder.Services.AddLazyCache();

@@ -1,7 +1,6 @@
 ﻿namespace OpenPrismNode.Web.Controller;
 
 using Asp.Versioning;
-using CardanoWalletApi;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
@@ -12,28 +11,18 @@ using OpenPrismNode.Web;
 [ApiController]
 public class TestController : ControllerBase
 {
-    private readonly IMediator _mediator;
-    private readonly IHttpContextAccessor _httpContextAccessor;
-    private readonly BackgroundSyncService _backgroundSyncService;
     private readonly AppSettings _appSettings;
-    private readonly ILogger<DeleteController> _logger;
-    private readonly HttpClient _httpClient;
+    private readonly ICardanoWalletService _walletService;
 
-    private static PostWalletResponse PostWalletResponse { get; set; }
 
     /// <inheritdoc />
-    public TestController(IMediator mediator, IHttpContextAccessor httpContextAccessor, IOptions<AppSettings> appSettings, ILogger<DeleteController> logger, BackgroundSyncService backgroundSyncService, IHttpClientFactory httpClientFactory)
+    public TestController(IMediator mediator, IHttpContextAccessor httpContextAccessor, IOptions<AppSettings> appSettings, ILogger<DeleteController> logger, BackgroundSyncService backgroundSyncService, IHttpClientFactory httpClientFactory, ICardanoWalletService walletService)
     {
-        _mediator = mediator;
-        _httpContextAccessor = httpContextAccessor;
         _appSettings = appSettings.Value;
-        _logger = logger;
-        _backgroundSyncService = backgroundSyncService;
-        _httpClient = httpClientFactory
-            .CreateClient("CardanoWalletApi");
+        _walletService = walletService;
     }
 
-    [HttpGet("api/v{version:apiVersion=1.0}/createWallet")]
+    [HttpPost("api/v{version:apiVersion=1.0}/createWallet")]
     [ApiVersion("1.0")]
     [Consumes("application/json")]
     [Produces("application/json")]
@@ -41,20 +30,18 @@ public class TestController : ControllerBase
     {
         var nms = new CardanoSharp.Wallet.MnemonicService();
         var mnemonic = nms.Generate(24);
-        var mnemonicList = mnemonic.Words.Split(" ").ToList();
 
-        var cardanoWalletClient = new Client(_httpClient);
-        var result = await cardanoWalletClient.PostWalletAsync(new ApiWalletPostData()
-            {
-                Name = "my test wallet",
-                Address_pool_gap = 20,
-                Passphrase = "my test passphrase",
-                Mnemonic_sentence = mnemonicList
-            }
-        );
-        PostWalletResponse = result;
+        // Create a new wallet
+        var mnemonicList = mnemonic.Words.Split(" ");
+        var createWalletRequest = new CreateWalletRequest
+        {
+            Name = "My Test Wallet",
+            Passphrase = "Secure Passphrase",
+            MnemonicSentence = mnemonicList
+        };
 
-        return Ok();
+        var walletResponse = await _walletService.CreateWalletAsync(createWalletRequest);
+        return Ok(walletResponse);
     }
 
     [HttpGet("api/v{version:apiVersion=1.0}/getWallet")]
@@ -63,17 +50,9 @@ public class TestController : ControllerBase
     [Produces("application/json")]
     public async Task<ActionResult> GetWallet()
     {
-        var cardanoWalletClient = new Client(_httpClient);
-        try
-        {
-            var walletId = "c8c6cbda31400bd28310d404a37030c5f91bcf4d";
-            GetWalletResponse result = await cardanoWalletClient.GetWalletAsync(walletId);
-            return Ok(result);
-        }
-        catch (Exception e)
-        {
-            return BadRequest();
-        }
+        var walletId = "c8c6cbda31400bd28310d404a37030c5f91bcf4d";
+        var result = await _walletService.GetWalletAsync(walletId);
+        return Ok(result);
     }
 
     [HttpGet("api/v{version:apiVersion=1.0}/listAddresses")]
@@ -82,72 +61,38 @@ public class TestController : ControllerBase
     [Produces("application/json")]
     public async Task<ActionResult> CreateAddresses()
     {
-        var cardanoWalletClient = new Client(_httpClient);
-        try
-        {
-            var walletId = "c8c6cbda31400bd28310d404a37030c5f91bcf4d";
-            ICollection<AddressDetail> result = await cardanoWalletClient.ListAddressesAsync(walletId, State.Unused);
-            var ff = 3;
-            return Ok(new
-            {
-                result.ToList()[0].Id,
-                result.ToList()[0].State,
-                result.ToList()[0].Derivation_path,
-                result.ToList()[0].AdditionalProperties,
-            });
-        }
-        catch (Exception e)
-        {
-            return BadRequest();
-        }
+        var walletId = "c8c6cbda31400bd28310d404a37030c5f91bcf4d";
+        var result = await _walletService.ListAddressesAsync(walletId);
+        return Ok(result);
     }
 
 
-    [HttpGet("api/v{version:apiVersion=1.0}/constructTransaction")]
+    [HttpPost("api/v{version:apiVersion=1.0}/executeTransaction")]
     [ApiVersion("1.0")]
     [Consumes("application/json")]
     [Produces("application/json")]
-    public async Task<ActionResult> ConstructTransaction()
+    public async Task<ActionResult> Full()
     {
-        var targetAddress = "addr_test1qpty9xc8d7kly7ua5rgtzrssc5eamzvhucjmjqvsgflykl84z33p0walfpkv9qnfermkfy5hf95dp3wrq42nmkmnpj6qjlmg7p";
-        var fundingAddress = "addr_test1qpzhuswt9varmv5a3n8uhxnjn46sft876jnzm7mzmq6c7704z33p0walfpkv9qnfermkfy5hf95dp3wrq42nmkmnpj6qjzhfun";
+        var walletId = "c8c6cbda31400bd28310d404a37030c5f91bcf4d";
+        var toAddress = "addr_test1qpty9xc8d7kly7ua5rgtzrssc5eamzvhucjmjqvsgflykl84z33p0walfpkv9qnfermkfy5hf95dp3wrq42nmkmnpj6qjlmg7p";
 
-        var cardanoWalletClient = new Client(_httpClient);
-        try
+        // Prepare payment (sending 1 ADA)
+        var payment = new Payment
         {
-            var walletId = "c8c6cbda31400bd28310d404a37030c5f91bcf4d";
-            ConstructedTransactionResult result = await cardanoWalletClient.ConstructTransactionAsync(walletId, new Body3()
-            {
-                Payments = new List<Payments>()
-                {
-                    new Payments()
-                    {
-                        Address = targetAddress,
-                        Amount = new Amount()
-                        {
-                            Quantity = 1_000_000,
-                            Unit = "lovelace" 
-                        },
-                        AdditionalProperties = null,
-                        Assets = null
-                    }
-                },
-                Vote = null,
-                AdditionalProperties = null,
-                Delegations = null,
-                Encoding = "base64",
-                Encrypt_metadata = null,
-                Metadata = null,
-                Mint_burn = null,
-                Reference_policy_script_template = null,
-                Validity_interval = null,
-                Withdrawal = "self"
-            });
-            return Ok(result.Fee);
-        }
-        catch (Exception e)
+            Address = toAddress,
+            Amount = new Amount { Quantity = 1_000_000, Unit = "lovelace" } // 1 ADA = 1,000,000 lovelace
+        };
+
+        // Prepare metadata (assuming you already have the map structure)
+        var metadata = new Dictionary<string, object>
         {
-            return BadRequest();
-        }
+            ["0"] = new Dictionary<string, object> { ["string"] = "Hello, Cardano!" }
+        };
+
+        var passphrase = "my test passphrase";
+        // Create and submit transaction
+        var transactionId = await _walletService.CreateAndSubmitTransactionAsync(walletId, passphrase, payment, metadata);
+
+        return Ok(transactionId);
     }
 }

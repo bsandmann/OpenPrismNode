@@ -487,6 +487,93 @@ namespace OpenPrismNode.Web.Migrations
                     b.ToTable("WalletAddressEntities");
                 });
 
+            modelBuilder.Entity("OpenPrismNode.Core.Entities.WalletEntity", b =>
+                {
+                    b.Property<int>("WalletEntityId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("WalletEntityId"));
+
+                    b.Property<DateTime>("CreatedUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("FundingAddress")
+                        .HasColumnType("text");
+
+                    b.Property<bool?>("IsInSync")
+                        .HasColumnType("boolean");
+
+                    b.Property<bool>("IsSyncedInitially")
+                        .HasColumnType("boolean");
+
+                    b.Property<long>("LastKnownBalance")
+                        .HasColumnType("bigint");
+
+                    b.Property<DateTime>("LastSynced")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Mnemonic")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("Passphrase")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<int?>("SyncProgress")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("WalletId")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("WalletName")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasKey("WalletEntityId");
+
+                    b.ToTable("WalletEntities");
+                });
+
+            modelBuilder.Entity("OpenPrismNode.Core.Entities.WalletTransactionEntity", b =>
+                {
+                    b.Property<int>("WalletTransactionEntityId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("WalletTransactionEntityId"));
+
+                    b.Property<DateTime>("CreatedUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<long>("Depth")
+                        .HasColumnType("bigint");
+
+                    b.Property<DateTime>("LastUpdatedUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<byte[]>("OperationStatusId")
+                        .HasColumnType("bytea");
+
+                    b.Property<string>("TransactionId")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<int>("WalletId")
+                        .HasColumnType("integer");
+
+                    b.HasKey("WalletTransactionEntityId");
+
+                    b.HasIndex("OperationStatusId")
+                        .IsUnique();
+
+                    b.HasIndex("WalletId");
+
+                    b.ToTable("WalletTransactionEntities");
+                });
+
             modelBuilder.Entity("OpenPrismNode.Core.Entities.BlockEntity", b =>
                 {
                     b.HasOne("OpenPrismNode.Core.Entities.EpochEntity", "EpochEntity")
@@ -654,6 +741,23 @@ namespace OpenPrismNode.Web.Migrations
                     b.Navigation("WalletAddressEntity");
                 });
 
+            modelBuilder.Entity("OpenPrismNode.Core.Entities.WalletTransactionEntity", b =>
+                {
+                    b.HasOne("OpenPrismNode.Core.Entities.OperationStatusEntity", "OperationStatusEntity")
+                        .WithOne("WalletTransactionEntity")
+                        .HasForeignKey("OpenPrismNode.Core.Entities.WalletTransactionEntity", "OperationStatusId");
+
+                    b.HasOne("OpenPrismNode.Core.Entities.WalletEntity", "Wallet")
+                        .WithMany("WalletTransactions")
+                        .HasForeignKey("WalletId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("OperationStatusEntity");
+
+                    b.Navigation("Wallet");
+                });
+
             modelBuilder.Entity("OpenPrismNode.Core.Entities.BlockEntity", b =>
                 {
                     b.Navigation("NextBlocks");
@@ -682,6 +786,11 @@ namespace OpenPrismNode.Web.Migrations
             modelBuilder.Entity("OpenPrismNode.Core.Entities.LedgerEntity", b =>
                 {
                     b.Navigation("Epochs");
+                });
+
+            modelBuilder.Entity("OpenPrismNode.Core.Entities.OperationStatusEntity", b =>
+                {
+                    b.Navigation("WalletTransactionEntity");
                 });
 
             modelBuilder.Entity("OpenPrismNode.Core.Entities.StakeAddressEntity", b =>
@@ -714,6 +823,11 @@ namespace OpenPrismNode.Web.Migrations
             modelBuilder.Entity("OpenPrismNode.Core.Entities.WalletAddressEntity", b =>
                 {
                     b.Navigation("Utxos");
+                });
+
+            modelBuilder.Entity("OpenPrismNode.Core.Entities.WalletEntity", b =>
+                {
+                    b.Navigation("WalletTransactions");
                 });
 #pragma warning restore 612, 618
         }

@@ -7,7 +7,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace OpenPrismNode.Web.Migrations
 {
     /// <inheritdoc />
-    public partial class initial2 : Migration
+    public partial class initial : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -63,6 +63,29 @@ namespace OpenPrismNode.Web.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "WalletEntities",
+                columns: table => new
+                {
+                    WalletEntityId = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    Mnemonic = table.Column<string>(type: "text", nullable: false),
+                    Passphrase = table.Column<string>(type: "text", nullable: false),
+                    WalletName = table.Column<string>(type: "text", nullable: false),
+                    WalletId = table.Column<string>(type: "text", nullable: false),
+                    IsSyncedInitially = table.Column<bool>(type: "boolean", nullable: false),
+                    SyncProgress = table.Column<int>(type: "integer", nullable: true),
+                    IsInSync = table.Column<bool>(type: "boolean", nullable: true),
+                    LastKnownBalance = table.Column<long>(type: "bigint", nullable: false),
+                    CreatedUtc = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    LastSynced = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    FundingAddress = table.Column<string>(type: "text", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_WalletEntities", x => x.WalletEntityId);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "EpochEntities",
                 columns: table => new
                 {
@@ -77,6 +100,35 @@ namespace OpenPrismNode.Web.Migrations
                         column: x => x.Ledger,
                         principalTable: "LedgerEntities",
                         principalColumn: "Ledger",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "WalletTransactionEntities",
+                columns: table => new
+                {
+                    WalletTransactionEntityId = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    TransactionId = table.Column<string>(type: "text", nullable: false),
+                    CreatedUtc = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    LastUpdatedUtc = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    Depth = table.Column<long>(type: "bigint", nullable: false),
+                    WalletId = table.Column<int>(type: "integer", nullable: false),
+                    OperationStatusId = table.Column<byte[]>(type: "bytea", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_WalletTransactionEntities", x => x.WalletTransactionEntityId);
+                    table.ForeignKey(
+                        name: "FK_WalletTransactionEntities_OperationStatusEntities_Operation~",
+                        column: x => x.OperationStatusId,
+                        principalTable: "OperationStatusEntities",
+                        principalColumn: "OperationStatusId");
+                    table.ForeignKey(
+                        name: "FK_WalletTransactionEntities_WalletEntities_WalletId",
+                        column: x => x.WalletId,
+                        principalTable: "WalletEntities",
+                        principalColumn: "WalletEntityId",
                         onDelete: ReferentialAction.Cascade);
                 });
 
@@ -481,6 +533,17 @@ namespace OpenPrismNode.Web.Migrations
                 name: "IX_UtxoEntities_WalletAddress",
                 table: "UtxoEntities",
                 column: "WalletAddress");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_WalletTransactionEntities_OperationStatusId",
+                table: "WalletTransactionEntities",
+                column: "OperationStatusId",
+                unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_WalletTransactionEntities_WalletId",
+                table: "WalletTransactionEntities",
+                column: "WalletId");
         }
 
         /// <inheritdoc />
@@ -488,9 +551,6 @@ namespace OpenPrismNode.Web.Migrations
         {
             migrationBuilder.DropTable(
                 name: "DeactivateDidEntities");
-
-            migrationBuilder.DropTable(
-                name: "OperationStatusEntities");
 
             migrationBuilder.DropTable(
                 name: "PatchedContextEntity");
@@ -508,6 +568,9 @@ namespace OpenPrismNode.Web.Migrations
                 name: "UtxoEntities");
 
             migrationBuilder.DropTable(
+                name: "WalletTransactionEntities");
+
+            migrationBuilder.DropTable(
                 name: "UpdateDidEntities");
 
             migrationBuilder.DropTable(
@@ -515,6 +578,12 @@ namespace OpenPrismNode.Web.Migrations
 
             migrationBuilder.DropTable(
                 name: "WalletAddressEntities");
+
+            migrationBuilder.DropTable(
+                name: "OperationStatusEntities");
+
+            migrationBuilder.DropTable(
+                name: "WalletEntities");
 
             migrationBuilder.DropTable(
                 name: "CreateDidEntities");

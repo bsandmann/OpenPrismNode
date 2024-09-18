@@ -29,6 +29,8 @@ public class DataContext : DbContext
     public List<PatchedContextEntity> PatchedContexts { get; set; }
     public DbSet<DeactivateDidEntity> DeactivateDidEntities { get; set; }
     public DbSet<OperationStatusEntity> OperationStatusEntities { get; set; }
+    public DbSet<WalletEntity> WalletEntities { get; set; }
+    public DbSet<WalletTransactionEntity> WalletTransactionEntities { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -47,6 +49,9 @@ public class DataContext : DbContext
         modelBuilder.Entity<PrismPublicKeyRemoveEntity>().HasKey(p => p.PrismPublicKeyRemoveEntityId);
         modelBuilder.Entity<PatchedContextEntity>().HasKey(p => p.PatchedContextEntityId);
         modelBuilder.Entity<DeactivateDidEntity>().HasKey(p => p.OperationHash);
+        modelBuilder.Entity<WalletTransactionEntity>().HasKey(e => e.WalletTransactionEntityId);
+        modelBuilder.Entity<WalletEntity>().HasKey(e => e.WalletEntityId);
+        modelBuilder.Entity<OperationStatusEntity>().HasKey(e => e.OperationStatusId);
 
         modelBuilder.Entity<EpochEntity>()
             .HasOne(p => p.LedgerEntity)
@@ -133,13 +138,13 @@ public class DataContext : DbContext
             .WithOne() // No navigation property back to CreateDidEntity
             .HasForeignKey(p => p.CreateDidEntityOperationHash)
             .OnDelete(DeleteBehavior.Cascade);
-        
+
         modelBuilder.Entity<CreateDidEntity>()
             .HasOne(c => c.PatchedContext)
             .WithOne(p => p.CreateDidEntity)
             .HasForeignKey<PatchedContextEntity>(p => p.CreateDidEntityOperationHash)
             .IsRequired(false);
-        
+
         modelBuilder.Entity<PatchedContextEntity>()
             .HasOne(p => p.CreateDidEntity)
             .WithOne(c => c.PatchedContext)
@@ -232,9 +237,30 @@ public class DataContext : DbContext
 
         modelBuilder.Entity<PrismPublicKeyEntity>()
             .HasIndex(p => p.UpdateDidEntityOperationHash);
-        
+
         modelBuilder.Entity<OperationStatusEntity>()
-            .HasKey(p=>p.OperationStatusId);
+            .HasOne(e => e.WalletTransactionEntity)
+            .WithOne(w => w.OperationStatusEntity)
+            .HasForeignKey<WalletTransactionEntity>(w => w.OperationStatusId)
+            .IsRequired(false);
+
+        modelBuilder.Entity<WalletEntity>()
+            .HasMany(e => e.WalletTransactions)
+            .WithOne(w => w.Wallet)
+            .HasForeignKey(w => w.WalletId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<WalletTransactionEntity>()
+            .HasOne(e => e.Wallet)
+            .WithMany(w => w.WalletTransactions)
+            .HasForeignKey(e => e.WalletId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<WalletTransactionEntity>()
+            .HasOne(e => e.OperationStatusEntity)
+            .WithOne(o => o.WalletTransactionEntity)
+            .HasForeignKey<WalletTransactionEntity>(e => e.OperationStatusId)
+            .IsRequired(false);
 
         // modelBuilder.Entity<OperationStatusEntity>()
         //     .HasOne(os => os.CreateDidEntity)

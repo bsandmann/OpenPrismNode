@@ -38,6 +38,11 @@ public class OperationStatusEntity
     /// </summary>
     public OperationTypeEnum OperationType { get; set; }
 
+    /// <summary>
+    /// Reference to the WalletTransaction used for this operation
+    /// </summary>
+    public WalletTransactionEntity? WalletTransactionEntity { get; set; }
+    
     // FKs 
     // public CreateDidEntity? CreateDidEntity { get; set; }
     // public UpdateDidEntity? UpdateDidEntity { get; set; }

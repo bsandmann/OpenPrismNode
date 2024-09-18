@@ -668,7 +668,7 @@ public partial class IntegrationTests
                 tx_id = 8
             }));
         _mediatorMock.Setup(p => p.Send(It.IsAny<GetPaymentDataFromTransactionRequest>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync(Result.Ok(new Payment()
+            .ReturnsAsync(Result.Ok(new OpenPrismNode.Core.DbSyncModels.Payment()
             {
                 Incoming = new List<Utxo>()
                 {
