@@ -12,7 +12,7 @@ using OpenPrismNode.Core;
 namespace OpenPrismNode.Web.Migrations
 {
     [DbContext(typeof(DataContext))]
-    [Migration("20240918150308_initial")]
+    [Migration("20240919151742_initial")]
     partial class initial
     {
         /// <inheritdoc />
@@ -524,8 +524,8 @@ namespace OpenPrismNode.Web.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<int?>("SyncProgress")
-                        .HasColumnType("integer");
+                    b.Property<decimal?>("SyncProgress")
+                        .HasColumnType("numeric");
 
                     b.Property<string>("WalletId")
                         .IsRequired()
@@ -640,7 +640,8 @@ namespace OpenPrismNode.Web.Migrations
                 {
                     b.HasOne("OpenPrismNode.Core.Entities.CreateDidEntity", "CreateDidEntity")
                         .WithOne("PatchedContext")
-                        .HasForeignKey("OpenPrismNode.Core.Entities.PatchedContextEntity", "CreateDidEntityOperationHash");
+                        .HasForeignKey("OpenPrismNode.Core.Entities.PatchedContextEntity", "CreateDidEntityOperationHash")
+                        .OnDelete(DeleteBehavior.Cascade);
 
                     b.HasOne("OpenPrismNode.Core.Entities.UpdateDidEntity", "UpdateDidEntity")
                         .WithMany("PatchedContexts")

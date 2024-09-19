@@ -73,7 +73,7 @@ namespace OpenPrismNode.Web.Migrations
                     WalletName = table.Column<string>(type: "text", nullable: false),
                     WalletId = table.Column<string>(type: "text", nullable: false),
                     IsSyncedInitially = table.Column<bool>(type: "boolean", nullable: false),
-                    SyncProgress = table.Column<int>(type: "integer", nullable: true),
+                    SyncProgress = table.Column<decimal>(type: "numeric", nullable: true),
                     IsInSync = table.Column<bool>(type: "boolean", nullable: true),
                     LastKnownBalance = table.Column<long>(type: "bigint", nullable: true),
                     CreatedUtc = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
@@ -324,7 +324,8 @@ namespace OpenPrismNode.Web.Migrations
                         name: "FK_PatchedContextEntity_CreateDidEntities_CreateDidEntityOpera~",
                         column: x => x.CreateDidEntityOperationHash,
                         principalTable: "CreateDidEntities",
-                        principalColumn: "OperationHash");
+                        principalColumn: "OperationHash",
+                        onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
                         name: "FK_PatchedContextEntity_UpdateDidEntities_UpdateDidEntityOpera~",
                         column: x => x.UpdateDidEntityOperationHash,

@@ -1,4 +1,5 @@
 using System.Text.Json.Serialization;
+using Grpc.Core;
 
 public class CreateWalletResponse
 {
@@ -19,6 +20,7 @@ public class CreateWalletResponse
 
     [JsonPropertyName("state")]
     public State State { get; set; }
+
 
     [JsonPropertyName("tip")]
     public Tip Tip { get; set; }

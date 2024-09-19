@@ -35,7 +35,7 @@ public class GetWalletStateHandler : IRequestHandler<GetWalletStateRequest, Resu
             return Result.Fail(walletState.Errors.FirstOrDefault()?.Message);
         }
 
-        if (walletState.Value.Balance.Total.Unit.Equals("lovelace", StringComparison.InvariantCultureIgnoreCase))
+        if (!walletState.Value.Balance.Total.Unit.Equals("lovelace", StringComparison.InvariantCultureIgnoreCase))
         {
             return Result.Fail("Unexpected unit in wallet balance. Should be in lovelace.");
         }
@@ -45,8 +45,7 @@ public class GetWalletStateHandler : IRequestHandler<GetWalletStateRequest, Resu
             return Result.Fail("Wallet is not in a syncing or ready state.");
         }
 
-        // TODO get the sync progress
-
+        storedWallet.SyncProgress = walletState.Value.State.Progress.Quantity;
         storedWallet.LastSynced = DateTime.UtcNow;
         storedWallet.IsSyncedInitially = storedWallet.IsSyncedInitially != false || walletState.Value.State.Status.Equals("ready", StringComparison.CurrentCultureIgnoreCase);
         storedWallet.LastKnownBalance = walletState.Value.Balance.Total.Quantity;

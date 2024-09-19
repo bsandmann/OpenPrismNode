@@ -53,12 +53,21 @@ public class DataContext : DbContext
         modelBuilder.Entity<WalletEntity>().HasKey(e => e.WalletEntityId);
         modelBuilder.Entity<OperationStatusEntity>().HasKey(e => e.OperationStatusId);
 
-        modelBuilder.Entity<EpochEntity>()
-            .HasOne(p => p.LedgerEntity)
-            .WithMany(b => b.Epochs)
-            .HasForeignKey(p => p.Ledger)
-            .OnDelete(DeleteBehavior.Cascade);
+        modelBuilder.Entity<LedgerEntity>()
+            .Property(e => e.Ledger)
+            .HasConversion<int>();
 
+        modelBuilder.Entity<EpochEntity>()
+            .Property(e => e.Ledger)
+            .HasConversion<int>();
+        
+        modelBuilder.Entity<EpochEntity>()
+            .HasOne(e => e.LedgerEntity)
+            .WithMany(l => l.Epochs)
+            .HasForeignKey(e => e.Ledger)
+            .HasPrincipalKey(l => l.Ledger)
+            .OnDelete(DeleteBehavior.Cascade);
+        
         modelBuilder.Entity<EpochEntity>()
             .Property(e => e.EpochNumber)
             .ValueGeneratedNever();
@@ -70,9 +79,10 @@ public class DataContext : DbContext
             .OnDelete(DeleteBehavior.Cascade);
 
         modelBuilder.Entity<BlockEntity>()
-            .HasOne(p => p.PreviousBlock)
+            .HasOne(b => b.PreviousBlock)
             .WithMany(b => b.NextBlocks)
-            .HasForeignKey(p => new { p.PreviousBlockHeight, p.PreviousBlockHashPrefix })
+            .HasForeignKey(b => new { b.PreviousBlockHeight, b.PreviousBlockHashPrefix })
+            .HasPrincipalKey(b => new { b.BlockHeight, b.BlockHashPrefix })
             .OnDelete(DeleteBehavior.NoAction);
 
         modelBuilder.Entity<TransactionEntity>()
@@ -139,17 +149,12 @@ public class DataContext : DbContext
             .HasForeignKey(p => p.CreateDidEntityOperationHash)
             .OnDelete(DeleteBehavior.Cascade);
 
-        modelBuilder.Entity<CreateDidEntity>()
-            .HasOne(c => c.PatchedContext)
-            .WithOne(p => p.CreateDidEntity)
-            .HasForeignKey<PatchedContextEntity>(p => p.CreateDidEntityOperationHash)
-            .IsRequired(false);
-
         modelBuilder.Entity<PatchedContextEntity>()
             .HasOne(p => p.CreateDidEntity)
             .WithOne(c => c.PatchedContext)
             .HasForeignKey<PatchedContextEntity>(p => p.CreateDidEntityOperationHash)
-            .IsRequired(false);
+            .IsRequired(false)
+            .OnDelete(DeleteBehavior.Cascade);
 
         modelBuilder.Entity<UpdateDidEntity>()
             .HasOne(u => u.TransactionEntity)

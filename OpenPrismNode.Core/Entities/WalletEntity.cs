@@ -32,7 +32,7 @@ public class WalletEntity
     /// <summary>
     /// Progress for the initiall sync
     /// </summary>
-    public int? SyncProgress { get; set; }
+    public decimal? SyncProgress { get; set; }
     
     /// <summary>
     /// Flag if the wallet is currently in sync

@@ -176,6 +176,6 @@ public partial class IntegrationTests
         Assert.NotNull(savedCreateDid);
 
         // Verify contexts were saved
-        Assert.Null(savedCreateDid.PatchedContext);
+        Assert.Empty(savedCreateDid.PatchedContext!.ContextList);
     }
 }
