@@ -1,6 +1,8 @@
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
+namespace OpenPrismNode.Core.Models.CardanoWallet;
+
 public class TransactionDetailsResponse
 {
     [JsonPropertyName("id")]

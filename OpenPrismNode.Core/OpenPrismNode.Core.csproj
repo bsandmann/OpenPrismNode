@@ -40,9 +40,4 @@
       <ProjectReference Include="..\OpenPrismNode.Grpc\OpenPrismNode.Grpc.csproj" />
     </ItemGroup>
 
-    <ItemGroup>
-      <Folder Include="Commands\RestoreWallet\" />
-      <Folder Include="Commands\WriteTransaction\" />
-    </ItemGroup>
-
 </Project>

@@ -1,5 +1,7 @@
 using System.Text.Json.Serialization;
 
+namespace OpenPrismNode.Core.Models.CardanoWallet;
+
 public class Asset
 {
     [JsonPropertyName("policy_id")]

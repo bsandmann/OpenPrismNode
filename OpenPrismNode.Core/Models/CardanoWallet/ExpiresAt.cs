@@ -1,5 +1,7 @@
 using System.Text.Json.Serialization;
 
+namespace OpenPrismNode.Core.Models.CardanoWallet;
+
 public class ExpiresAt
 {
     [JsonPropertyName("absolute_slot_number")]

@@ -51,7 +51,7 @@ public class DataContext : DbContext
         modelBuilder.Entity<DeactivateDidEntity>().HasKey(p => p.OperationHash);
         modelBuilder.Entity<WalletTransactionEntity>().HasKey(e => e.WalletTransactionEntityId);
         modelBuilder.Entity<WalletEntity>().HasKey(e => e.WalletEntityId);
-        modelBuilder.Entity<OperationStatusEntity>().HasKey(e => e.OperationStatusId);
+        modelBuilder.Entity<OperationStatusEntity>().HasKey(e => e.OperationStatusEntityId);
 
         modelBuilder.Entity<LedgerEntity>()
             .Property(e => e.Ledger)
@@ -246,25 +246,25 @@ public class DataContext : DbContext
         modelBuilder.Entity<OperationStatusEntity>()
             .HasOne(e => e.WalletTransactionEntity)
             .WithOne(w => w.OperationStatusEntity)
-            .HasForeignKey<WalletTransactionEntity>(w => w.OperationStatusId)
+            .HasForeignKey<WalletTransactionEntity>(w => w.OperationStatusEntityId)
             .IsRequired(false);
 
         modelBuilder.Entity<WalletEntity>()
             .HasMany(e => e.WalletTransactions)
             .WithOne(w => w.Wallet)
-            .HasForeignKey(w => w.WalletId)
+            .HasForeignKey(w => w.WalletEntityId)
             .OnDelete(DeleteBehavior.Cascade);
 
         modelBuilder.Entity<WalletTransactionEntity>()
             .HasOne(e => e.Wallet)
             .WithMany(w => w.WalletTransactions)
-            .HasForeignKey(e => e.WalletId)
+            .HasForeignKey(e => e.WalletEntityId)
             .OnDelete(DeleteBehavior.Cascade);
 
         modelBuilder.Entity<WalletTransactionEntity>()
             .HasOne(e => e.OperationStatusEntity)
             .WithOne(o => o.WalletTransactionEntity)
-            .HasForeignKey<WalletTransactionEntity>(e => e.OperationStatusId)
+            .HasForeignKey<WalletTransactionEntity>(e => e.OperationStatusEntityId)
             .IsRequired(false);
 
         // modelBuilder.Entity<OperationStatusEntity>()

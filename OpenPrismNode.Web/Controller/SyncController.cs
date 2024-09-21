@@ -63,7 +63,7 @@ public class SyncController : ControllerBase
     [ApiKeyAuthorization]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-    [HttpPost("api/v{version:apiVersion=1.0}/sync/restart")]
+    [HttpPost("api/v{version:apiVersion=1.0}/sync/start")]
     [ApiVersion("1.0")]
     [Consumes("application/json")]
     [Produces("application/json")]

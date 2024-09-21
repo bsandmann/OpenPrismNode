@@ -19,16 +19,16 @@ using OpenPrismNode.Web;
 
 /// <inheritdoc />
 [ApiController]
-public class DeleteController : ControllerBase
+public class LedgersController : ControllerBase
 {
     private readonly IMediator _mediator;
     private readonly IHttpContextAccessor _httpContextAccessor;
     private readonly BackgroundSyncService _backgroundSyncService;
     private readonly AppSettings _appSettings;
-    private readonly ILogger<DeleteController> _logger;
+    private readonly ILogger<LedgersController> _logger;
 
     /// <inheritdoc />
-    public DeleteController(IMediator mediator, IHttpContextAccessor httpContextAccessor, IOptions<AppSettings> appSettings, ILogger<DeleteController> logger, BackgroundSyncService backgroundSyncService)
+    public LedgersController(IMediator mediator, IHttpContextAccessor httpContextAccessor, IOptions<AppSettings> appSettings, ILogger<LedgersController> logger, BackgroundSyncService backgroundSyncService)
     {
         _mediator = mediator;
         _httpContextAccessor = httpContextAccessor;
@@ -55,11 +55,11 @@ public class DeleteController : ControllerBase
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-    [HttpDelete("api/v{version:apiVersion=1.0}/delete/ledger")]
+    [HttpDelete("api/v{version:apiVersion=1.0}/ledgers/{ledger}")]
     [ApiVersion("1.0")]
     [Consumes("application/json")]
     [Produces("application/json")]
-    public async Task<ActionResult> DeleteLedger([FromQuery] string ledger)
+    public async Task<ActionResult> DeleteLedger(string ledger)
     {
         if (string.IsNullOrEmpty(ledger))
         {
@@ -120,7 +120,7 @@ public class DeleteController : ControllerBase
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-    [HttpDelete("api/v{version:apiVersion=1.0}/delete/block")]
+    [HttpDelete("api/v{version:apiVersion=1.0}/ledgers/{ledger}/block")]
     [ApiVersion("1.0")]
     [Consumes("application/json")]
     [Produces("application/json")]
@@ -286,11 +286,11 @@ public class DeleteController : ControllerBase
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-    [HttpDelete("api/v{version:apiVersion=1.0}/delete/epoch")]
+    [HttpDelete("api/v{version:apiVersion=1.0}/ledgers/{ledger}/epochs")]
     [ApiVersion("1.0")]
     [Consumes("application/json")]
     [Produces("application/json")]
-    public async Task<ActionResult> DeleteEpoch([FromQuery] int? epochNumber, string ledger)
+    public async Task<ActionResult> DeleteEpoch([FromQuery]int? epochNumber, string ledger)
     {
         if (string.IsNullOrEmpty(ledger))
         {

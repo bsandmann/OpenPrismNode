@@ -170,8 +170,11 @@ namespace OpenPrismNode.Web.Migrations
 
             modelBuilder.Entity("OpenPrismNode.Core.Entities.OperationStatusEntity", b =>
                 {
-                    b.Property<byte[]>("OperationStatusId")
-                        .HasColumnType("bytea");
+                    b.Property<int>("OperationStatusEntityId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("OperationStatusEntityId"));
 
                     b.Property<DateTime>("CreatedUtc")
                         .HasColumnType("timestamp with time zone");
@@ -183,13 +186,17 @@ namespace OpenPrismNode.Web.Migrations
                         .IsRequired()
                         .HasColumnType("bytea");
 
+                    b.Property<byte[]>("OperationStatusId")
+                        .IsRequired()
+                        .HasColumnType("bytea");
+
                     b.Property<int>("OperationType")
                         .HasColumnType("integer");
 
                     b.Property<int>("Status")
                         .HasColumnType("integer");
 
-                    b.HasKey("OperationStatusId");
+                    b.HasKey("OperationStatusEntityId");
 
                     b.ToTable("OperationStatusEntities");
                 });
@@ -551,25 +558,28 @@ namespace OpenPrismNode.Web.Migrations
                     b.Property<long>("Depth")
                         .HasColumnType("bigint");
 
+                    b.Property<long>("Fee")
+                        .HasColumnType("bigint");
+
                     b.Property<DateTime>("LastUpdatedUtc")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<byte[]>("OperationStatusId")
-                        .HasColumnType("bytea");
+                    b.Property<int>("OperationStatusEntityId")
+                        .HasColumnType("integer");
 
                     b.Property<string>("TransactionId")
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<int>("WalletId")
+                    b.Property<int>("WalletEntityId")
                         .HasColumnType("integer");
 
                     b.HasKey("WalletTransactionEntityId");
 
-                    b.HasIndex("OperationStatusId")
+                    b.HasIndex("OperationStatusEntityId")
                         .IsUnique();
 
-                    b.HasIndex("WalletId");
+                    b.HasIndex("WalletEntityId");
 
                     b.ToTable("WalletTransactionEntities");
                 });
@@ -746,11 +756,11 @@ namespace OpenPrismNode.Web.Migrations
                 {
                     b.HasOne("OpenPrismNode.Core.Entities.OperationStatusEntity", "OperationStatusEntity")
                         .WithOne("WalletTransactionEntity")
-                        .HasForeignKey("OpenPrismNode.Core.Entities.WalletTransactionEntity", "OperationStatusId");
+                        .HasForeignKey("OpenPrismNode.Core.Entities.WalletTransactionEntity", "OperationStatusEntityId");
 
                     b.HasOne("OpenPrismNode.Core.Entities.WalletEntity", "Wallet")
                         .WithMany("WalletTransactions")
-                        .HasForeignKey("WalletId")
+                        .HasForeignKey("WalletEntityId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 

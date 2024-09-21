@@ -6,12 +6,12 @@ using Models;
 
 public class UpdateOperationStatusRequest : IRequest<Result>
 {
-    public UpdateOperationStatusRequest(byte[] operationStatusId, OperationStatusEnum status)
+    public UpdateOperationStatusRequest(int operationStatusEntityId, OperationStatusEnum status)
     {
-        OperationStatusId = operationStatusId;
+        OperationStatusEntityId = operationStatusEntityId;
         Status = status;
     }
 
     public OperationStatusEnum Status { get; set; }
-    public byte[] OperationStatusId { get; set; }
+    public int OperationStatusEntityId { get; set; }
 }

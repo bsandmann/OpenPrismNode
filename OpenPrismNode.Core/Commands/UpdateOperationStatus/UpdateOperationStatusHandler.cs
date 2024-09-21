@@ -22,7 +22,7 @@ namespace OpenPrismNode.Core.Commands.UpdateOperationStatus
             try
             {
                 var operationStatus = await _context.OperationStatusEntities
-                    .FirstOrDefaultAsync(os => os.OperationStatusId == request.OperationStatusId, cancellationToken);
+                    .FirstOrDefaultAsync(os => os.OperationStatusEntityId == request.OperationStatusEntityId, cancellationToken);
 
                 if (operationStatus == null)
                 {
@@ -32,6 +32,7 @@ namespace OpenPrismNode.Core.Commands.UpdateOperationStatus
                 operationStatus.Status = request.Status;
                 operationStatus.LastUpdatedUtc = DateTime.UtcNow;
 
+                _context.OperationStatusEntities.Update(operationStatus);
                 await _context.SaveChangesAsync(cancellationToken);
 
                 return Result.Ok();

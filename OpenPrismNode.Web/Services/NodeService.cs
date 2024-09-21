@@ -190,7 +190,7 @@ namespace OpenPrismNode.Web.Services
                 return GenerateScheduleOperationsErrorResponse(operationStatusId, transactionResult.Errors);
             }
 
-            operationStatusId = createOperationStatusResult.Value;
+            operationStatusId = createOperationStatusResult.Value.OperationStatusId;
 
             return new ScheduleOperationsResponse()
             {

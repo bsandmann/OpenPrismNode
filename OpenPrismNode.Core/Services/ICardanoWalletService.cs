@@ -2,6 +2,8 @@ using FluentResults;
 
 namespace OpenPrismNode.Core.Services;
 
+using Models.CardanoWallet;
+
 public interface ICardanoWalletService
 {
     public Task<Result<CreateWalletResponse>> CreateWalletAsync(CreateWalletRequest request);

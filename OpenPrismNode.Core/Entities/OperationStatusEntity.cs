@@ -5,6 +5,8 @@ using Models;
 
 public class OperationStatusEntity
 {
+    public int OperationStatusEntityId { get; set; }
+    
     /// <summary>
     /// PK - hash of the fully signed operation
     /// </summary>

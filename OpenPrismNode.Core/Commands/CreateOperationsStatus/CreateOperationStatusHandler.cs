@@ -5,7 +5,7 @@ using OpenPrismNode.Core.Entities;
 
 namespace OpenPrismNode.Core.Commands.CreateOperationsStatus;
 
-public class CreateOperationStatusHandler : IRequestHandler<CreateOperationStatusRequest, Result<byte[]>>
+public class CreateOperationStatusHandler : IRequestHandler<CreateOperationStatusRequest, Result<CreateOperationStatusResponse>>
 {
     private readonly DataContext _context;
 
@@ -14,7 +14,7 @@ public class CreateOperationStatusHandler : IRequestHandler<CreateOperationStatu
         _context = context;
     }
 
-    public async Task<Result<byte[]>> Handle(CreateOperationStatusRequest request, CancellationToken cancellationToken)
+    public async Task<Result<CreateOperationStatusResponse>> Handle(CreateOperationStatusRequest request, CancellationToken cancellationToken)
     {
         _context.ChangeTracker.Clear();
         _context.ChangeTracker.AutoDetectChangesEnabled = false;
@@ -32,7 +32,11 @@ public class CreateOperationStatusHandler : IRequestHandler<CreateOperationStatu
                 existingStatus.LastUpdatedUtc = DateTime.UtcNow;
                 _context.OperationStatusEntities.Update(existingStatus);
                 await _context.SaveChangesAsync(cancellationToken);
-                return Result.Ok(existingStatus.OperationStatusId);
+                return Result.Ok(new CreateOperationStatusResponse()
+                {
+                    OperationStatusEntityId = existingStatus.OperationStatusEntityId,
+                    OperationStatusId = existingStatus.OperationStatusId
+                });
             }
 
             // Create new OperationStatus
@@ -68,7 +72,11 @@ public class CreateOperationStatusHandler : IRequestHandler<CreateOperationStatu
             await _context.OperationStatusEntities.AddAsync(operationStatus, cancellationToken);
             await _context.SaveChangesAsync(cancellationToken);
 
-            return Result.Ok(operationStatus.OperationStatusId);
+            return Result.Ok(new CreateOperationStatusResponse()
+            {
+                OperationStatusEntityId = operationStatus.OperationStatusEntityId,
+                OperationStatusId = operationStatus.OperationStatusId
+            });
         }
         catch (Exception ex)
         {

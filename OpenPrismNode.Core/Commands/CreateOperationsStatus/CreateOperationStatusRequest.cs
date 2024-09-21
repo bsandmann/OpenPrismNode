@@ -4,7 +4,7 @@ using FluentResults;
 using MediatR;
 using Models;
 
-public class CreateOperationStatusRequest : IRequest<Result<byte[]>>
+public class CreateOperationStatusRequest : IRequest<Result<CreateOperationStatusResponse>>
 {
     public CreateOperationStatusRequest(byte[] operationStatusId, byte[] operationHash, OperationStatusEnum status, OperationTypeEnum operationType)
     {

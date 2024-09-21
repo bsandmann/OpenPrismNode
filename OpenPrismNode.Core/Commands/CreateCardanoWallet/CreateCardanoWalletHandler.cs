@@ -3,6 +3,7 @@ namespace OpenPrismNode.Core.Commands.CreateCardanoWallet;
 using Entities;
 using FluentResults;
 using MediatR;
+using Models.CardanoWallet;
 using Services;
 
 public class CreateCardanoWalletHandler : IRequestHandler<CreateCardanoWalletRequest, Result<CreateCardanoWalletResponse>>
@@ -62,7 +63,7 @@ public class CreateCardanoWalletHandler : IRequestHandler<CreateCardanoWalletReq
         {
             Mnemonic = mnemonicList.ToList(),
             WalletId = wallet.WalletId,
-            WalletKey = passphrase
+            WalletEntityId = wallet.WalletEntityId
         });
     }
 }

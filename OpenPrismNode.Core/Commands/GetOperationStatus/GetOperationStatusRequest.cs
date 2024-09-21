@@ -6,9 +6,9 @@ using MediatR;
 
 public class GetOperationStatusRequest : IRequest<Result<OperationStatusEntity>>
 {
-    public GetOperationStatusRequest(byte[] operationStatusId)
+    public GetOperationStatusRequest(byte[] operationStatusEntityId)
     {
-        OperationStatusId = operationStatusId;
+        OperationStatusId = operationStatusEntityId;
     }
     public byte[] OperationStatusId { get; set; } 
 }

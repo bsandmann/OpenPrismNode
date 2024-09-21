@@ -1,5 +1,6 @@
 using System.Text.Json.Serialization;
-using Grpc.Core;
+
+namespace OpenPrismNode.Core.Models.CardanoWallet;
 
 public class CreateWalletResponse
 {

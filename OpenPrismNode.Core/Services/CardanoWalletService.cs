@@ -6,6 +6,8 @@ using FluentResults;
 
 namespace OpenPrismNode.Core.Services;
 
+using Models.CardanoWallet;
+
 public class CardanoWalletService : ICardanoWalletService
 {
     private readonly HttpClient _httpClient;
@@ -38,6 +40,10 @@ public class CardanoWalletService : ICardanoWalletService
                 var responseContent = await response.Content.ReadAsStringAsync();
                 var walletResponse = JsonSerializer.Deserialize<CreateWalletResponse>(responseContent, _jsonOptions);
                 return Result.Ok(walletResponse);
+            }
+            else if (response.StatusCode == HttpStatusCode.Conflict)
+            {
+                return Result.Fail("Wallet already exists. Use the walletId for authorization.");
             }
             else
             {
@@ -193,7 +199,9 @@ public class CardanoWalletService : ICardanoWalletService
         var constructResult = await ConstructTransactionAsync(walletId, constructRequest);
 
         if (constructResult.IsFailed)
+        {
             return Result.Fail(constructResult.Errors);
+        }
 
         // Step 2: Sign the transaction
         var signRequest = new TransactionSignRequest
@@ -206,7 +214,9 @@ public class CardanoWalletService : ICardanoWalletService
         var signResult = await SignTransactionAsync(walletId, signRequest);
 
         if (signResult.IsFailed)
+        {
             return Result.Fail(signResult.Errors);
+        }
 
         // Step 3: Submit the transaction
         var submitRequest = new TransactionSubmitRequest
@@ -217,7 +227,9 @@ public class CardanoWalletService : ICardanoWalletService
         var submitResult = await SubmitTransactionAsync(walletId, submitRequest);
 
         if (submitResult.IsFailed)
+        {
             return Result.Fail(submitResult.Errors);
+        }
 
         return Result.Ok(submitResult.Value);
     }
@@ -324,7 +336,7 @@ public class CardanoWalletService : ICardanoWalletService
             return Result.Fail($"An unexpected error occurred: {ex.Message}");
         }
     }
-    
+
     public string GeneratePassphrase(int length = 24)
     {
         return new string(Enumerable.Repeat(_chars, length)

@@ -4,5 +4,7 @@ public enum OperationTypeEnum
 {
     CreateDid,
     UpdateDid,
-    DeactivateDid
+    DeactivateDid,
+    ProtocolVersionUpdate,
+    Unknown
 }
