@@ -6,8 +6,10 @@ using Core.Commands.GetOperationStatus;
 using Core.Commands.GetWallet;
 using Core.Commands.GetWalletTransactions;
 using Core.Commands.RestoreWallet;
+using Core.Commands.Withdrawal;
 using Core.Commands.WriteTransaction;
 using Core.Services;
+using FluentResults;
 using Google.Protobuf;
 using MediatR;
 using Microsoft.AspNetCore.Http.HttpResults;
@@ -185,6 +187,25 @@ public class WalletsController : ControllerBase
             Status = p.Status.ToString(),
             Fee = p.Fee,
         }));
+    }
+    
+    [HttpPost("api/v{version:apiVersion=1.0}/wallets/{walletId}/withdrawal/{withdrawalAddress}")]
+    [ApiVersion("1.0")]
+    [Consumes("application/json")]
+    [Produces("application/json")]
+    public async Task<ActionResult> Withdrawal(string walletId, string withdrawalAddress)
+    {
+        var transactionResult = await _mediator.Send(new WithdrawalRequest()
+        {
+            WalletId = walletId,
+            WithdrawalAddress = withdrawalAddress
+        });
+        if (transactionResult.IsFailed)
+        {
+            return BadRequest(transactionResult.Errors.FirstOrDefault().Message);
+        }
+
+        return Ok();
     }
 
     private bool IsValidBase64(string base64String)

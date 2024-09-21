@@ -186,7 +186,7 @@ public class CardanoWalletService : ICardanoWalletService
         }
     }
 
-    public async Task<Result<string>> CreateAndSubmitTransactionAsync(string walletId, string passphrase, Payment payment, object metadata)
+    public async Task<Result<string>> CreateAndSubmitTransactionAsync(string walletId, string passphrase, Payment payment, object? metadata)
     {
         // Step 1: Construct the transaction
         var constructRequest = new TransactionConstructRequest
@@ -196,12 +196,30 @@ public class CardanoWalletService : ICardanoWalletService
             Encoding = "base64"
         };
 
+        if (metadata is null)
+        {
+            // We have a withdrawal transaction, so we need accomodate for the fee for a full withdrawal
+            // TODO - This is a temporary solution. Is there a better way to calculate the fee?
+            var amount = payment.Amount.Quantity - 200_000;
+            if (amount <= 0)
+            {
+                return Result.Fail("Insufficient funds for withdrawal.");
+            }
+
+            constructRequest = new TransactionConstructRequest
+            {
+                Payments = new List<Payment> { new Payment { Address = payment.Address, Amount = new Amount { Quantity = amount, Unit = "lovelace" } } },
+                Encoding = "base64"
+            };
+        }
+
         var constructResult = await ConstructTransactionAsync(walletId, constructRequest);
 
-        if (constructResult.IsFailed)
+        if (constructResult.IsFailed && metadata is not null)
         {
             return Result.Fail(constructResult.Errors);
         }
+
 
         // Step 2: Sign the transaction
         var signRequest = new TransactionSignRequest
