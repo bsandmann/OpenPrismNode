@@ -1,8 +1,8 @@
-namespace OpenPrismNode.Core.Commands.SwitchBranch;
+namespace OpenPrismNode.Sync.Commands.SwitchBranch;
 
 using FluentResults;
 using MediatR;
-using Models;
+using OpenPrismNode.Core.Models;
 
 public class SwitchBranchRequest : IRequest<Result>
 {

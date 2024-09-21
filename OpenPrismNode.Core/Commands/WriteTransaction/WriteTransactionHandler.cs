@@ -1,14 +1,18 @@
 namespace OpenPrismNode.Core.Commands.WriteTransaction;
 
+using System.Text.Json;
 using Common;
 using CreateOperationsStatus;
-using CreateWalletTransactionEntity;
+using CreateWalletTransaction;
 using Crypto;
 using DbSyncModels;
+using EncodeTransaction;
 using FluentResults;
 using GetWallet;
 using Google.Protobuf;
+using Grpc.Models;
 using MediatR;
+using Microsoft.Extensions.Options;
 using Models;
 using Models.CardanoWallet;
 using Services;
@@ -20,13 +24,15 @@ public class WriteTransactionHandler : IRequestHandler<WriteTransactionRequest, 
     private ICardanoWalletService _walletService;
     private DataContext _context;
     private ISha256Service _sha256Service;
+    private readonly AppSettings _appSettings;
 
-    public WriteTransactionHandler(ICardanoWalletService walletService, DataContext context, IMediator mediator, ISha256Service sha256Service)
+    public WriteTransactionHandler(ICardanoWalletService walletService, DataContext context, IMediator mediator, ISha256Service sha256Service, IOptions<AppSettings> appSettings)
     {
         _walletService = walletService;
         _context = context;
         _mediator = mediator;
         _sha256Service = sha256Service;
+        _appSettings = appSettings.Value;
     }
 
     public async Task<Result<WriteTransactionResponse>> Handle(WriteTransactionRequest request, CancellationToken cancellationToken)
@@ -59,10 +65,20 @@ public class WriteTransactionHandler : IRequestHandler<WriteTransactionRequest, 
             Amount = new Amount() { Quantity = 1_000_000, Unit = "lovelace" } // 1 ADA = 1,000,000 lovelace
         };
 
+
+        var encodedOperation = await _mediator.Send(new EncodeTransactionRequest(new List<SignedAtalaOperation>()
+        {
+            request.SignedAtalaOperation
+        }), cancellationToken);
+        if (encodedOperation.IsFailed || encodedOperation.Value.Content is null)
+        {
+            return Result.Fail(encodedOperation.Errors.FirstOrDefault()?.Message);
+        }
+
         // Prepare metadata
         var metadata = new Dictionary<string, object>
         {
-            ["0"] = new Dictionary<string, object> { ["string"] = "Hello, Cardano!" }
+            [_appSettings.MetadataKey.ToString()] = new Dictionary<string, object> { ["c"] = encodedOperation.Value.Content, ["v"] = encodedOperation.Value.Version }
         };
 
         var operationType = request.SignedAtalaOperation.Operation.OperationCase switch

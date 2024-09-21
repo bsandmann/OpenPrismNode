@@ -43,7 +43,7 @@ public class WalletTransactionEntity
     /// <summary>
     /// The OperationStatus this transaction belongs to
     /// </summary>
-    public int OperationStatusEntityId { get; set; }
+    public int? OperationStatusEntityId { get; set; }
     
     /// <summary>
     /// The OperationStatus this transaction belongs to

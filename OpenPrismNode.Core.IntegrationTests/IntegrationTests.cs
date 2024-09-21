@@ -29,6 +29,7 @@ using OpenPrismNode.Sync.Commands.DecodeTransaction;
 using OpenPrismNode.Sync.Commands.ParseTransaction;
 using OpenPrismNode.Sync.Commands.ProcessBlock;
 using OpenPrismNode.Sync.Commands.ProcessTransaction;
+using OpenPrismNode.Sync.Commands.SwitchBranch;
 
 [Collection("TransactionalTests")]
 public partial class IntegrationTests : IDisposable

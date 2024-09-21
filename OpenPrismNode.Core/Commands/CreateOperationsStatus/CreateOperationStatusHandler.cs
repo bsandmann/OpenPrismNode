@@ -27,16 +27,7 @@ public class CreateOperationStatusHandler : IRequestHandler<CreateOperationStatu
 
             if (existingStatus != null)
             {
-                // Update existing status
-                existingStatus.Status = request.Status;
-                existingStatus.LastUpdatedUtc = DateTime.UtcNow;
-                _context.OperationStatusEntities.Update(existingStatus);
-                await _context.SaveChangesAsync(cancellationToken);
-                return Result.Ok(new CreateOperationStatusResponse()
-                {
-                    OperationStatusEntityId = existingStatus.OperationStatusEntityId,
-                    OperationStatusId = existingStatus.OperationStatusId
-                });
+                return Result.Fail("Operation already exists. Application of the same operation is not allowed.");
             }
 
             // Create new OperationStatus

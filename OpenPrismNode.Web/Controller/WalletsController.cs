@@ -16,7 +16,6 @@ using Microsoft.Extensions.Options;
 using Models;
 using OpenPrismNode.Core.Common;
 using OpenPrismNode.Web;
-using Sync.Commands.DecodeTransaction;
 
 /// <inheritdoc />
 [ApiController]
@@ -109,10 +108,18 @@ public class WalletsController : ControllerBase
 
     [HttpPost("api/v{version:apiVersion=1.0}/wallets/{walletId}/transactions")]
     [ApiVersion("1.0")]
-    [Consumes("application/octet-stream")]
+    // [Consumes("application/octet-stream")]
+    [Consumes("text/plain")]
     [Produces("application/json")]
-    public async Task<ActionResult> ExecuteTransaction(string walletId, [FromBody] string signedAtalaOperationAsBase64EncodedByteString)
+    public async Task<ActionResult> ExecuteTransaction(string walletId)
     {
+        using var reader = new StreamReader(Request.Body);
+        var signedAtalaOperationAsBase64EncodedByteString = await reader.ReadToEndAsync();
+
+        if (string.IsNullOrWhiteSpace(signedAtalaOperationAsBase64EncodedByteString))
+        {
+            return BadRequest("Input string is empty or null");
+        }
         // Validate base64
         if (!IsValidBase64(signedAtalaOperationAsBase64EncodedByteString))
         {
@@ -189,8 +196,7 @@ public class WalletsController : ControllerBase
 
         try
         {
-            // Attempt to convert the string to a byte array
-            Convert.FromBase64String(base64String);
+            PrismEncoding.Base64ToByteString(base64String);
             return true;
         }
         catch

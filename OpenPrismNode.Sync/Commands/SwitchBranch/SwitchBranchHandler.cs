@@ -2,10 +2,11 @@ using FluentResults;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using OpenPrismNode.Core;
-using OpenPrismNode.Core.Commands.SwitchBranch;
 using OpenPrismNode.Core.Entities;
 using OpenPrismNode.Sync.Commands.GetPostgresBlockByBlockNo;
 using OpenPrismNode.Sync.Commands.ProcessBlock;
+
+namespace OpenPrismNode.Sync.Commands.SwitchBranch;
 
 public class SwitchBranchHandler : IRequestHandler<SwitchBranchRequest, Result>
 {

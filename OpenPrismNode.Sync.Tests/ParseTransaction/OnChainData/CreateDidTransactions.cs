@@ -1,5 +1,6 @@
 namespace OpenPrismNode.Sync.Tests.ParseTransaction.OnChainData;
 
+using Commands.DecodeTransaction;
 using FluentAssertions;
 using FluentResults.Extensions.FluentAssertions;
 using MediatR;
@@ -7,7 +8,6 @@ using Microsoft.Extensions.Logging;
 using Moq;
 using OpenPrismNode.Core.Crypto;
 using OpenPrismNode.Core.Models;
-using OpenPrismNode.Sync.Commands.DecodeTransaction;
 using OpenPrismNode.Sync.Commands.ParseTransaction;
 using OpenPrismNode.Sync.Tests.TestDocuments;
 

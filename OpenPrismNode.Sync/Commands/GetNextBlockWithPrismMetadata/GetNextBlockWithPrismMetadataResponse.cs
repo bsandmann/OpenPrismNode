@@ -1,5 +1,4 @@
-using FluentResults;
-using MediatR;
+namespace OpenPrismNode.Sync.Commands.GetNextBlockWithPrismMetadata;
 
 public class GetNextBlockWithPrismMetadataResponse
 {

@@ -7,6 +7,8 @@ using OpenPrismNode.Core.Common;
 using OpenPrismNode.Core.Models;
 using OpenPrismNode.Sync.Services;
 
+namespace OpenPrismNode.Sync.Commands.GetNextBlockWithPrismMetadata;
+
 public class GetNextBlockWithPrismMetadataHandler : IRequestHandler<GetNextBlockWithPrismMetadataRequest, Result<GetNextBlockWithPrismMetadataResponse>>
 {
     private readonly INpgsqlConnectionFactory _connectionFactory;

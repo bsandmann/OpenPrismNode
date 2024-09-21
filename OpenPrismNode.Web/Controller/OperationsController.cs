@@ -14,7 +14,6 @@ using Microsoft.Extensions.Options;
 using Models;
 using OpenPrismNode.Core.Common;
 using OpenPrismNode.Web;
-using Sync.Commands.DecodeTransaction;
 
 /// <inheritdoc />
 [ApiController]

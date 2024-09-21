@@ -12,7 +12,6 @@ using OpenPrismNode.Core.Commands.CreateWalletAddress;
 using OpenPrismNode.Core.Commands.GetBlockByBlockHash;
 using OpenPrismNode.Core.Commands.GetEpoch;
 using OpenPrismNode.Core.Commands.GetMostRecentBlock;
-using OpenPrismNode.Core.Commands.SwitchBranch;
 using OpenPrismNode.Core.Common;
 using OpenPrismNode.Core.DbSyncModels;
 using OpenPrismNode.Core.Entities;
@@ -27,6 +26,7 @@ using OpenPrismNode.Sync.Commands.GetTransactionsWithPrismMetadataForBlockId;
 using OpenPrismNode.Sync.Commands.ParseTransaction;
 using OpenPrismNode.Sync.Commands.ProcessBlock;
 using OpenPrismNode.Sync.Commands.ProcessTransaction;
+using OpenPrismNode.Sync.Commands.SwitchBranch;
 using OpenPrismNode.Sync.Services;
 
 public partial class IntegrationTests

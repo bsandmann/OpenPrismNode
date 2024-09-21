@@ -60,14 +60,14 @@ public class DataContext : DbContext
         modelBuilder.Entity<EpochEntity>()
             .Property(e => e.Ledger)
             .HasConversion<int>();
-        
+
         modelBuilder.Entity<EpochEntity>()
             .HasOne(e => e.LedgerEntity)
             .WithMany(l => l.Epochs)
             .HasForeignKey(e => e.Ledger)
             .HasPrincipalKey(l => l.Ledger)
             .OnDelete(DeleteBehavior.Cascade);
-        
+
         modelBuilder.Entity<EpochEntity>()
             .Property(e => e.EpochNumber)
             .ValueGeneratedNever();

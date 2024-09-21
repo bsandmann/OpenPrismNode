@@ -1,11 +1,13 @@
 namespace OpenPrismNode.Sync.Services;
 
+using Commands.GetNextBlockWithPrismMetadata;
 using Commands.GetPostgresBlockByBlockId;
 using Commands.GetPostgresBlockByBlockNo;
 using Commands.GetPostgresBlocksByBlockNos;
 using Commands.GetPostgresBlockTip;
 using Commands.GetPostgresFirstBlockOfEpoch;
 using Commands.ProcessBlock;
+using Commands.SwitchBranch;
 using Core;
 using Core.Commands.CreateBlock;
 using Core.Commands.CreateBlocksAsBatch;
@@ -15,7 +17,6 @@ using Core.Commands.GetBlockByBlockHash;
 using Core.Commands.GetBlockByBlockHeight;
 using Core.Commands.GetEpoch;
 using Core.Commands.GetMostRecentBlock;
-using Core.Commands.SwitchBranch;
 using Core.Common;
 using Core.DbSyncModels;
 using Core.Entities;

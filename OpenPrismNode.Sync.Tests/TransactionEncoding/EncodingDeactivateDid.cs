@@ -1,8 +1,9 @@
 namespace OpenPrismNode.Sync.Tests.TransactionEncoding;
 
+using System.Text.Json;
 using System.Text.Json.Nodes;
 using Commands.DecodeTransaction;
-using Commands.EncodeTransaction;
+using Core.Commands.EncodeTransaction;
 using FluentAssertions;
 using FluentResults.Extensions.FluentAssertions;
 using TestDocuments;
@@ -31,7 +32,7 @@ public class EncodingDeactivateDid
         // Assert
         roundTripResult.Should().BeSuccess();
         JsonNode? originalTransaction = JsonNode.Parse(serializedTransaction);
-        JsonNode? roundTripTransaction = JsonNode.Parse(roundTripResult.Value);
+        JsonNode? roundTripTransaction = JsonNode.Parse(JsonSerializer.Serialize(roundTripResult.Value));
         JsonNode.DeepEquals(originalTransaction, roundTripTransaction).Should().BeTrue();
     }
 }

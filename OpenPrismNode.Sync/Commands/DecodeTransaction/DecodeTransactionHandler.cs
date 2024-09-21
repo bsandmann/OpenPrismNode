@@ -1,11 +1,11 @@
 ﻿namespace OpenPrismNode.Sync.Commands.DecodeTransaction;
 
 using System.Text.Json;
-using Core.Common;
 using FluentResults;
-using Grpc.Models;
 using MediatR;
 using Models;
+using OpenPrismNode.Core.Common;
+using OpenPrismNode.Grpc.Models;
 
 /// <summary>
 /// Takes the raw transaction data as json and decodes it into a list of SignedAtalaOperations

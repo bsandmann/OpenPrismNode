@@ -1,4 +1,4 @@
-namespace OpenPrismNode.Core.Commands.CreateWalletTransactionEntity;
+namespace OpenPrismNode.Core.Commands.CreateWalletTransaction;
 
 using FluentResults;
 using MediatR;

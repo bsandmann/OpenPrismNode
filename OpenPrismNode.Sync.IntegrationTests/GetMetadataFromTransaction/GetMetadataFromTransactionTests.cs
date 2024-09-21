@@ -1,6 +1,5 @@
 namespace OpenPrismNode.Sync.IntegrationTests.GetMetadataFromTransaction;
 
-using Commands.DecodeTransaction;
 using Core;
 using FluentAssertions;
 using FluentResults.Extensions.FluentAssertions;

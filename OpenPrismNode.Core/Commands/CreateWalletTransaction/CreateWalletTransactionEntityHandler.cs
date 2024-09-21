@@ -1,8 +1,8 @@
-namespace OpenPrismNode.Core.Commands.CreateWalletTransactionEntity;
+namespace OpenPrismNode.Core.Commands.CreateWalletTransaction;
 
-using Entities;
 using FluentResults;
 using MediatR;
+using OpenPrismNode.Core.Entities;
 
 public class CreateWalletTransactionEntityHandler : IRequestHandler<CreateWalletTransactionEntityRequest, Result>
 {
