@@ -124,7 +124,9 @@ public class WriteTransactionHandler : IRequestHandler<WriteTransactionRequest, 
 
         return Result.Ok(new WriteTransactionResponse()
         {
-            OperationStatusId = operationResult.Value.OperationStatusId
+            OperationStatusId = operationResult.Value.OperationStatusId,
+            OperationType = operationType,
+            DidSuffix = operationType == OperationTypeEnum.CreateDid ? PrismEncoding.ByteArrayToHex(operationHash) : null
         });
     }
 }
