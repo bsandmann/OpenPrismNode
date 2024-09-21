@@ -12,7 +12,7 @@ namespace OpenPrismNode.Core.Commands.GetOperationStatus
     using UpdateOperationStatus;
     using UpdateWalletTransaction;
 
-    public class GetOperationStatusHandler : IRequestHandler<GetOperationStatusRequest, Result<OperationStatusEntity>>
+    public class GetOperationStatusHandler : IRequestHandler<GetOperationStatusRequest, Result<GetOperationStatusResponse>>
     {
         private ICardanoWalletService _walletService;
         private readonly DataContext _context;
@@ -25,7 +25,7 @@ namespace OpenPrismNode.Core.Commands.GetOperationStatus
             _mediator = mediator;
         }
 
-        public async Task<Result<OperationStatusEntity>> Handle(GetOperationStatusRequest request, CancellationToken cancellationToken)
+        public async Task<Result<GetOperationStatusResponse>> Handle(GetOperationStatusRequest request, CancellationToken cancellationToken)
         {
             try
             {
@@ -70,38 +70,46 @@ namespace OpenPrismNode.Core.Commands.GetOperationStatus
                     return transactionDetails.ToResult();
                 }
 
-                if (transactionDetails.Value.Status == "pending" && operationStatus.Status != OperationStatusEnum.PendingSubmission)
+                var status = operationStatus.Status;
+                if (transactionDetails.Value.Status.Equals("pending") && status != OperationStatusEnum.PendingSubmission)
                 {
                     await _mediator.Send(new UpdateOperationStatusRequest(operationStatus.OperationStatusEntityId, OperationStatusEnum.PendingSubmission), cancellationToken);
+                    status = OperationStatusEnum.PendingSubmission;
                 }
-                else if (operationStatus.Status == OperationStatusEnum.PendingSubmission ||
-                    operationStatus.Status == OperationStatusEnum.AwaitConfirmation)
+                else if ((status == OperationStatusEnum.PendingSubmission ||
+                          status == OperationStatusEnum.AwaitConfirmation) && !transactionDetails.Value.Status.Equals("pending"))
                 {
                     // TODO define a requirement for the depth of the transaction
-                    if (transactionDetails.Value.Depth.Quantity <= 2 && operationStatus.Status == OperationStatusEnum.PendingSubmission)
+                    if (transactionDetails.Value.Depth?.Quantity < 2 && status != OperationStatusEnum.AwaitConfirmation)
                     {
                         await _mediator.Send(new UpdateOperationStatusRequest(operationStatus.OperationStatusEntityId, OperationStatusEnum.AwaitConfirmation), cancellationToken);
+                        status = OperationStatusEnum.AwaitConfirmation;
                     }
-                    else if (transactionDetails.Value.Depth.Quantity > 2 && transactionDetails.Value.Status.Equals("in_ledger", StringComparison.InvariantCultureIgnoreCase))
+                    else if (transactionDetails.Value.Depth?.Quantity >= 2 && transactionDetails.Value.Status.Equals("in_ledger", StringComparison.InvariantCultureIgnoreCase))
                     {
                         await _mediator.Send(new UpdateOperationStatusRequest(operationStatus.OperationStatusEntityId, OperationStatusEnum.ConfirmedAndApplied), cancellationToken);
+                        status = OperationStatusEnum.ConfirmedAndApplied;
                     }
                 }
 
-                await _mediator.Send(new UpdateWalletTransactionRequest(
-                        walletTransactionEntityId: operationStatus.WalletTransactionEntity.WalletTransactionEntityId,
-                        depth: transactionDetails.Value.Depth.Quantity,
-                        fee: transactionDetails.Value.Fee.Quantity)
-                    , cancellationToken);
+                if (!transactionDetails.Value.Status.Equals("pending"))
+                {
+                    await _mediator.Send(new UpdateWalletTransactionRequest(
+                            walletTransactionEntityId: operationStatus.WalletTransactionEntity.WalletTransactionEntityId,
+                            depth: transactionDetails.Value.Depth?.Quantity ?? 0,
+                            fee: transactionDetails.Value.Fee.Quantity)
+                        , cancellationToken);
+                }
 
-                return Result.Ok(new OperationStatusEntity()
+                return Result.Ok(new GetOperationStatusResponse()
                 {
                     OperationStatusId = operationStatus.OperationStatusId,
-                    Status = operationStatus.Status,
+                    Status = status,
                     OperationHash = operationStatus.OperationHash,
                     OperationType = operationStatus.OperationType,
                     CreatedUtc = operationStatus.CreatedUtc,
                     LastUpdatedUtc = operationStatus.LastUpdatedUtc,
+                    TransactionId = transactionId
                 });
             }
             catch (Exception ex)

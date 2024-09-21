@@ -18,6 +18,7 @@ namespace OpenPrismNode.Web.Services
     using Sync;
     using Sync.Commands.ParseTransaction;
     using System;
+    using Core.Commands.GetWallets;
     using Core.Commands.ResolveDid;
     using Core.Commands.ResolveDid.Transform;
     using Core.Commands.WriteTransaction;
@@ -91,8 +92,7 @@ namespace OpenPrismNode.Web.Services
                 {
                     Details = "some details",
                     OperationStatus = MapOperationStatus(operationIdResult.Value!.Status),
-                    //TODO: Get the transaction id from the transaction table
-                    TransactionId = "0",
+                    TransactionId = operationIdResult.Value.TransactionId,
                     LastSyncedBlockTimestamp = Timestamp.FromDateTime(DateTime.UtcNow)
                 };
             }
@@ -225,9 +225,26 @@ namespace OpenPrismNode.Web.Services
             }
             else
             {
+                // TODO: since we cannot distinguish between different wallets, we are using the first available wallet
+                // What we need here is to read the X-API-KEY header and get the walletId from the header
+                // The problem is that the current identus-implementations does not allow header information
+
+                var getWalletsResult = await _mediator.Send(new GetWalletsRequest());
+                if (getWalletsResult.IsFailed)
+                {
+                    return GenerateScheduleOperationsErrorResponse(Hash.CreateRandom().Value, getWalletsResult.Errors);
+                }
+
+                if (!getWalletsResult.Value.Any())
+                {
+                    return GenerateScheduleOperationsErrorResponse(Hash.CreateRandom().Value, new List<IError>() { new Error("No wallets found") });
+                }
+
+                var selectedWallet = getWalletsResult.Value.MaxBy(p => p.Balance);
+
                 var transactionResult = await _mediator.Send(new WriteTransactionRequest()
                 {
-                    WalletId = "////TODO",
+                    WalletId = selectedWallet.WalletId,
                     SignedAtalaOperation = request.SignedOperations[0]
                 });
 

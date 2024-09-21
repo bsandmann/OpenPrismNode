@@ -4,7 +4,7 @@ using Entities;
 using FluentResults;
 using MediatR;
 
-public class GetOperationStatusRequest : IRequest<Result<OperationStatusEntity>>
+public class GetOperationStatusRequest : IRequest<Result<GetOperationStatusResponse>>
 {
     public GetOperationStatusRequest(byte[] operationStatusEntityId)
     {

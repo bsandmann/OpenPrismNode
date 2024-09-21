@@ -37,6 +37,8 @@ public class WriteTransactionHandler : IRequestHandler<WriteTransactionRequest, 
 
     public async Task<Result<WriteTransactionResponse>> Handle(WriteTransactionRequest request, CancellationToken cancellationToken)
     {
+        _context.ChangeTracker.Clear();
+        _context.ChangeTracker.AutoDetectChangesEnabled = false;
         var wallet = await _mediator.Send(new GetWalletRequest { WalletId = request.WalletId }, cancellationToken);
         if (wallet.IsFailed)
         {

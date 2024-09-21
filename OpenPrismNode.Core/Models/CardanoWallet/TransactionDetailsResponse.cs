@@ -30,7 +30,7 @@ public class TransactionDetailsResponse
     public TimeInfo PendingSince { get; set; }
 
     [JsonPropertyName("depth")]
-    public Depth Depth { get; set; }
+    public Depth? Depth { get; set; }
 
     [JsonPropertyName("direction")]
     public string Direction { get; set; }

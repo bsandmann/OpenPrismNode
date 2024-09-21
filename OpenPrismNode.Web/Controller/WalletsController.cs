@@ -1,9 +1,11 @@
 namespace OpenPrismNode.Web.Controller;
 
 using Asp.Versioning;
+using Common;
 using Core.Commands.CreateCardanoWallet;
 using Core.Commands.GetOperationStatus;
 using Core.Commands.GetWallet;
+using Core.Commands.GetWallets;
 using Core.Commands.GetWalletTransactions;
 using Core.Commands.RestoreWallet;
 using Core.Commands.Withdrawal;
@@ -107,6 +109,34 @@ public class WalletsController : ControllerBase
             SyncProgress = getWalletResult.Value.SyncProgress
         });
     }
+    
+    [ApiKeyAuthorization]
+    [HttpGet("api/v{version:apiVersion=1.0}/wallets/")]
+    [ApiVersion("1.0")]
+    [Consumes("application/json")]
+    [Produces("application/json")]
+    public async Task<ActionResult> GetWallets()
+    {
+        // TODO Authorization
+        // THis endpoint should either not exist or be protected to only allow admin access
+
+        var getWalletsResult = await _mediator.Send(new GetWalletsRequest()
+        {
+        });
+        if (getWalletsResult.IsFailed)
+        {
+            return BadRequest(getWalletsResult.Errors?.FirstOrDefault()?.Message);
+        }
+
+        return Ok(getWalletsResult.Value.Select(p => new GetWalletResponseModel()
+        {
+            WalletId = p.WalletId,
+            Balance = p.Balance,
+            FundingAddress = p.FundingAddress,
+            SyncingComplete = p.SyncingComplete,
+            SyncProgress = p.SyncProgress
+        }).ToList());
+    }
 
     [HttpPost("api/v{version:apiVersion=1.0}/wallets/{walletId}/transactions")]
     [ApiVersion("1.0")]
@@ -122,6 +152,7 @@ public class WalletsController : ControllerBase
         {
             return BadRequest("Input string is empty or null");
         }
+
         // Validate base64
         if (!IsValidBase64(signedAtalaOperationAsBase64EncodedByteString))
         {
@@ -188,7 +219,7 @@ public class WalletsController : ControllerBase
             Fee = p.Fee,
         }));
     }
-    
+
     [HttpPost("api/v{version:apiVersion=1.0}/wallets/{walletId}/withdrawal/{withdrawalAddress}")]
     [ApiVersion("1.0")]
     [Consumes("application/json")]
