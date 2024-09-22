@@ -3,9 +3,11 @@ namespace OpenPrismNode.Core.Commands.GetOperationStatus
     using System;
     using System.Threading;
     using System.Threading.Tasks;
+    using Common;
     using FluentResults;
     using MediatR;
     using Microsoft.EntityFrameworkCore;
+    using Microsoft.Extensions.Options;
     using Models;
     using OpenPrismNode.Core.Entities;
     using Services;
@@ -17,12 +19,14 @@ namespace OpenPrismNode.Core.Commands.GetOperationStatus
         private ICardanoWalletService _walletService;
         private readonly DataContext _context;
         private readonly IMediator _mediator;
+        private readonly AppSettings _appSettings;
 
-        public GetOperationStatusHandler(DataContext context, ICardanoWalletService walletService, IMediator mediator)
+        public GetOperationStatusHandler(DataContext context, ICardanoWalletService walletService, IMediator mediator, IOptions<AppSettings> appSettings)
         {
             _context = context;
             _walletService = walletService;
             _mediator = mediator;
+            _appSettings = appSettings.Value;
         }
 
         public async Task<Result<GetOperationStatusResponse>> Handle(GetOperationStatusRequest request, CancellationToken cancellationToken)
@@ -70,6 +74,8 @@ namespace OpenPrismNode.Core.Commands.GetOperationStatus
                     return transactionDetails.ToResult();
                 }
 
+                var requiredConfirmationDepth = _appSettings.RequiredConfirmationDepth ?? 2;
+
                 var status = operationStatus.Status;
                 if (transactionDetails.Value.Status.Equals("pending") && status != OperationStatusEnum.PendingSubmission)
                 {
@@ -79,13 +85,12 @@ namespace OpenPrismNode.Core.Commands.GetOperationStatus
                 else if ((status == OperationStatusEnum.PendingSubmission ||
                           status == OperationStatusEnum.AwaitConfirmation) && !transactionDetails.Value.Status.Equals("pending"))
                 {
-                    // TODO define a requirement for the depth of the transaction
-                    if (transactionDetails.Value.Depth?.Quantity < 2 && status != OperationStatusEnum.AwaitConfirmation)
+                    if (transactionDetails.Value.Depth?.Quantity < requiredConfirmationDepth && status != OperationStatusEnum.AwaitConfirmation)
                     {
                         await _mediator.Send(new UpdateOperationStatusRequest(operationStatus.OperationStatusEntityId, OperationStatusEnum.AwaitConfirmation), cancellationToken);
                         status = OperationStatusEnum.AwaitConfirmation;
                     }
-                    else if (transactionDetails.Value.Depth?.Quantity >= 2 && transactionDetails.Value.Status.Equals("in_ledger", StringComparison.InvariantCultureIgnoreCase))
+                    else if (transactionDetails.Value.Depth?.Quantity >= requiredConfirmationDepth && transactionDetails.Value.Status.Equals("in_ledger", StringComparison.InvariantCultureIgnoreCase))
                     {
                         await _mediator.Send(new UpdateOperationStatusRequest(operationStatus.OperationStatusEntityId, OperationStatusEnum.ConfirmedAndApplied), cancellationToken);
                         status = OperationStatusEnum.ConfirmedAndApplied;

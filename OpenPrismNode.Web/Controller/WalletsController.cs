@@ -37,7 +37,7 @@ public class WalletsController : ControllerBase
         _walletService = walletService;
         _mediator = mediator;
     }
-
+    [ApiKeyUserAuthorization]
     [HttpPost("api/v{version:apiVersion=1.0}/wallets")]
     [ApiVersion("1.0")]
     [Consumes("application/json")]
@@ -60,7 +60,8 @@ public class WalletsController : ControllerBase
             WalletId = createWalletResult.Value.WalletId
         });
     }
-
+    
+    [ApiKeyUserAuthorization]
     [HttpPost("api/v{version:apiVersion=1.0}/wallets/restore")]
     [ApiVersion("1.0")]
     [Consumes("application/json")]
@@ -83,7 +84,8 @@ public class WalletsController : ControllerBase
             WalletId = restoreWalletResult.Value.WalletId,
         });
     }
-
+    
+    [ApiKeyUserAuthorization]
     [HttpGet("api/v{version:apiVersion=1.0}/wallets/{walletId}")]
     [ApiVersion("1.0")]
     [Consumes("application/json")]
@@ -110,7 +112,7 @@ public class WalletsController : ControllerBase
         });
     }
     
-    [ApiKeyAuthorization]
+    [ApiKeyAdminAuthorization]
     [HttpGet("api/v{version:apiVersion=1.0}/wallets/")]
     [ApiVersion("1.0")]
     [Consumes("application/json")]
@@ -137,7 +139,8 @@ public class WalletsController : ControllerBase
             SyncProgress = p.SyncProgress
         }).ToList());
     }
-
+    
+    [ApiKeyUserAuthorization]
     [HttpPost("api/v{version:apiVersion=1.0}/wallets/{walletId}/transactions")]
     [ApiVersion("1.0")]
     // [Consumes("application/octet-stream")]
@@ -193,7 +196,7 @@ public class WalletsController : ControllerBase
         }
     }
 
-
+    [ApiKeyUserAuthorization]
     [HttpGet("api/v{version:apiVersion=1.0}/wallets/{walletId}/transactions")]
     [ApiVersion("1.0")]
     [Consumes("application/json")]
@@ -219,7 +222,8 @@ public class WalletsController : ControllerBase
             Fee = p.Fee,
         }));
     }
-
+    
+    [ApiKeyUserAuthorization]
     [HttpPost("api/v{version:apiVersion=1.0}/wallets/{walletId}/withdrawal/{withdrawalAddress}")]
     [ApiVersion("1.0")]
     [Consumes("application/json")]

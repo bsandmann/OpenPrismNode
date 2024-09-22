@@ -6,7 +6,7 @@ using OpenPrismNode.Core.Common;
 
 namespace OpenPrismNode.Web.Common;
 
-public class ApiKeyAuthorizationAttribute : Attribute, IAuthorizationFilter
+public class ApiKeyAdminAuthorizationAttribute : Attribute, IAuthorizationFilter
 {
     private const string API_KEY_HEADER_NAME = "Authorization";
 
@@ -19,7 +19,7 @@ public class ApiKeyAuthorizationAttribute : Attribute, IAuthorizationFilter
         }
 
         var appSettings = context.HttpContext.RequestServices.GetRequiredService<IOptions<AppSettings>>().Value;
-        var apiKey = appSettings.AuthorizationKey;
+        var apiKey = appSettings.AdminAuthorizationKey;
 
         if (!apiKey.Equals(extractedApiKey.ToString(), StringComparison.InvariantCultureIgnoreCase))
         {

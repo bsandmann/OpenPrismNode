@@ -1,6 +1,7 @@
 namespace OpenPrismNode.Web.Controller;
 
 using Asp.Versioning;
+using Common;
 using Core.Commands.CreateCardanoWallet;
 using Core.Commands.GetOperationStatus;
 using Core.Commands.GetWallet;
@@ -32,7 +33,7 @@ public class OperationsController : ControllerBase
         _mediator = mediator;
     }
 
-
+    [ApiKeyUserAuthorization]
     [HttpGet("api/v{version:apiVersion=1.0}/operations/{operationStatusIdHex}")]
     [ApiVersion("1.0")]
     [Consumes("application/json")]

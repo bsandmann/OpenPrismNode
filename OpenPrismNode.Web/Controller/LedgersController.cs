@@ -51,7 +51,7 @@ public class LedgersController : ControllerBase
     /// <response code="200">The ledger has been successfully deleted</response>
     /// <response code="400">Bad request, due to missing or invalid ledger value</response>
     /// <response code="401">Unauthorized request</response>
-    [ApiKeyAuthorization]
+    [ApiKeyAdminAuthorization]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
@@ -116,7 +116,7 @@ public class LedgersController : ControllerBase
     /// <response code="200">Blocks have been successfully deleted and the new tip has been set</response>
     /// <response code="400">Bad request due to missing or invalid block height or ledger value</response>
     /// <response code="401">Unauthorized request</response>
-    [ApiKeyAuthorization]
+    [ApiKeyAdminAuthorization]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
@@ -282,7 +282,7 @@ public class LedgersController : ControllerBase
     /// <response code="200">Epochs have been successfully deleted, orphaned addresses cleaned up, and the new tip has been set</response>
     /// <response code="400">Bad request due to missing or invalid epoch number or ledger value</response>
     /// <response code="401">Unauthorized request</response>
-    [ApiKeyAuthorization]
+    [ApiKeyAdminAuthorization]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]

@@ -25,9 +25,24 @@ public class AppSettings
     public PrismLedger PrismLedger { get; set; }
 
     /// <summary>
-    /// API Key to access the interface to controll the sync-process
+    /// API Key to access the interface to controll the sync-process as well as the Admin-Interface
+    /// to see all Wallets
     /// </summary>
-    public string AuthorizationKey { get; set; }
+    public string AdminAuthorizationKey { get; set; }
+    
+    /// <summary>
+    /// API Key to access the Wallet-Interface to create a new Wallet and to see the Wallet-Status
+    /// </summary>
+    public string UserAuthorizationKey { get; set; }
+    
+    
+    /// <summary>
+    /// If a operation/block has reached the specific depth (evaluated by the Cardano-Wallet),
+    /// It is returned back by the GetOperationStatusHandler to the Client (e.g. Idenuts via gRPC)
+    /// The depth has no relavance for when a operation is written into the database and for the syncing
+    /// in general. It is just a information for client which just wrote a operation.
+    /// </summary>
+    public int? RequiredConfirmationDepth { get; set; }
 
     /// <summary>
     /// The MetadataKey used for the PRISM-network 
