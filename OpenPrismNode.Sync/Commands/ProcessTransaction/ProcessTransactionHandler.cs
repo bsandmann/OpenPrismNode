@@ -14,18 +14,22 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Models;
 using ParseTransaction;
+using Services;
 
 public class ProcessTransactionHandler : IRequestHandler<ProcessTransactionRequest, Result>
 {
     private readonly IMediator _mediator;
     private readonly ILogger<ProcessTransactionHandler> _logger;
     private readonly AppSettings _appSettings;
+    private readonly IIngestionService _ingestionService;
+    
 
-    public ProcessTransactionHandler(IMediator mediator, ILogger<ProcessTransactionHandler> logger, IOptions<AppSettings> appSettings)
+    public ProcessTransactionHandler(IMediator mediator, ILogger<ProcessTransactionHandler> logger, IOptions<AppSettings> appSettings, IIngestionService ingestionService)
     {
         _mediator = mediator;
         _logger = logger;
         _appSettings = appSettings.Value;
+        _ingestionService = ingestionService;
     }
 
     public async Task<Result> Handle(ProcessTransactionRequest request, CancellationToken cancellationToken)
@@ -167,10 +171,7 @@ public class ProcessTransactionHandler : IRequestHandler<ProcessTransactionReque
 
                         if (didIdentifier is not null)
                         {
-                            // OUT OF SCOPE
- 
-                            // Resolving as qualified did and pushing to external database
-                          
+                            await _ingestionService.Ingest(didIdentifier, request.Ledger);
                         }
 
                         operationSequenceIndex++;

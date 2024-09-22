@@ -32,11 +32,11 @@ builder.Services.AddHttpContextAccessor();
 builder.Services.AddSwaggerGen(c =>
 {
     c.SwaggerDoc("v1", new OpenApiInfo { Title = "OpenPrismNode API", Version = "v1" });
-   
+
     var xmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
     var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
     c.IncludeXmlComments(xmlPath);
-    
+
     // Add the Authorization header
     c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
     {
@@ -58,7 +58,7 @@ builder.Services.AddSwaggerGen(c =>
                     Id = "Bearer"
                 }
             },
-            new string[] {}
+            new string[] { }
         }
     });
 });
@@ -73,7 +73,7 @@ builder.Services.AddApiVersioning(options =>
 
 builder.WebHost.ConfigureKestrel(options =>
 {
-   // Listen for REST endpoints over HTTPS
+    // Listen for REST endpoints over HTTPS
     options.Listen(IPAddress.Any, 5001, listenOptions =>
     {
         listenOptions.UseHttps(); // Enforce HTTPS
@@ -81,16 +81,10 @@ builder.WebHost.ConfigureKestrel(options =>
     });
 
     // Listen for gRPC services over HTTP/2 without TLS
-    options.Listen(IPAddress.Any, 50053, listenOptions =>
-    {
-        listenOptions.Protocols = HttpProtocols.Http2;
-    });
+    options.Listen(IPAddress.Any, 50053, listenOptions => { listenOptions.Protocols = HttpProtocols.Http2; });
 });
 
-builder.Services.AddGrpc(options =>
-{
-    options.EnableDetailedErrors = true;
-});
+builder.Services.AddGrpc(options => { options.EnableDetailedErrors = true; });
 
 var appSettingsSection = builder.Configuration.GetSection("AppSettings");
 builder.Services.Configure<AppSettings>(appSettingsSection);
@@ -100,13 +94,12 @@ builder.Services.AddSingleton<ISha256Service, Sha256ServiceBouncyCastle>();
 builder.Services.AddScoped<INpgsqlConnectionFactory, NpgsqlConnectionFactory>();
 builder.Services.AddScoped<BackgroundSyncService>();
 builder.Services.AddScoped<ICardanoWalletService, CardanoWalletService>();
+builder.Services.AddScoped<IIngestionService, IngestionService>();
 builder.Services.AddSingleton<IWalletAddressCache>(new WalletAddressCache(appSettings!.WalletCacheSize));
 builder.Services.AddSingleton<IStakeAddressCache>(new StakeAddressCache(appSettings.WalletCacheSize));
 builder.Services.AddLazyCache();
-builder.Services.AddHttpClient("CardanoWalletApi", client =>
-{
-    client.BaseAddress = new Uri("http://10.10.20.104:8090/v2/");
-});
+builder.Services.AddHttpClient("CardanoWalletApi", client => { client.BaseAddress = new Uri("http://10.10.20.104:8090/v2/"); });
+builder.Services.AddHttpClient("Ingestion", client => { client.BaseAddress = appSettings.IngestionEndpoint; });
 builder.Services.AddSingleton<BackgroundSyncService>();
 builder.Services.AddHostedService(provider => provider.GetRequiredService<BackgroundSyncService>());
 builder.Services.AddMediatR(cfg => cfg.RegisterServicesFromAssemblies(AppDomain.CurrentDomain.GetAssemblies()));

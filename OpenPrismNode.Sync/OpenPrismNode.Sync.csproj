@@ -13,10 +13,17 @@
       <PackageReference Include="MediatR" Version="12.4.1" />
       <PackageReference Include="Microsoft.Extensions.Options" Version="8.0.2" />
       <PackageReference Include="Npgsql" Version="8.0.4" />
+      <PackageReference Include="Polly" Version="8.4.1" />
     </ItemGroup>
 
     <ItemGroup>
       <ProjectReference Include="..\OpenPrismNode.Core\OpenPrismNode.Core.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <Reference Include="Microsoft.Extensions.Http">
+        <HintPath>..\..\..\..\..\usr\lib64\dotnet\shared\Microsoft.AspNetCore.App\8.0.8\Microsoft.Extensions.Http.dll</HintPath>
+      </Reference>
     </ItemGroup>
 
 </Project>

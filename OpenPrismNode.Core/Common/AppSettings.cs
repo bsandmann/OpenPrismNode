@@ -29,13 +29,13 @@ public class AppSettings
     /// to see all Wallets
     /// </summary>
     public string AdminAuthorizationKey { get; set; }
-    
+
     /// <summary>
     /// API Key to access the Wallet-Interface to create a new Wallet and to see the Wallet-Status
     /// </summary>
     public string UserAuthorizationKey { get; set; }
-    
-    
+
+
     /// <summary>
     /// If a operation/block has reached the specific depth (evaluated by the Cardano-Wallet),
     /// It is returned back by the GetOperationStatusHandler to the Client (e.g. Idenuts via gRPC)
@@ -57,5 +57,10 @@ public class AppSettings
     /// <summary>
     /// The number of blocks to batch together when fast syncing
     /// </summary>
-    public  int FastSyncBatchSize { get; set; }= 2000;
+    public int FastSyncBatchSize { get; set; } = 2000;
+
+    /// <summary>
+    /// Endpoint where newly created DIDs are sent to
+    /// </summary>
+    public Uri? IngestionEndpoint { get; set; }
 }

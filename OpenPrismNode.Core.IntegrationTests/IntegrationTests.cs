@@ -30,6 +30,7 @@ using OpenPrismNode.Sync.Commands.ParseTransaction;
 using OpenPrismNode.Sync.Commands.ProcessBlock;
 using OpenPrismNode.Sync.Commands.ProcessTransaction;
 using OpenPrismNode.Sync.Commands.SwitchBranch;
+using OpenPrismNode.Sync.Services;
 
 [Collection("TransactionalTests")]
 public partial class IntegrationTests : IDisposable
@@ -37,6 +38,7 @@ public partial class IntegrationTests : IDisposable
     private TransactionalTestDatabaseFixture Fixture { get; }
     readonly IAppCache _mockedCache;
     readonly IOptions<AppSettings> _appSettingsOptions;
+    readonly IIngestionService _ingestionService;
     private readonly DataContext _context;
     private readonly Mock<IMediator> _mediatorMock;
     private readonly CreateLedgerHandler _createLedgerHandler;
@@ -80,6 +82,7 @@ public partial class IntegrationTests : IDisposable
             }
         });
         this._mediatorMock = new Mock<IMediator>();
+        this._ingestionService = null;
         this._mockedCache = LazyCache.Testing.Moq.Create.MockedCachingService();
         this._createLedgerHandler = new CreateLedgerHandler(_context);
         this._createEpochHandler = new CreateEpochHandler(_context);
@@ -97,13 +100,12 @@ public partial class IntegrationTests : IDisposable
         this._createStakeAddressHandler = new CreateStakeAddressHandler(_context, _stakeAddressCache, Mock.Of<ILogger<CreateStakeAddressHandler>>());
         this._resolveDidHandler = new ResolveDidHandler(_context);
         this._processBlockHandler = new ProcessBlockHandler(_mediatorMock.Object, _appSettingsOptions, Mock.Of<ILogger<ProcessBlockHandler>>());
-        this._processTransactionHandler = new ProcessTransactionHandler(_mediatorMock.Object,Mock.Of<ILogger<ProcessTransactionHandler>>(), _appSettingsOptions);
+        this._processTransactionHandler = new ProcessTransactionHandler(_mediatorMock.Object, Mock.Of<ILogger<ProcessTransactionHandler>>(), _appSettingsOptions, null);
         this._decodeTransactionHandler = new DecodeTransactionHandler();
         this._switchBranchHandler = new SwitchBranchHandler(_context, _mediatorMock.Object);
         this._createAddressesHandler = new CreateAddressesHandler(_mediatorMock.Object);
         this._parseTransactionHandler = new ParseTransactionHandler(_mediatorMock.Object, new Sha256ServiceBouncyCastle(), new EcServiceBouncyCastle(), Mock.Of<ILogger<ParseTransactionHandler>>());
         this._createTransactionHandler = new CreateTransactionHandler(_mediatorMock.Object, new Sha256ServiceBouncyCastle());
-
     }
 
     public void Dispose()
