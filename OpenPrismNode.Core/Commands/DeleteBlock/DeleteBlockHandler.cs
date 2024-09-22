@@ -43,7 +43,7 @@ public class DeleteBlockHandler : IRequestHandler<DeleteBlockRequest, Result<Del
                         blockEpochNumber = p.EpochNumber,
                         previousBlockHeight = p.PreviousBlockHeight,
                         previousBlockHashPrefix = p.PreviousBlockHashPrefix,
-                        transactions = p.PrismTransactionEntities!.Select(q => new
+                        transactions = p.PrismTransactionEntities.Select(q => new
                         {
                             transactionhash = q.TransactionHash,
                             index = q.Index

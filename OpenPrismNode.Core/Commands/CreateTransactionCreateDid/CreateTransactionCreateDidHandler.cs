@@ -107,7 +107,7 @@ public class CreateTransactionCreateDidHandler : IRequestHandler<CreateTransacti
                 var createDidEntity =
                     new CreateDidEntity()
                     {
-                        OperationHash = request.OperationHash.Value!,
+                        OperationHash = request.OperationHash.Value,
                         OperationSequenceNumber = request.OperationSequenceNumber,
                         SigningKeyId = request.SigningKeyId,
                         TransactionHash = request.TransactionHash.Value,

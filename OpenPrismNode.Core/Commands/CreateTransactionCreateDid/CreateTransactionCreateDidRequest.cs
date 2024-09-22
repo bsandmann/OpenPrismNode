@@ -53,7 +53,7 @@ public class CreateTransactionCreateDidRequest : TransactionBaseRequest, IReques
     /// <summary>
     /// Optional list of patched contexts
     /// </summary>
-    public List<string>? PatchedContexts { get; set; }
+    public List<string>? PatchedContexts { get;  }
 
     ///  /// <summary>
     /// Hash of the Prism-operation
@@ -64,7 +64,7 @@ public class CreateTransactionCreateDidRequest : TransactionBaseRequest, IReques
     /// In case multiple PRISM-Operations are in one transaction, this number defines the position in the transaction
     /// eg. a DidCreateOperation may have 0 and the following IssueCredentialBatchOperation has 1.
     /// </summary>
-    public int OperationSequenceNumber { get; set; }
+    public int OperationSequenceNumber { get;  }
 
     /// <summary>
     /// The Did created

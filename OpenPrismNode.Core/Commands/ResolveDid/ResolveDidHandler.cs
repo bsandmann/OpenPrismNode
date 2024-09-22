@@ -194,10 +194,10 @@ public class ResolveDidHandler : IRequestHandler<ResolveDidRequest, Result<Resol
                         Updated = r.Updated,
                         UpdateOperationOrder = r.UpdateOperationOrder
                     }).ToList(),
-                    PatchedContextResults = p.PatchedContexts.Select(p => new PatchedContextResult()
+                    PatchedContextResults = p.PatchedContexts.Select(q => new PatchedContextResult()
                     {
-                        ContextList = p.ContextList,
-                        UpdateOperationOrder = p.UpdateOperationOrder
+                        ContextList = q.ContextList,
+                        UpdateOperationOrder = q.UpdateOperationOrder
                     }).ToList(),
                 })
                 .Where(d => d.Did == didKey)
@@ -238,10 +238,10 @@ public class ResolveDidHandler : IRequestHandler<ResolveDidRequest, Result<Resol
                         Updated = r.Updated,
                         UpdateOperationOrder = r.UpdateOperationOrder
                     }).ToList(),
-                    PatchedContextResults = p.PatchedContexts.Select(p => new PatchedContextResult()
+                    PatchedContextResults = p.PatchedContexts.Select(q => new PatchedContextResult()
                     {
-                        ContextList = p.ContextList,
-                        UpdateOperationOrder = p.UpdateOperationOrder
+                        ContextList = q.ContextList,
+                        UpdateOperationOrder = q.UpdateOperationOrder
                     }).ToList(),
                 })
                 .Where(q => q.Did == didKey &&
@@ -288,7 +288,7 @@ public class ResolveDidHandler : IRequestHandler<ResolveDidRequest, Result<Resol
                             var (keyX, keyY) = keysXy.Value;
                             prismPublicKeys.Add(new PrismPublicKey(
                                 keyUsage: addKeyAction.PrismKeyUsage,
-                                keyId: addKeyAction.KeyId!,
+                                keyId: addKeyAction.KeyId,
                                 curve: addKeyAction.Curve,
                                 keyX: keyX,
                                 keyY: keyY.Length == 0 ? null : keyY

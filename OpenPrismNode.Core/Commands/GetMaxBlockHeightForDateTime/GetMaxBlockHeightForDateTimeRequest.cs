@@ -14,5 +14,5 @@ public class GetMaxBlockHeightForDateTimeRequest : IRequest<Result<int>>
     }
 
     public LedgerType Ledger { get; }
-    public DateTime VersionTime { get; set; }
+    public DateTime VersionTime { get; }
 }

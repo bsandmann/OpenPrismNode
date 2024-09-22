@@ -10,6 +10,8 @@ public class DeleteTransactionRequest : IRequest<Result>
     /// Constructor
     /// </summary>
     /// <param name="transactionHash"></param>
+    /// <param name="blockHeight"></param>
+    /// <param name="blockHashPrefix"></param>
     public DeleteTransactionRequest(Hash transactionHash, int blockHeight, int? blockHashPrefix)
     {
         TransactionHash = transactionHash;

@@ -12,6 +12,6 @@ public class UpdateOperationStatusRequest : IRequest<Result>
         Status = status;
     }
 
-    public OperationStatusEnum Status { get; set; }
-    public int OperationStatusEntityId { get; set; }
+    public OperationStatusEnum Status { get; }
+    public int OperationStatusEntityId { get; }
 }

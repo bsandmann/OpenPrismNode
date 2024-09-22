@@ -39,7 +39,7 @@ public class WriteTransactionHandler : IRequestHandler<WriteTransactionRequest, 
     {
         _context.ChangeTracker.Clear();
         _context.ChangeTracker.AutoDetectChangesEnabled = false;
-        var wallet = await _mediator.Send(new GetWalletRequest { WalletId = request.WalletId }, cancellationToken);
+        var wallet = await _mediator.Send(new GetWalletRequest(request.WalletId), cancellationToken);
         if (wallet.IsFailed)
         {
             return Result.Fail(wallet.Errors.FirstOrDefault()?.Message);
@@ -113,12 +113,13 @@ public class WriteTransactionHandler : IRequestHandler<WriteTransactionRequest, 
             return Result.Fail(transactionResult.Errors.FirstOrDefault()?.Message);
         }
 
-        var createWalletTransactionResult = await _mediator.Send(new CreateWalletTransactionEntityRequest()
-        {
-            WalletEntityId = wallet.Value.WalletEntityId,
-            TransactionId = transactionResult.Value,
-            OperationStatusEntityId = operationResult.Value.OperationStatusEntityId
-        }, cancellationToken);
+        var createWalletTransactionResult = await _mediator.Send(
+            new CreateWalletTransactionEntityRequest(
+                wallet.Value.WalletEntityId,
+                transactionResult.Value,
+                operationResult.Value.OperationStatusEntityId
+            ), cancellationToken);
+        
         if (createWalletTransactionResult.IsFailed)
         {
             return Result.Fail(createWalletTransactionResult.Errors.FirstOrDefault()?.Message);

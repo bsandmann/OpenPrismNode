@@ -2,5 +2,5 @@ namespace OpenPrismNode.Core.Commands.RestoreWallet;
 
 public class RestoreCardanoWalletResponse
 {
-    public string WalletId { get; set; }
+    public string WalletId { get; init; }
 }

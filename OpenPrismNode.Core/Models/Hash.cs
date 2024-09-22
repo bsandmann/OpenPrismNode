@@ -12,9 +12,6 @@ public sealed class Hash
 
     public byte[] Value { get; private set; }
 
-    private const byte LeafPrefix = 0;
-    private const byte NodePrefix = 1;
-
     private Hash(byte[] value)
     {
         Debug.Assert(value != null);
@@ -40,7 +37,6 @@ public sealed class Hash
         return this;
     }
 
-    //
     /// <summary>
     /// Takes the provided data and wrappes it in this hash-class without hashing it
     /// </summary>

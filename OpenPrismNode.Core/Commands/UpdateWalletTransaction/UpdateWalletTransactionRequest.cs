@@ -12,9 +12,9 @@ public class UpdateWalletTransactionRequest : IRequest<Result>
         Fee = fee;
     }
 
-    public int WalletTransactionEntityId { get; set; }
+    public int WalletTransactionEntityId { get; }
 
-    public long Depth { get; set; }
+    public long Depth { get; }
 
-    public long Fee { get; set; }
+    public long Fee { get; }
 }

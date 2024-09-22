@@ -242,11 +242,7 @@ namespace OpenPrismNode.Web.Services
 
                 var selectedWallet = getWalletsResult.Value.MaxBy(p => p.Balance);
 
-                var transactionResult = await _mediator.Send(new WriteTransactionRequest()
-                {
-                    WalletId = selectedWallet.WalletId,
-                    SignedAtalaOperation = request.SignedOperations[0]
-                });
+                var transactionResult = await _mediator.Send(new WriteTransactionRequest(request.SignedOperations[0], selectedWallet!.WalletId));
 
                 if (transactionResult.IsFailed)
                 {

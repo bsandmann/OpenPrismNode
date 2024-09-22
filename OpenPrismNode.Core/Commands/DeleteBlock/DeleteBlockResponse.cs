@@ -11,6 +11,6 @@ public class DeleteBlockResponse
 
     public int PreviousBlockHeight { get; }
     public int? PreviousBlockHashPrefix { get; }
-    
-    public int DeletedBlockWasInEpoch { get; set; }
+
+    public int DeletedBlockWasInEpoch { get; }
 }

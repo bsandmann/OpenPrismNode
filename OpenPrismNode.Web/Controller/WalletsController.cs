@@ -37,6 +37,7 @@ public class WalletsController : ControllerBase
         _walletService = walletService;
         _mediator = mediator;
     }
+
     [ApiKeyUserAuthorization]
     [HttpPost("api/v{version:apiVersion=1.0}/wallets")]
     [ApiVersion("1.0")]
@@ -44,11 +45,7 @@ public class WalletsController : ControllerBase
     [Produces("application/json")]
     public async Task<ActionResult> CreateWallet([FromBody] CreateWalletRequestModel requestModel)
     {
-        // TODO Authorization??
-        var createWalletResult = await _mediator.Send(new CreateCardanoWalletRequest()
-        {
-            Name = requestModel.Name
-        });
+        var createWalletResult = await _mediator.Send(new CreateCardanoWalletRequest(requestModel.Name));
         if (createWalletResult.IsFailed)
         {
             return BadRequest(createWalletResult.Errors?.FirstOrDefault()?.Message);
@@ -60,7 +57,7 @@ public class WalletsController : ControllerBase
             WalletId = createWalletResult.Value.WalletId
         });
     }
-    
+
     [ApiKeyUserAuthorization]
     [HttpPost("api/v{version:apiVersion=1.0}/wallets/restore")]
     [ApiVersion("1.0")]
@@ -68,12 +65,7 @@ public class WalletsController : ControllerBase
     [Produces("application/json")]
     public async Task<ActionResult> RestoreWallet([FromBody] RestoreWalletRequestModel requestModel)
     {
-        // TODO Authorization??
-        var restoreWalletResult = await _mediator.Send(new RestoreCardanoWalletRequest()
-        {
-            Name = requestModel.Name,
-            Mnemonic = requestModel.Mnemonic
-        });
+        var restoreWalletResult = await _mediator.Send(new RestoreCardanoWalletRequest(requestModel.Mnemonic, requestModel.Name));
         if (restoreWalletResult.IsFailed)
         {
             return BadRequest(restoreWalletResult.Errors?.FirstOrDefault()?.Message);
@@ -84,7 +76,7 @@ public class WalletsController : ControllerBase
             WalletId = restoreWalletResult.Value.WalletId,
         });
     }
-    
+
     [ApiKeyUserAuthorization]
     [HttpGet("api/v{version:apiVersion=1.0}/wallets/{walletId}")]
     [ApiVersion("1.0")]
@@ -92,11 +84,7 @@ public class WalletsController : ControllerBase
     [Produces("application/json")]
     public async Task<ActionResult> GetWallet(string walletId)
     {
-        // TODO Authorization - problematic walletId
-        var getWalletResult = await _mediator.Send(new GetWalletRequest()
-        {
-            WalletId = walletId
-        });
+        var getWalletResult = await _mediator.Send(new GetWalletRequest(walletId));
         if (getWalletResult.IsFailed)
         {
             return BadRequest(getWalletResult.Errors?.FirstOrDefault()?.Message);
@@ -111,7 +99,7 @@ public class WalletsController : ControllerBase
             SyncProgress = getWalletResult.Value.SyncProgress
         });
     }
-    
+
     [ApiKeyAdminAuthorization]
     [HttpGet("api/v{version:apiVersion=1.0}/wallets/")]
     [ApiVersion("1.0")]
@@ -119,9 +107,6 @@ public class WalletsController : ControllerBase
     [Produces("application/json")]
     public async Task<ActionResult> GetWallets()
     {
-        // TODO Authorization
-        // THis endpoint should either not exist or be protected to only allow admin access
-
         var getWalletsResult = await _mediator.Send(new GetWalletsRequest()
         {
         });
@@ -139,7 +124,7 @@ public class WalletsController : ControllerBase
             SyncProgress = p.SyncProgress
         }).ToList());
     }
-    
+
     [ApiKeyUserAuthorization]
     [HttpPost("api/v{version:apiVersion=1.0}/wallets/{walletId}/transactions")]
     [ApiVersion("1.0")]
@@ -177,12 +162,7 @@ public class WalletsController : ControllerBase
                 return BadRequest("Unable to parse SignedAtalaOperation");
             }
 
-            var transactionResult = await _mediator.Send(new WriteTransactionRequest()
-            {
-                WalletId = walletId,
-                SignedAtalaOperation = signedAtalaOperation
-            });
-
+            var transactionResult = await _mediator.Send(new WriteTransactionRequest(signedAtalaOperation, walletId));
             if (transactionResult.IsFailed)
             {
                 return BadRequest(transactionResult.Errors?.FirstOrDefault()?.Message);
@@ -203,10 +183,7 @@ public class WalletsController : ControllerBase
     [Produces("application/json")]
     public async Task<ActionResult> GetTransactions(string walletId)
     {
-        var transactionsResult = await _mediator.Send(new GetWalletTransactionsRequest()
-        {
-            WalletId = walletId,
-        });
+        var transactionsResult = await _mediator.Send(new GetWalletTransactionsRequest(walletId));
         if (transactionsResult.IsFailed)
         {
             return BadRequest(transactionsResult.Errors?.FirstOrDefault()?.Message);
@@ -222,7 +199,7 @@ public class WalletsController : ControllerBase
             Fee = p.Fee,
         }));
     }
-    
+
     [ApiKeyUserAuthorization]
     [HttpPost("api/v{version:apiVersion=1.0}/wallets/{walletId}/withdrawal/{withdrawalAddress}")]
     [ApiVersion("1.0")]
@@ -230,11 +207,7 @@ public class WalletsController : ControllerBase
     [Produces("application/json")]
     public async Task<ActionResult> Withdrawal(string walletId, string withdrawalAddress)
     {
-        var transactionResult = await _mediator.Send(new WithdrawalRequest()
-        {
-            WalletId = walletId,
-            WithdrawalAddress = withdrawalAddress
-        });
+        var transactionResult = await _mediator.Send(new WithdrawalRequest(walletId, withdrawalAddress));
         if (transactionResult.IsFailed)
         {
             return BadRequest(transactionResult.Errors.FirstOrDefault().Message);

@@ -5,7 +5,14 @@ using MediatR;
 
 public class CreateWalletTransactionEntityRequest : IRequest<Result>
 {
-    public int WalletEntityId { get; set; }
-    public string TransactionId { get; set; }
-    public int OperationStatusEntityId { get; set; }
+    public CreateWalletTransactionEntityRequest(int walletEntityId, string transactionId, int operationStatusEntityId)
+    {
+        WalletEntityId = walletEntityId;
+        TransactionId = transactionId;
+        OperationStatusEntityId = operationStatusEntityId;
+    }
+
+    public int WalletEntityId { get; }
+    public string TransactionId { get; }
+    public int OperationStatusEntityId { get; }
 }

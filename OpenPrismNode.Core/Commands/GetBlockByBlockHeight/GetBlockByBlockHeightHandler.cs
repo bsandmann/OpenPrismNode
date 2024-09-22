@@ -26,7 +26,7 @@ public class GetBlockByBlockHeightHandler : IRequestHandler<GetBlockByBlockHeigh
         }
         
         block.TimeUtc = DateTime.SpecifyKind(block.TimeUtc, DateTimeKind.Utc);
-        block.LastParsedOnUtc = block.LastParsedOnUtc is not null ? DateTime.SpecifyKind(block.LastParsedOnUtc!.Value, DateTimeKind.Utc) : null;
+        block.LastParsedOnUtc = block.LastParsedOnUtc is not null ? DateTime.SpecifyKind(block.LastParsedOnUtc.Value, DateTimeKind.Utc) : null;
         return Result.Ok(block);
     }
 }

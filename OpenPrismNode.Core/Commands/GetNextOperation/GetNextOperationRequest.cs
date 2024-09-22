@@ -12,6 +12,6 @@ public class GetNextOperationRequest : IRequest<Result<DateTime?>>
         Ledger = ledger;
     }
     
-    public byte[] CurrentOperationHash { get; set; }
-    public LedgerType Ledger { get; set; }
+    public byte[] CurrentOperationHash { get;  }
+    public LedgerType Ledger { get; }
 }

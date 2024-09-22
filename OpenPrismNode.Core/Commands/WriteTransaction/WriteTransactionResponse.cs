@@ -4,7 +4,7 @@ using Models;
 
 public class WriteTransactionResponse
 {
-    public byte[] OperationStatusId { get; set; }
-    public OperationTypeEnum OperationType { get; set; }
-    public string? DidSuffix { get; set; }
+    public byte[] OperationStatusId { get; init; }
+    public OperationTypeEnum OperationType { get; init; }
+    public string? DidSuffix { get; init; }
 }

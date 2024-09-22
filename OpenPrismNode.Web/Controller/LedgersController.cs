@@ -389,9 +389,5 @@ public class LedgersController : ControllerBase
         }
 
         // TODO cache update!
-
-        _logger.LogInformation($"Deletion completed for the ledger {ledger}. The last epoch in the database is now {epochNumber}");
-
-        return Ok();
     }
 }

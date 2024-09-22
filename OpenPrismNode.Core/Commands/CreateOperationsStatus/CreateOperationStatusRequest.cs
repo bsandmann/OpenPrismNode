@@ -13,27 +13,27 @@ public class CreateOperationStatusRequest : IRequest<Result<CreateOperationStatu
         Status = status;
         OperationType = operationType;
     }
-    
+
     /// <summary>
     /// Key of the operation status
     /// Hash of the fully signed operation
     /// </summary>
-    public byte[] OperationStatusId { get; set; } = null!;
-    
+    public byte[] OperationStatusId { get; }
+
     /// <summary>
     /// Identifier
     /// Hash of the Prism-operation which has the specific status
     /// Different from OperationStatusId
     /// </summary>
-    public byte[] OperationHash { get; set; } = null!;
-    
+    public byte[] OperationHash { get; }
+
     /// <summary>
     /// Status of the operation
     /// </summary>
-    public OperationStatusEnum Status { get; set; }
-    
+    public OperationStatusEnum Status { get; }
+
     /// <summary>
     /// Reference to type of operation
     /// </summary>
-    public OperationTypeEnum OperationType { get; set; } 
+    public OperationTypeEnum OperationType { get; }
 }

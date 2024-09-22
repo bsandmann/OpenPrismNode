@@ -5,7 +5,13 @@ using MediatR;
 
 public class WriteTransactionRequest : IRequest<Result<WriteTransactionResponse>>
 {
-    public string WalletId { get; set; }
+    public WriteTransactionRequest(SignedAtalaOperation signedAtalaOperation, string walletId)
+    {
+        SignedAtalaOperation = signedAtalaOperation;
+        WalletId = walletId;
+    }
 
-    public SignedAtalaOperation SignedAtalaOperation { get; set; }
+    public string WalletId { get; }
+
+    public SignedAtalaOperation SignedAtalaOperation { get; }
 }

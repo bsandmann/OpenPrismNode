@@ -2,8 +2,7 @@ namespace OpenPrismNode.Core.Commands.CreateCardanoWallet;
 
 public class CreateCardanoWalletResponse
 {
-    public string WalletId { get; set; }
-
-    public List<string> Mnemonic { get; set; }
-    public int WalletEntityId { get; set; }
+    public string WalletId { get; init; }
+    public List<string> Mnemonic { get; init; }
+    public int WalletEntityId { get; init; }
 }

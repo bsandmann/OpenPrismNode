@@ -66,7 +66,7 @@ public class CreateBlockHandler : IRequestHandler<CreateBlockRequest, Result<Blo
             await _context.SaveChangesAsync(cancellationToken);
 
             blockEntity.TimeUtc = DateTime.SpecifyKind(blockEntity.TimeUtc, DateTimeKind.Utc);
-            blockEntity.LastParsedOnUtc = blockEntity.LastParsedOnUtc is not null ? DateTime.SpecifyKind(blockEntity.LastParsedOnUtc!.Value, DateTimeKind.Utc) : null;
+            blockEntity.LastParsedOnUtc = blockEntity.LastParsedOnUtc is not null ? DateTime.SpecifyKind(blockEntity.LastParsedOnUtc.Value, DateTimeKind.Utc) : null;
 
             return Result.Ok(blockEntity);
         }
@@ -79,7 +79,7 @@ public class CreateBlockHandler : IRequestHandler<CreateBlockRequest, Result<Blo
                 {
                     BlockHeight = request.BlockHeight,
                     BlockHashPrefix = BlockEntity.CalculateBlockHashPrefix(request.BlockHash.Value) ?? 0,
-                    BlockHash = request.BlockHash.Value!,
+                    BlockHash = request.BlockHash.Value,
                     EpochNumber = request.EpochNumber,
                     TimeUtc = timeCreatedUtc,
                     TxCount = request.TxCount,
@@ -100,7 +100,7 @@ public class CreateBlockHandler : IRequestHandler<CreateBlockRequest, Result<Blo
                 await _context.SaveChangesAsync(cancellationToken);
 
                 blockEntity.TimeUtc = DateTime.SpecifyKind(blockEntity.TimeUtc, DateTimeKind.Utc);
-                blockEntity.LastParsedOnUtc = blockEntity.LastParsedOnUtc is not null ? DateTime.SpecifyKind(blockEntity.LastParsedOnUtc!.Value, DateTimeKind.Utc) : null;
+                blockEntity.LastParsedOnUtc = blockEntity.LastParsedOnUtc is not null ? DateTime.SpecifyKind(blockEntity.LastParsedOnUtc.Value, DateTimeKind.Utc) : null;
 
                 return Result.Ok(blockEntity);
             }

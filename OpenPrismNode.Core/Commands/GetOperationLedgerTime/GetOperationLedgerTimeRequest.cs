@@ -12,6 +12,6 @@ public class GetOperationLedgerTimeRequest : IRequest<Result<GetOperationLedgerT
         Ledger = ledger;
     }
 
-    public string VersionId { get; set; }
-    public LedgerType Ledger { get; set; }
+    public string VersionId { get;}
+    public LedgerType Ledger { get; }
 }

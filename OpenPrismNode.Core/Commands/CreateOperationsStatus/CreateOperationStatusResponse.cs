@@ -7,6 +7,6 @@ using Models;
 
 public class CreateOperationStatusResponse()
 {
-    public int OperationStatusEntityId { get; set; }
-    public byte[] OperationStatusId { get; set; }
+    public int OperationStatusEntityId { get; init; }
+    public byte[] OperationStatusId { get; init; }
 }

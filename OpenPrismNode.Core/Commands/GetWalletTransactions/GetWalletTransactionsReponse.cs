@@ -4,14 +4,14 @@ using Models;
 
 public class GetWalletTransactionsReponse
 {
-    public int WalletEntityId { get; set; }
-    public string WalletId { get; set; }
-    public int WalletTransactionEntityId { get; set; }
-    public long Fee { get; set; }
-    public string TransactionId { get; set; }
-    public int? OperationStatusEntityId { get; set; }
-    public byte[]? OperationStatusId { get; set; }
-    public byte[]? OperationHash { get; set; }
-    public OperationTypeEnum? OperationType { get; set; }
-    public OperationStatusEnum? Status { get; set; }
+    public int WalletEntityId { get; init; }
+    public string WalletId { get; init; }
+    public int WalletTransactionEntityId { get; init; }
+    public long Fee { get; init; }
+    public string TransactionId { get; init; }
+    public int? OperationStatusEntityId { get; init; }
+    public byte[]? OperationStatusId { get; init; }
+    public byte[]? OperationHash { get; init; }
+    public OperationTypeEnum? OperationType { get; init; }
+    public OperationStatusEnum? Status { get; init; }
 }

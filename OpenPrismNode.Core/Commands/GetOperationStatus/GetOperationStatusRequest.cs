@@ -10,5 +10,5 @@ public class GetOperationStatusRequest : IRequest<Result<GetOperationStatusRespo
     {
         OperationStatusId = operationStatusEntityId;
     }
-    public byte[] OperationStatusId { get; set; } 
+    public byte[] OperationStatusId { get; } 
 }

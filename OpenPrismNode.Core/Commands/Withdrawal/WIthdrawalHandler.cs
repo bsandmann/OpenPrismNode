@@ -35,7 +35,7 @@ public class WithdrawalHandler : IRequestHandler<WithdrawalRequest, Result>
 
     public async Task<Result> Handle(WithdrawalRequest request, CancellationToken cancellationToken)
     {
-        var wallet = await _mediator.Send(new GetWalletRequest { WalletId = request.WalletId }, cancellationToken);
+        var wallet = await _mediator.Send(new GetWalletRequest(request.WalletId), cancellationToken);
         if (wallet.IsFailed)
         {
             return Result.Fail(wallet.Errors.FirstOrDefault()?.Message);

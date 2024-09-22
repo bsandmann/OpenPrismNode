@@ -5,7 +5,13 @@ using MediatR;
 
 public class WithdrawalRequest : IRequest<Result>
 {
-    public string WalletId { get; set; }
+    public WithdrawalRequest(string walletId, string withdrawalAddress)
+    {
+        WalletId = walletId;
+        WithdrawalAddress = withdrawalAddress;
+    }
 
-    public string WithdrawalAddress { get; set; }
+    public string WalletId { get; }
+
+    public string WithdrawalAddress { get; }
 }

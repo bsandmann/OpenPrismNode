@@ -5,5 +5,10 @@ using MediatR;
 
 public class GetWalletTransactionsRequest : IRequest<Result<List<GetWalletTransactionsReponse>>>
 {
-    public string WalletId { get; set; } 
+    public GetWalletTransactionsRequest(string walletId)
+    {
+        WalletId = walletId;
+    }
+
+    public string WalletId { get; }
 }
