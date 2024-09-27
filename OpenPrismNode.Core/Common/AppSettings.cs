@@ -63,4 +63,6 @@ public class AppSettings
     /// Endpoint where newly created DIDs are sent to
     /// </summary>
     public Uri? IngestionEndpoint { get; set; }
+
+    public string? IngestionEndpointAuthorizationKey { get; set; }
 }

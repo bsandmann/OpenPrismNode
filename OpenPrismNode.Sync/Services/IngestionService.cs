@@ -1,8 +1,8 @@
 using System.Diagnostics;
-using System.Net.Http;
 using System.Text;
 using System.Text.Json;
-using System.Threading.Tasks;
+using System.Text.Json.Serialization;
+using System.Threading.Channels;
 using MediatR;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -11,15 +11,19 @@ using OpenPrismNode.Core.Commands.ResolveDid.Transform;
 using OpenPrismNode.Core.Common;
 using OpenPrismNode.Core.Models;
 using OpenPrismNode.Core.Models.DidDocument;
-using OpenPrismNode.Sync.Services;
-using Polly;
 
-public class IngestionService : IIngestionService
+namespace OpenPrismNode.Sync.Services;
+
+public class IngestionService : IIngestionService, IDisposable
 {
     private readonly IMediator _mediator;
     private readonly ILogger<IngestionService> _logger;
     private readonly AppSettings _appSettings;
     private readonly IHttpClientFactory _httpClientFactory;
+
+    private readonly Channel<DidResolutionResult> _channel;
+    private readonly CancellationTokenSource _cts;
+    private readonly Task _workerTask;
 
     public IngestionService(
         IMediator mediator,
@@ -31,80 +35,100 @@ public class IngestionService : IIngestionService
         _logger = logger;
         _appSettings = appSettings.Value;
         _httpClientFactory = httpClientFactory;
+
+        // Initialize the channel and background worker
+        _channel = Channel.CreateUnbounded<DidResolutionResult>();
+        _cts = new CancellationTokenSource();
+        _workerTask = Task.Run(() => ProcessQueueAsync(_cts.Token));
     }
 
-    public Task Ingest(string didIdentifier, LedgerType requestLedger)
+    public void Dispose()
+    {
+        _cts.Cancel();
+        _workerTask.Wait();
+        _cts.Dispose();
+    }
+
+    public async Task Ingest(string didIdentifier, LedgerType requestLedger)
     {
         if (_appSettings.IngestionEndpoint is not null && requestLedger != LedgerType.InMemory)
         {
-            // Start the background task
-            _ = Task.Run(async () =>
+            DidResolutionResult? resolutionResult = await PrepareResolutionResult(didIdentifier, requestLedger);
+            if (resolutionResult == null)
             {
-                try
-                {
-                    await IngestInBackground(didIdentifier, requestLedger);
-                }
-                catch (Exception ex)
-                {
-                    _logger.LogError(
-                        ex,
-                        "An unhandled exception occurred while ingesting DID {DidIdentifier}. Error: {ErrorMessage}",
-                        didIdentifier,
-                        ex.Message);
-                }
-            });
-        }
+                _logger.LogError("Failed to prepare resolution result for DID {DidIdentifier}", didIdentifier);
+                return;
+            }
 
-        // Return immediately
-        return Task.CompletedTask;
+            // Enqueue the resolutionResult into the channel
+            await _channel.Writer.WriteAsync(resolutionResult);
+        }
     }
 
-    private async Task IngestInBackground(string didIdentifier, LedgerType requestLedger)
+    private async Task ProcessQueueAsync(CancellationToken cancellationToken)
     {
-        var resolutionResult = await PrepareResolutionResult(didIdentifier, requestLedger);
-        if (resolutionResult == null)
+        while (await _channel.Reader.WaitToReadAsync(cancellationToken))
         {
-            // If preparation fails, log and exit
-            _logger.LogError("Failed to prepare resolution result for DID {DidIdentifier}", didIdentifier);
-            return;
+            while (_channel.Reader.TryRead(out var resolutionResult))
+            {
+                await ProcessItemAsync(resolutionResult, cancellationToken);
+            }
         }
+    }
+
+    private async Task ProcessItemAsync(DidResolutionResult resolutionResult, CancellationToken cancellationToken)
+    {
+        var didIdentifier = resolutionResult.DidDocument?.Id;
 
         var client = _httpClientFactory.CreateClient("Ingestion");
-        var retryPolicy = ResiliencePolicies.GetRetryPolicy(_logger);
+        client.DefaultRequestHeaders.Add("Authorization", _appSettings.IngestionEndpointAuthorizationKey);
 
-        try
+        var jsonOptions = new JsonSerializerOptions
         {
-            var response = await retryPolicy.ExecuteAsync(async () =>
+            PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+            DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
+        };
+
+        var content = new StringContent(
+            JsonSerializer.Serialize(resolutionResult, jsonOptions),
+            Encoding.UTF8,
+            "application/json");
+
+        // Retry logic: keep trying until the request succeeds
+        while (true)
+        {
+            try
             {
-                var content = new StringContent(
-                    JsonSerializer.Serialize(resolutionResult),
-                    Encoding.UTF8,
-                    "application/json");
+                var response = await client.PostAsync("", content, cancellationToken);
+                if (response.IsSuccessStatusCode)
+                {
+                    _logger.LogInformation(
+                        "Successfully ingested DID {DidIdentifier}",
+                        didIdentifier);
+                    break; // Success, proceed to next item
+                }
+                else
+                {
+                    _logger.LogError(
+                        "Failed to ingest DID {DidIdentifier}. Status Code: {StatusCode}",
+                        didIdentifier,
+                        response.StatusCode);
 
-                return await client.PostAsync("/", content);
-            });
-
-            if (!response.IsSuccessStatusCode)
+                    // Wait before retrying
+                    await Task.Delay(TimeSpan.FromSeconds(5), cancellationToken);
+                }
+            }
+            catch (Exception ex)
             {
                 _logger.LogError(
-                    "Failed to ingest DID {DidIdentifier} after retries. Status Code: {StatusCode}",
+                    ex,
+                    "Failed to ingest DID {DidIdentifier}. Error: {ErrorMessage}",
                     didIdentifier,
-                    response.StatusCode);
+                    ex.Message);
+
+                // Wait before retrying
+                await Task.Delay(TimeSpan.FromSeconds(5), cancellationToken);
             }
-            else
-            {
-                _logger.LogInformation(
-                    "Successfully ingested DID {DidIdentifier} after retries",
-                    didIdentifier);
-            }
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(
-                ex,
-                "Failed to ingest DID {DidIdentifier} after retries. Error: {ErrorMessage}",
-                didIdentifier,
-                ex.Message);
         }
     }
 
@@ -125,11 +149,10 @@ public class IngestionService : IIngestionService
         }
 
         stopWatch.Stop();
-        var includeNetworkIdentifier = true;
         var didDocument = TransformToDidDocument.Transform(
             resolveResult.Value.InternalDidDocument,
             requestLedger,
-            includeNetworkIdentifier,
+            includeNetworkIdentifier: true,
             showMasterAndRevocationKeys: false);
 
         DateTime? nextUpdate = null;
@@ -142,8 +165,8 @@ public class IngestionService : IIngestionService
                 resolveResult.Value.InternalDidDocument,
                 requestLedger,
                 nextUpdate,
-                includeNetworkIdentifier,
-                false),
+                includeNetworkIdentifier: true,
+                isLongForm: false),
             DidResolutionMetadata = new DidResolutionMetadata()
             {
                 ContentType = DidResolutionHeader.ApplicationLdJsonProfile,

@@ -99,6 +99,7 @@ public static class TransformToDidDocument
     {
         var service = new DidDocumentService();
         service.Id = $"{did}#{ps.ServiceId}";
+        service.Type = ps.Type;
         if (ps.ServiceEndpoints.Uri is not null)
         {
             service.ServiceEndpointString = ps.ServiceEndpoints.Uri.AbsoluteUri;
