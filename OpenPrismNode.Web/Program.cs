@@ -63,6 +63,9 @@ builder.Services.AddSwaggerGen(c =>
     });
 });
 
+var appSettingsSection = builder.Configuration.GetSection("AppSettings");
+builder.Services.Configure<AppSettings>(appSettingsSection);
+var appSettings = appSettingsSection.Get<AppSettings>();
 builder.Services.AddApiVersioning(options =>
 {
     options.DefaultApiVersion = new ApiVersion(1, 0);
@@ -74,21 +77,17 @@ builder.Services.AddApiVersioning(options =>
 builder.WebHost.ConfigureKestrel(options =>
 {
     // Listen for REST endpoints over HTTPS
-    options.Listen(IPAddress.Any, 5001, listenOptions =>
+    options.Listen(IPAddress.Any, appSettings!.ApiHttpsPort , listenOptions =>
     {
         listenOptions.UseHttps(); // Enforce HTTPS
         listenOptions.Protocols = HttpProtocols.Http1AndHttp2;
     });
 
     // Listen for gRPC services over HTTP/2 without TLS
-    options.Listen(IPAddress.Any, 50053, listenOptions => { listenOptions.Protocols = HttpProtocols.Http2; });
+    options.Listen(IPAddress.Any, appSettings.GrpcPort, listenOptions => { listenOptions.Protocols = HttpProtocols.Http2; });
 });
 
 builder.Services.AddGrpc(options => { options.EnableDetailedErrors = true; });
-
-var appSettingsSection = builder.Configuration.GetSection("AppSettings");
-builder.Services.Configure<AppSettings>(appSettingsSection);
-var appSettings = appSettingsSection.Get<AppSettings>();
 builder.Services.AddSingleton<IEcService, EcServiceBouncyCastle>();
 builder.Services.AddSingleton<ISha256Service, Sha256ServiceBouncyCastle>();
 builder.Services.AddScoped<INpgsqlConnectionFactory, NpgsqlConnectionFactory>();
@@ -98,7 +97,7 @@ builder.Services.AddScoped<IIngestionService, IngestionService>();
 builder.Services.AddSingleton<IWalletAddressCache>(new WalletAddressCache(appSettings!.WalletCacheSize));
 builder.Services.AddSingleton<IStakeAddressCache>(new StakeAddressCache(appSettings.WalletCacheSize));
 builder.Services.AddLazyCache();
-builder.Services.AddHttpClient("CardanoWalletApi", client => { client.BaseAddress = new Uri("http://10.10.20.104:8090/v2/"); });
+builder.Services.AddHttpClient("CardanoWalletApi", client => { client.BaseAddress = new Uri($"{appSettings.CardanoWalletApiEndpoint}:{appSettings.CardanoWalletApiEndpointPort}/v2/"); });
 builder.Services.AddHttpClient("Ingestion", client => { client.BaseAddress = appSettings.IngestionEndpoint; });
 builder.Services.AddSingleton<BackgroundSyncService>();
 builder.Services.AddHostedService(provider => provider.GetRequiredService<BackgroundSyncService>());

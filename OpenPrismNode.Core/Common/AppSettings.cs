@@ -64,5 +64,31 @@ public class AppSettings
     /// </summary>
     public Uri? IngestionEndpoint { get; set; }
 
+    /// <summary>
+    /// API key for the ingestion endpoint
+    /// </summary>
     public string? IngestionEndpointAuthorizationKey { get; set; }
+
+    /// <summary>
+    /// Endpoint for the Cardano-Wallet-API
+    /// e.g. "http://1.2.3.4"
+    /// </summary>
+    public string CardanoWalletApiEndpoint { get; set; }
+    
+    /// <summary>
+    /// Port for the Cardano-Wallet-API
+    /// eg. 8090
+    /// </summary>
+    public int? CardanoWalletApiEndpointPort { get; set; }
+    
+    /// <summary>
+    /// Port for the API
+    /// </summary>
+    public int ApiHttpsPort { get; set; } = 5001;
+
+    /// <summary>
+    /// Port for the gRPC endpoint
+    /// </summary>
+    public int GrpcPort { get; set; } = 50053;
+    
 }
