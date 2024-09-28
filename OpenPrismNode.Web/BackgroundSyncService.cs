@@ -37,6 +37,21 @@ public class BackgroundSyncService : BackgroundService
     /// <inheritdoc />
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
+        Console.WriteLine(
+           """
+             ____                       _____        _                  _   _             _       
+            / __ \                     |  __ \      (_)                | \ | |           | |      
+           | |  | | _ __    ___  _ __  | |__) |_ __  _  ___  _ __ ___  |  \| |  ___    __| |  ___ 
+           | |  | || '_ \  / _ \| '_ \ |  ___/| '__|| |/ __|| '_ ` _ \ | . ` | / _ \  / _` | / _ \
+           | |__| || |_) ||  __/| | | || |    | |   | |\__ \| | | | | || |\  || (_) || (_| ||  __/
+            \____/ | .__/  \___||_| |_||_|    |_|   |_||___/|_| |_| |_||_| \_| \___/  \__,_| \___|
+                   | |                                                                            
+                   |_|                                                                            
+           """);
+        Console.WriteLine("Press any key to start the automatic sync service");
+        Console.ReadLine();
+
+
         if (_isRunning)
         {
             return;
@@ -58,7 +73,7 @@ public class BackgroundSyncService : BackgroundService
                     {
                         _logger.LogCritical("Failed to create the in-memory ledger in the database");
                     }
-                    
+
                     var createStartingEpochResult = await mediator.Send(new CreateEpochRequest(LedgerType.InMemory, 1), CancellationToken.None);
                     if (createStartingEpochResult.IsFailed)
                     {
