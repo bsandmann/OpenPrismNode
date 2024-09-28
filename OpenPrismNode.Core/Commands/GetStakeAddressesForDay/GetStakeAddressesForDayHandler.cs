@@ -8,17 +8,42 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Common;
+using LazyCache;
 
 public class GetStakeAddressesForDayHandler : IRequestHandler<GetStakeAddressesForDayRequest, Result<Dictionary<string, int>>>
 {
     private readonly DataContext _context;
+    private readonly IAppCache _cache;
 
-    public GetStakeAddressesForDayHandler(DataContext context)
+    public GetStakeAddressesForDayHandler(DataContext context, IAppCache cache)
     {
         _context = context;
+        _cache = cache;
     }
 
     public async Task<Result<Dictionary<string, int>>> Handle(GetStakeAddressesForDayRequest request, CancellationToken cancellationToken)
+    {
+        var cacheKey = $"{CacheKeys.StakeAddressesByDay_}_{request.Ledger}_{request.Date:yyyy-MM-dd}";
+
+        var isCached = _cache.TryGetValue(cacheKey, out Dictionary<string, int> cachedResult);
+        if (isCached)
+        {
+            return Result.Ok(cachedResult);
+        }
+
+        var result = await FetchStakeAddresses(request, cancellationToken);
+
+        if (result.IsSuccess)
+        {
+            var cacheOptions = GetCacheOptions(request.Date);
+            _cache.Add(cacheKey, result.Value, cacheOptions);
+        }
+
+        return result;
+    }
+
+    private async Task<Result<Dictionary<string, int>>> FetchStakeAddresses(GetStakeAddressesForDayRequest request, CancellationToken cancellationToken)
     {
         try
         {
@@ -53,6 +78,18 @@ public class GetStakeAddressesForDayHandler : IRequestHandler<GetStakeAddressesF
         catch (Exception ex)
         {
             return Result.Fail($"An error occurred while fetching stake addresses: {ex.Message}");
+        }
+    }
+
+    private TimeSpan GetCacheOptions(DateOnly date)
+    {
+        if (date == DateOnly.FromDateTime(DateTime.UtcNow))
+        {
+            return TimeSpan.FromMinutes(15);
+        }
+        else
+        {
+            return TimeSpan.FromDays(365);
         }
     }
 }
