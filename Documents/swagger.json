@@ -1,0 +1,774 @@
+{
+  "openapi": "3.0.1",
+  "info": {
+    "title": "OpenPrismNode API",
+    "version": "v1"
+  },
+  "paths": {
+    "/api/v{version}/ledgers/{ledger}": {
+      "delete": {
+        "tags": [
+          "Ledgers"
+        ],
+        "summary": "Deletes the complete ledger for a specified network.",
+        "description": "This operation deletes the ledger data but not the full database.\r\nAny automatic syncing or execution of other tasks is disabled during the deletion process.\r\nDepending on the ledger size, this process may take a few seconds to complete.\r\nThe sync service will need to be manually restarted after the deletion if required.",
+        "parameters": [
+          {
+            "name": "ledger",
+            "in": "path",
+            "description": "The ledger to delete: 'preprod', 'mainnet', or 'inmemory'",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "version",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The ledger has been successfully deleted"
+          },
+          "400": {
+            "description": "Bad request, due to missing or invalid ledger value",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v{version}/ledgers/{ledger}/block": {
+      "delete": {
+        "tags": [
+          "Ledgers"
+        ],
+        "summary": "Deletes a range of blocks from the tip down to a specified block height.",
+        "description": "This operation deletes blocks from the tip of the chain down to, but not including, the specified block height.\r\nThe block at the specified height becomes the new tip of the chain.\r\nAutomatic syncing and other tasks are disabled during this operation.\r\nIt is not recommended to use this endpoint to delete a large number of blocks, as the process operates on each block individually.\r\nIf no block height is specified, only the tip block is deleted.",
+        "parameters": [
+          {
+            "name": "blockHeight",
+            "in": "query",
+            "description": "The block height to delete up to (not included). If omitted, only the tip block is deleted.",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "ledger",
+            "in": "path",
+            "description": "The ledger to delete blocks from: 'preprod', 'mainnet', or 'inmemory'.",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "version",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Blocks have been successfully deleted and the new tip has been set"
+          },
+          "400": {
+            "description": "Bad request due to missing or invalid block height or ledger value",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v{version}/ledgers/{ledger}/epochs": {
+      "delete": {
+        "tags": [
+          "Ledgers"
+        ],
+        "summary": "Deletes a range of epochs from the tip down to a specified epoch number.",
+        "description": "This operation deletes epochs from the tip of the chain down to, but not including, the specified epoch number.\r\nThe last block of the provided epoch becomes the new tip of the chain.\r\nAutomatic syncing and other tasks are disabled during this operation.\r\nIf no epoch number is specified, only the most recent epoch is deleted.\r\nThis operation also includes cleaning up orphaned addresses after epoch deletion.",
+        "parameters": [
+          {
+            "name": "epochNumber",
+            "in": "query",
+            "description": "The epoch number to delete up to (not included). If omitted, only the most recent epoch is deleted.",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "ledger",
+            "in": "path",
+            "description": "The ledger to delete epochs from: 'preprod', 'mainnet', or 'inmemory'.",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "version",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Epochs have been successfully deleted, orphaned addresses cleaned up, and the new tip has been set"
+          },
+          "400": {
+            "description": "Bad request due to missing or invalid epoch number or ledger value",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v{version}/operations/{operationStatusIdHex}": {
+      "get": {
+        "tags": [
+          "Operations"
+        ],
+        "parameters": [
+          {
+            "name": "operationStatusIdHex",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "version",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/v{version}/identifiers/{did}": {
+      "get": {
+        "tags": [
+          "Resolve"
+        ],
+        "summary": "Resolves a Decentralized Identifier (DID) and returns the corresponding DID Document.",
+        "description": "This endpoint implements the DID Resolution process as specified in the W3C DID Resolution specification.\r\nIt supports resolution of PRISM DIDs, including long-form DIDs, and can return the DID Document in various formats.\r\nIt supports the selection of a sepecific version either by versionId or versionTime.\r\nIt allows the adding of the network-identifier in the output e.g. did:prism:prepord:123 if requested.\r\nIt supports the following content types: application/did+ld+json, application/did+json, application/ld+json;profile=\"https://w3id.org/did-resolution\".\r\nIt does not support the 'noCache' option.\r\nIt does not support dereferencing of DID URLs.\r\nIt does not support cbor.",
+        "parameters": [
+          {
+            "name": "did",
+            "in": "path",
+            "description": "The DID to resolve",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "VersionId",
+            "in": "query",
+            "description": "The version ID of the DID document to resolve in HEX format.\r\nNote: for the initial createDid-operation the versionId is identical to the did-identifier",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "VersionTime",
+            "in": "query",
+            "description": "The timestamp of the specific version of the DID document to resolve.\r\nThe timestamp acts as an upper bound for the version of the DID document to resolve.\r\ne.g. 2024-01-01T00:00:00Z",
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "name": "IncludeNetworkIdentifier",
+            "in": "query",
+            "description": "Shows the network-identifier in the DID-Document e.g. did:prism:mainnet:123\r\nOverwrites the default setting of ledger",
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "ledger",
+            "in": "query",
+            "description": "Optional ledger to use for resolution: 'preprod', 'mainnet', or 'inmemory'. If not provided, defaults to the configuration setting.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "version",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful resolution. Returns the DID Document or DID Resolution Result."
+          },
+          "400": {
+            "description": "Bad request. Invalid DID format or incompatible resolution options.",
+            "content": {
+              "application/did+ld+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "application/did+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "application/ld+json;profile=\"https://w3id.org/did-resolution\"": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found. The requested DID does not exist.",
+            "content": {
+              "application/did+ld+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "application/did+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "application/ld+json;profile=\"https://w3id.org/did-resolution\"": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "406": {
+            "description": "Not acceptable. The requested representation is not supported.",
+            "content": {
+              "application/did+ld+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "application/did+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "application/ld+json;profile=\"https://w3id.org/did-resolution\"": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "410": {
+            "description": "Gone. The DID has been deactivated.",
+            "content": {
+              "application/did+ld+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "application/did+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "application/ld+json;profile=\"https://w3id.org/did-resolution\"": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v{version}/statistics/{ledger}/stakeaddresses/{day}": {
+      "get": {
+        "tags": [
+          "Statistics"
+        ],
+        "parameters": [
+          {
+            "name": "ledger",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "day",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "date"
+            }
+          },
+          {
+            "name": "version",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/v{version}/sync/stop": {
+      "post": {
+        "tags": [
+          "Sync"
+        ],
+        "summary": "Force the automatic sync service to stop.",
+        "description": "The service will be paused and no further syncing tasks will be performed until manually restarted.",
+        "parameters": [
+          {
+            "name": "version",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The sync service has been successfully stopped"
+          },
+          "401": {
+            "description": "Unauthorized request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v{version}/sync/start": {
+      "post": {
+        "tags": [
+          "Sync"
+        ],
+        "summary": "Force the automatic sync service to restart.",
+        "description": "The service will resume automatic syncing tasks immediately upon restart.\r\nThis endpoint can be used to manually trigger a restart of the sync service,\r\nwhich may be useful after a manual stop or in case of unexpected service interruptions.",
+        "parameters": [
+          {
+            "name": "version",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The sync service has been successfully restarted"
+          },
+          "401": {
+            "description": "Unauthorized request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v{version}/system/health": {
+      "get": {
+        "tags": [
+          "System"
+        ],
+        "summary": "Health check endpoint to verify the service is running.",
+        "parameters": [
+          {
+            "name": "version",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/v{version}/wallets": {
+      "post": {
+        "tags": [
+          "Wallets"
+        ],
+        "parameters": [
+          {
+            "name": "version",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateWalletRequestModel"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      },
+      "get": {
+        "tags": [
+          "Wallets"
+        ],
+        "parameters": [
+          {
+            "name": "version",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/v{version}/wallets/restore": {
+      "post": {
+        "tags": [
+          "Wallets"
+        ],
+        "parameters": [
+          {
+            "name": "version",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RestoreWalletRequestModel"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/v{version}/wallets/{walletId}": {
+      "get": {
+        "tags": [
+          "Wallets"
+        ],
+        "parameters": [
+          {
+            "name": "walletId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "version",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/v{version}/wallets/{walletId}/transactions": {
+      "post": {
+        "tags": [
+          "Wallets"
+        ],
+        "parameters": [
+          {
+            "name": "walletId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "version",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      },
+      "get": {
+        "tags": [
+          "Wallets"
+        ],
+        "parameters": [
+          {
+            "name": "walletId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "version",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/v{version}/wallets/{walletId}/withdrawal/{withdrawalAddress}": {
+      "post": {
+        "tags": [
+          "Wallets"
+        ],
+        "parameters": [
+          {
+            "name": "walletId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "withdrawalAddress",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "version",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "CreateWalletRequestModel": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "Optional user-defined name for the wallet",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "ProblemDetails": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string",
+            "nullable": true
+          },
+          "title": {
+            "type": "string",
+            "nullable": true
+          },
+          "status": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          },
+          "detail": {
+            "type": "string",
+            "nullable": true
+          },
+          "instance": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": { }
+      },
+      "RestoreWalletRequestModel": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "Optional user-defined name for the wallet",
+            "nullable": true
+          },
+          "mnemonic": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Recovery phrase. Need to restore the wallet on a new system",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    "securitySchemes": {
+      "Bearer": {
+        "type": "apiKey",
+        "description": "Enter the authorization key",
+        "name": "Authorization",
+        "in": "header"
+      }
+    }
+  },
+  "security": [
+    {
+      "Bearer": [ ]
+    }
+  ]
+}
