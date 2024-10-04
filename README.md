@@ -6,7 +6,7 @@ The project is currently under development, but already in alpha testing.
 - A hosted version of the OpenPrismNode for API calls for **preprod** is available at https://opn.blocktrust.dev:31200 e.g
      `https://opn.blocktrust.dev:31200/api/v1/system/health` (Health check)
      `https://opn.blocktrust.dev:31200/api/v1/identifiers/did:prism:69ecb82551e3e08c092f14f720bae485a8808e5799e966ff1b415cf88d4107e2` (Resolver endpoint)
-- For the creation of a new tenant (wallet), and writing of PRISM operations on chain an API-Key is required for as `authorization: kfUpMnvUf32KLi73KLifhahfQ!` header.
+- For the creation of a new tenant (wallet), and writing of PRISM operations on chain an API-Key is required for preprod that is `authorization: kfUpMnvUf32KLi73KLifhahfQ!`.
 - A full list of currently available endpoints can be found [here](https://github.com/bsandmann/O penPrismNode/blob/master/Documents/swagger.json)
 - *While in development you might get an certificate error. Please set your application to ignore the certifcate for now. A fix will be delievered later*
 
