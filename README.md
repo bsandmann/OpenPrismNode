@@ -12,7 +12,7 @@ The project is currently under development, but already in alpha testing.
 
 ## gRPC Endpoint
 - An open gRPC endpoint is available for **preprod** at `opn.blocktrust.dev:31201` for the identus-agent
-- Just replace the path and port variables in the docker-compose file with `opn.blocktrust.dev` and `31300` respectively.
+- Just replace the path and port variables in the docker-compose file with `opn.blocktrust.dev` and `31201` respectively.
 
 
 ## Mainnet
