@@ -11,8 +11,8 @@ The project is currently under development, but already in alpha testing.
 - *While in development you might get an certificate error. Please set your application to ignore the certifcate for now. A fix will be delievered later*
 
 ## gRPC Endpoint
-- An open gRPC endpoint is available for **preprod** at `opn.blocktrust.dev:31201` for the identus-agent
-- Just replace the path and port variables in the docker-compose file with `opn.blocktrust.dev` and `31201` respectively.
+- An open gRPC endpoint is available for **preprod** at `opn.blocktrust.dev:31300` for the identus-agent
+- Just replace the path and port variables in the docker-compose file with `opn.blocktrust.dev` and `31300` respectively.
 
 
 ## Mainnet
