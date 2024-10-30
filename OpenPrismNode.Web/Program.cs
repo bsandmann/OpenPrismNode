@@ -13,6 +13,7 @@ using OpenPrismNode.Core.Models.DidDocument;
 using OpenPrismNode.Core.Services;
 using OpenPrismNode.Sync.Services;
 using OpenPrismNode.Web;
+using OpenPrismNode.Web.Components;
 using NodeService = OpenPrismNode.Web.Services.NodeService;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -28,6 +29,10 @@ builder.Services.AddControllers()
 
 
 builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddRazorComponents(o => o.DetailedErrors = builder.Environment.IsDevelopment())
+    .AddInteractiveServerComponents();
+
+
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddSwaggerGen(c =>
 {
@@ -128,6 +133,11 @@ app.UseAuthorization();
 // Map gRPC service and controllers
 app.MapGrpcService<OpenPrismNode.Web.Services.NodeService>();
 app.MapControllers();
+app.UseStaticFiles();
+app.UseAntiforgery();
+
+app.MapRazorComponents<App>()
+    .AddInteractiveServerRenderMode();
 
 // Enable Swagger in development
 if (app.Environment.IsDevelopment())

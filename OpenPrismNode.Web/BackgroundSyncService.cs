@@ -48,8 +48,8 @@ public class BackgroundSyncService : BackgroundService
                    | |                                                                            
                    |_|                                                                            
            """);
-        Console.WriteLine("Press any key to start the automatic sync service");
-        Console.ReadLine();
+        // Console.WriteLine("Press any key to start the automatic sync service");
+        // Console.ReadLine();
 
 
         if (_isRunning)
