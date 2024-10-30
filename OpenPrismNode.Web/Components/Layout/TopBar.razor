@@ -1,6 +1,28 @@
-﻿
+﻿@using System.Security.Claims
+@using OpenPrismNode.Web.Components.Pages.Shared
+@inject AuthenticationStateProvider AuthenticationStateProvider
+
 <div class="flex justify-between items-center bg-slate-700 h-16 pr-4">
     <div class="">OpenPrismNode</div>
-    <div class="">Login</div>
-    @* <Login/> *@
+    @if (User.Identity.IsAuthenticated)
+    {
+        <span>Hello, @User.Identity.Name!</span>
+        <RedirectToLogout/>
+    }
+    else
+    {
+        <a href="/login">Login</a>
+    }
 </div>
+
+
+@code {
+    private ClaimsPrincipal User { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        User = authState.User;
+    }
+
+}

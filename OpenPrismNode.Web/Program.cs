@@ -2,6 +2,7 @@ using System.Net;
 using System.Reflection;
 using System.Text.Json.Serialization;
 using Asp.Versioning;
+using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
@@ -125,15 +126,29 @@ builder.Services.AddLogging(p =>
         .AddSeq(builder.Configuration.GetSection("Seq"))
 );
 
+builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
+    .AddCookie(options =>
+    {
+        options.LoginPath = "/login";
+        options.AccessDeniedPath = "/access-denied";
+    });
+
+builder.Services.AddAuthorization(options =>
+{
+    options.AddPolicy("Admin", policy => policy.RequireRole("Admin"));
+    options.AddPolicy("User", policy => policy.RequireRole("Admin", "User"));
+});
+
 var app = builder.Build();
 
-// Enable authorization if needed
+app.UseStaticFiles();
+app.UseRouting();
+
+app.UseAuthentication();
 app.UseAuthorization();
 
-// Map gRPC service and controllers
-app.MapGrpcService<OpenPrismNode.Web.Services.NodeService>();
 app.MapControllers();
-app.UseStaticFiles();
+app.MapGrpcService<OpenPrismNode.Web.Services.NodeService>();
 app.UseAntiforgery();
 
 app.MapRazorComponents<App>()

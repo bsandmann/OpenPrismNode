@@ -1,0 +1,12 @@
+@inject IHttpContextAccessor HttpContextAccessor
+@inject NavigationManager Navigation
+@rendermode @(new InteractiveServerRenderMode(prerender: false))
+
+<button @onclick="HandleLogout" class="btn btn-link">Logout</button>
+
+@code {
+    private async Task HandleLogout()
+    {
+        Navigation.NavigateTo("/logout");
+    }
+}

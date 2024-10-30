@@ -1,0 +1,16 @@
+@page "/access-denied"
+@inject NavigationManager Navigation
+@rendermode @(new InteractiveServerRenderMode(prerender: false))
+
+
+<h3>Not allowed</h3>
+<button @onclick="HandleRedirect" class="btn btn-link">Back</button>
+
+@code {
+
+    private async Task HandleRedirect()
+    {
+        Navigation.NavigateTo("/");
+    }
+
+}

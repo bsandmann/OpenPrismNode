@@ -1,20 +1,14 @@
-﻿@* @using Blocktrust.AnalyticsWeb.Components.Account.Shared *@
-<Router AppAssembly="typeof(Program).Assembly">
+﻿@using OpenPrismNode.Web.Components.Layout
+@using OpenPrismNode.Web.Components.Pages.Shared
+<Router AppAssembly="@typeof(App).Assembly">
     <Found Context="routeData">
-        <RouteView RouteData="routeData" DefaultLayout="typeof(Layout.MainLayout)"/>
-        <FocusOnNavigate RouteData="routeData" Selector="h1"/>
+        <AuthorizeRouteView RouteData="@routeData" DefaultLayout="@typeof(MainLayout)">
+            <NotAuthorized>
+                <RedirectToLogin />
+            </NotAuthorized>
+        </AuthorizeRouteView>
     </Found>
-    @* <Found Context="routeData"> *@
-    @*     <AuthorizeRouteView RouteData="routeData" DefaultLayout="typeof(Layout.MainLayout)"> *@
-    @*         <NotAuthorized> *@
-    @*             <RedirectToLogin/> *@
-    @*         </NotAuthorized> *@
-    @*     </AuthorizeRouteView> *@
-    @*     <FocusOnNavigate RouteData="routeData" Selector="h1"/> *@
-    @* </Found> *@
-    @* <NotFound> *@
-    @*     <LayoutView Layout="@typeof(Layout.MainLayout)"> *@
-    @*         <p>Sorry, there's nothing at this address.</p> *@
-    @*     </LayoutView> *@
-    @* </NotFound> *@
+    <NotFound>
+        <p>Sorry, there's nothing at this address.</p>
+    </NotFound>
 </Router>

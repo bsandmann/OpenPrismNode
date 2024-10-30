@@ -1,0 +1,86 @@
+@page "/login"
+@using System.ComponentModel.DataAnnotations
+@using System.Security.Claims
+@using Microsoft.AspNetCore.Authentication
+@using Microsoft.AspNetCore.Authentication.Cookies
+@using Microsoft.Extensions.Options
+@using OpenPrismNode.Core.Common
+@inject IHttpContextAccessor HttpContextAccessor
+@inject IOptions<AppSettings> AppSettings
+@inject NavigationManager Navigation
+
+<h3>Login</h3>
+
+@if (!string.IsNullOrEmpty(ErrorMessage))
+{
+    <div class="alert alert-danger">@ErrorMessage</div>
+}
+
+<EditForm Model="Input" OnValidSubmit="HandleLogin" FormName="HandleLogin">
+    <DataAnnotationsValidator />
+    <ValidationSummary />
+
+    <div class="form-group">
+        <label>Password:</label>
+        <InputText @bind-Value="Input.Password" type="password" class="form-control" />
+        <ValidationMessage For="@(() => Input.Password)" />
+    </div>
+
+    <button type="submit" class="btn btn-primary">Login</button>
+</EditForm>
+
+@code {
+
+    private string ErrorMessage { get; set; }
+    
+    [SupplyParameterFromForm] private InputModel Input { get; set; } = new();
+
+    private async Task HandleLogin()
+    {
+        var appSettings = AppSettings.Value;
+        var adminKey = appSettings.AdminAuthorizationKey;
+        var userKey = appSettings.UserAuthorizationKey;
+
+        string role = null;
+
+        Console.WriteLine("asdfasdf");
+        
+        if (string.Equals(Input.Password, adminKey, StringComparison.InvariantCultureIgnoreCase))
+        {
+            role = "Admin";
+        }
+        else if (string.Equals(Input.Password, userKey, StringComparison.InvariantCultureIgnoreCase))
+        {
+            role = "User";
+        }
+        else
+        {
+            // Invalid password
+            ErrorMessage = "Invalid password.";
+            return;
+        }
+
+        var claims = new List<Claim>
+        {
+            new Claim(ClaimTypes.Name, "SharedUser"),
+            new Claim(ClaimTypes.Role, role)
+        };
+
+        var identity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
+        var principal = new ClaimsPrincipal(identity);
+
+        await HttpContextAccessor.HttpContext.SignInAsync(
+            CookieAuthenticationDefaults.AuthenticationScheme,
+            principal);
+
+        // Redirect to home page or desired page
+        Navigation.NavigateTo("/");
+    }
+    private sealed class InputModel
+    {
+        [Required]
+        [DataType(DataType.Password)]
+        public string Password { get; set; } = "";
+    }
+    
+}
