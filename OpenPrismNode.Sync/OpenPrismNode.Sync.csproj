@@ -1,20 +1,20 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <TargetFramework>net8.0</TargetFramework>
+        <TargetFramework>net9.0</TargetFramework>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
         <UserSecretsId>46d3e0c0-9000-484c-b5df-20004a39aad4</UserSecretsId>
     </PropertyGroup>
 
     <ItemGroup>
-      <PackageReference Include="Dapper" Version="2.1.35" />
+      <PackageReference Include="Dapper" Version="2.1.66" />
       <PackageReference Include="FluentResults" Version="3.16.0" />
       <PackageReference Include="LazyCache.AspNetCore" Version="2.4.0" />
       <PackageReference Include="MediatR" Version="12.4.1" />
-      <PackageReference Include="Microsoft.Extensions.Options" Version="8.0.2" />
-      <PackageReference Include="Npgsql" Version="8.0.4" />
-      <PackageReference Include="Polly" Version="8.4.1" />
+      <PackageReference Include="Microsoft.Extensions.Options" Version="9.0.2" />
+      <PackageReference Include="Npgsql" Version="9.0.2" />
+      <PackageReference Include="Polly" Version="8.5.2" />
     </ItemGroup>
 
     <ItemGroup>
