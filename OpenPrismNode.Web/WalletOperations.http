@@ -1,0 +1,76 @@
+@OpenPrismNode_HostAddress = https://localhost:5001
+@walletId = f2f4c751c9fba3283c63f5e1dd1bb937021ceee2
+@withdrawalAddress = SomeCardanoAddrHere
+@base64Transaction = AQIDBAUGBwo=    # Example base64 string for a transaction
+@mnemonic = "chicken grant north tower sell knock grab scrap burden floor advance cheese scatter shuffle echo limit rose bullet valid fetch actual unaware result boost"
+@operationStatusIdHex = 96ea4587a96f408e08fa253f354650d34e6331eda4ea02b2e12e9d3f3ee3db5b
+
+###
+# 1) Create a new wallet
+POST {{OpenPrismNode_HostAddress}}/api/v1/wallets
+Accept: application/json
+Content-Type: application/json
+Authorization: secretPhrase
+
+{
+  "name": "MyTestWallet"
+}
+
+###
+# 2) Restore a wallet from a mnemonic
+POST {{OpenPrismNode_HostAddress}}/api/v1/wallets/restore
+Accept: application/json
+Content-Type: application/json
+Authorization: secretPhrase
+
+{
+  "mnemonic": {{mnemonic}},
+  "name": "MyRestoredWallet"
+}
+
+###
+# 3) Get a single wallet by ID
+GET {{OpenPrismNode_HostAddress}}/api/v1/wallets/{{walletId}}
+Accept: application/json
+Content-Type: application/json
+Authorization: secretPhrase
+
+###
+# 4) Get all wallets (requires admin key)
+GET {{OpenPrismNode_HostAddress}}/api/v1/wallets/
+Accept: application/json
+Content-Type: application/json
+Authorization: secretPhrase
+
+###
+# 5) Execute (write) a transaction against a wallet
+#    The request body is a base64-encoded string representing a SignedAtalaOperation protobuf.
+POST {{OpenPrismNode_HostAddress}}/api/v1/wallets/{{walletId}}/transactions
+Accept: application/json
+Content-Type: text/plain
+Authorization: secretPhrase
+
+{{base64Transaction}}
+
+###
+# 6) Get all transactions for a wallet
+GET {{OpenPrismNode_HostAddress}}/api/v1/wallets/{{walletId}}/transactions
+Accept: application/json
+Authorization: secretPhrase
+
+###
+# 7) Withdraw from a wallet to a specified address
+POST {{OpenPrismNode_HostAddress}}/api/v1/wallets/{{walletId}}/withdrawal/{{withdrawalAddress}}
+Accept: application/json
+Content-Type: application/json
+Authorization: secretPhrase
+
+{}
+
+###
+# Get Operation Status (OperationsController)
+# Provide the operation status ID as a hex string (e.g. ABC123).
+GET {{OpenPrismNode_HostAddress}}/api/v1/operations/{{operationStatusIdHex}}
+Accept: application/json
+Content-Type: application/json
+Authorization: secretPhrase

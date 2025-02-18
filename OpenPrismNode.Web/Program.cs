@@ -20,7 +20,6 @@ using NodeService = OpenPrismNode.Web.Services.NodeService;
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
-
 builder.Services.AddControllers()
     .AddJsonOptions(options =>
     {
@@ -28,11 +27,9 @@ builder.Services.AddControllers()
         options.JsonSerializerOptions.Converters.Add(new ServiceEndpointConverter());
     });
 
-
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddRazorComponents(o => o.DetailedErrors = builder.Environment.IsDevelopment())
     .AddInteractiveServerComponents();
-
 
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddSwaggerGen(c =>
@@ -64,7 +61,7 @@ builder.Services.AddSwaggerGen(c =>
                     Id = "Bearer"
                 }
             },
-            new string[] { }
+            []
         }
     });
 });

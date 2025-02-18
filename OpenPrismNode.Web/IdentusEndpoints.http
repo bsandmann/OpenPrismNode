@@ -1,0 +1,88 @@
+@IdentusCloudAgent_HostAdress = http://localhost:8085
+@didRef = did:prism:36c0188331bf3ff1100d38bb43eee5a5d349865b6e8575a5dda2bb34a8233e20
+
+###
+# Creates a new DID locally inside the Identus Cloud Agent
+POST {{IdentusCloudAgent_HostAdress}}/did-registrar/dids
+Accept: application/json
+Content-Type: application/json
+
+{
+  "documentTemplate": {
+    "publicKeys": [
+      {
+        "id": "key-1",
+        "purpose": "authentication",
+        "curve": "Ed25519"
+      }
+    ],
+    "services": [
+      {
+        "id": "service-1",
+        "type": "LinkedDomains",
+        "serviceEndpoint": "https://example.com"
+      }
+    ],
+    "contexts": [
+      "https://didcomm.org/messaging/contexts/v2"
+    ]
+  }
+}
+
+###
+# Publish DID to the VDR
+POST {{IdentusCloudAgent_HostAdress}}/did-registrar/dids/{{didRef}}/publications
+Accept: application/json
+Content-Type: application/json
+
+# Request body is typically empty or minimal if you only need the DID reference
+# In many implementations, you can just send an empty JSON object. If your
+# agent requires additional data, place it here.
+{}
+
+
+###
+# Update DID document (add/remove keys, services, contexts, etc.)
+# Only valid for a DID in status PUBLISHED and not currently pending another operation.
+POST {{IdentusCloudAgent_HostAdress}}/did-registrar/dids/{{didRef}}/updates
+Accept: application/json
+Content-Type: application/json
+
+{
+  "actions": [
+    {
+      "actionType": "ADD_KEY",
+      "addKey": {
+        "id": "key-1",
+        "purpose": "authentication",
+        "curve": "Ed25519"
+      },
+      "removeKey": {
+        "id": "string"
+      },
+      "addService": {
+        "id": "service-2",
+        "type": "LinkedDomains",
+        "serviceEndpoint": "https://example.com"
+      },
+      "removeService": {
+        "id": "service-1"
+      },
+      "patchContext": {
+        "contexts": [
+          "https://didcomm.org/messaging/contexts/v2"
+        ]
+      }
+    }
+  ]
+}
+
+###
+# Deactivate DID (asynchronous operation)
+POST {{IdentusCloudAgent_HostAdress}}/did-registrar/dids/{{didRef}}/deactivations
+Accept: application/json
+Content-Type: application/json
+
+# If the endpoint doesn't require specific data,
+# you can send an empty JSON object or leave it blank:
+{}

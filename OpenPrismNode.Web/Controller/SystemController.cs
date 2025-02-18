@@ -43,8 +43,8 @@ public class SystemController : ControllerBase
     [ProducesResponseType(StatusCodes.Status200OK)]
     [HttpGet("api/v{version:apiVersion=1.0}/system/health")]
     [ApiVersion("1.0")]
-    public async Task<ActionResult> HealthCheck()
+    public Task<ActionResult> HealthCheck()
     {
-        return Ok();
+        return Task.FromResult<ActionResult>(Ok($"OpenPrismNode - Version {OpnVersion.GetVersion()}"));
     }
 }

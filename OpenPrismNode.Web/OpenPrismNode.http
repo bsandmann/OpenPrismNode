@@ -1,6 +1,75 @@
-@OpenPrismNode_HostAddress = http://localhost:5095
+@OpenPrismNode_HostAddress = https://localhost:5001
+# Optional variables for demonstration:
+@ledger = preprod
+@blockHeight = 1000
+@epochNumber = 10
+@day = 2024-10-01
 
-GET {{OpenPrismNode_HostAddress}}/weatherforecast/
+###
+# HealthCheck endpoint
+GET {{OpenPrismNode_HostAddress}}/api/v1/system/health
 Accept: application/json
 
 ###
+# Stop the Sync service
+POST {{OpenPrismNode_HostAddress}}/api/v1/sync/stop
+Accept: application/json
+Content-Type: application/json
+Authorization: secretPhrase
+
+{}
+
+###
+# Start the Sync service
+POST {{OpenPrismNode_HostAddress}}/api/v1/sync/start
+Accept: application/json
+Content-Type: application/json
+Authorization: secretPhrase
+
+{}
+
+###
+# Delete entire ledger (e.g., preprod, mainnet, inmemory)
+DELETE {{OpenPrismNode_HostAddress}}/api/v1/ledgers/{{ledger}}
+Accept: application/json
+Content-Type: application/json
+Authorization: secretPhrase
+
+###
+# Delete the tip block (no blockHeight; effectively deletes the most recent block)
+DELETE {{OpenPrismNode_HostAddress}}/api/v1/ledgers/{{ledger}}/block
+Accept: application/json
+Content-Type: application/json
+Authorization: secretPhrase
+
+###
+# Delete blocks down to a given block height (use ?blockHeight=)
+# Example: blockHeight = 1000
+DELETE {{OpenPrismNode_HostAddress}}/api/v1/ledgers/{{ledger}}/block?blockHeight={{blockHeight}}
+Accept: application/json
+Content-Type: application/json
+Authorization: secretPhrase
+
+###
+# Delete the tip epoch (no epochNumber; effectively deletes the most recent epoch)
+DELETE {{OpenPrismNode_HostAddress}}/api/v1/ledgers/{{ledger}}/epochs
+Accept: application/json
+Content-Type: application/json
+Authorization: secretPhrase
+
+###
+# Delete epochs down to a given epoch number (use ?epochNumber=)
+# Example: epochNumber = 10
+DELETE {{OpenPrismNode_HostAddress}}/api/v1/ledgers/{{ledger}}/epochs?epochNumber={{epochNumber}}
+Accept: application/json
+Content-Type: application/json
+Authorization: secretPhrase
+
+###
+# Retrieve Stake Addresses for a Specific Day (StatisticsController)
+# Requires a ledger (e.g. preprod, mainnet, inmemory) and a date in YYYY-MM-DD format.
+GET {{OpenPrismNode_HostAddress}}/api/v1/statistics/{{ledger}}/stakeaddresses/{{day}}
+Accept: application/json
+Content-Type: application/json
+Authorization: secretPhrase
+

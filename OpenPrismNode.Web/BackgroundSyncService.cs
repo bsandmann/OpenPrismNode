@@ -1,5 +1,6 @@
 ﻿namespace OpenPrismNode.Web;
 
+using Common;
 using Core.Commands.CreateBlock;
 using Core.Commands.CreateEpoch;
 using Core.Commands.CreateLedger;
@@ -37,20 +38,17 @@ public class BackgroundSyncService : BackgroundService
     /// <inheritdoc />
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
+        var version = OpnVersion.GetVersion();
         Console.WriteLine(
-           """
-             ____                       _____        _                  _   _             _       
-            / __ \                     |  __ \      (_)                | \ | |           | |      
-           | |  | | _ __    ___  _ __  | |__) |_ __  _  ___  _ __ ___  |  \| |  ___    __| |  ___ 
-           | |  | || '_ \  / _ \| '_ \ |  ___/| '__|| |/ __|| '_ ` _ \ | . ` | / _ \  / _` | / _ \
-           | |__| || |_) ||  __/| | | || |    | |   | |\__ \| | | | | || |\  || (_) || (_| ||  __/
-            \____/ | .__/  \___||_| |_||_|    |_|   |_||___/|_| |_| |_||_| \_| \___/  \__,_| \___|
-                   | |                                                                            
-                   |_|                                                                            
+           $"""
+             ____   _____  _   _ 
+            / __ \ |  __ \| \ | |
+           | |  | || |__) |  \| |
+           | |  | ||  ___/| . ` |
+           | |__| || |    | |\  |
+            \____/ |_|    |_| \_|
+           Open PRISM Node (v{version})
            """);
-        // Console.WriteLine("Press any key to start the automatic sync service");
-        // Console.ReadLine();
-
 
         if (_isRunning)
         {
