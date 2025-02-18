@@ -33,7 +33,7 @@ public class OperationsController : ControllerBase
         _mediator = mediator;
     }
 
-    [ApiKeyUserAuthorization]
+    [ApiKeyOrUserRoleAuthorization]
     [HttpGet("api/v{version:apiVersion=1.0}/operations/{operationStatusIdHex}")]
     [ApiVersion("1.0")]
     [Consumes("application/json")]

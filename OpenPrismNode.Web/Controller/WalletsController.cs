@@ -38,7 +38,7 @@ public class WalletsController : ControllerBase
         _mediator = mediator;
     }
 
-    [ApiKeyUserAuthorization]
+    [ApiKeyOrUserRoleAuthorization]
     [HttpPost("api/v{version:apiVersion=1.0}/wallets")]
     [ApiVersion("1.0")]
     [Consumes("application/json")]
@@ -58,7 +58,7 @@ public class WalletsController : ControllerBase
         });
     }
 
-    [ApiKeyUserAuthorization]
+    [ApiKeyOrUserRoleAuthorization]
     [HttpPost("api/v{version:apiVersion=1.0}/wallets/restore")]
     [ApiVersion("1.0")]
     [Consumes("application/json")]
@@ -77,7 +77,7 @@ public class WalletsController : ControllerBase
         });
     }
 
-    [ApiKeyUserAuthorization]
+    [ApiKeyOrUserRoleAuthorization]
     [HttpGet("api/v{version:apiVersion=1.0}/wallets/{walletId}")]
     [ApiVersion("1.0")]
     [Consumes("application/json")]
@@ -100,7 +100,7 @@ public class WalletsController : ControllerBase
         });
     }
 
-    [ApiKeyAdminAuthorization]
+    [ApiKeyOrAdminRoleAuthorizationAttribute]
     [HttpGet("api/v{version:apiVersion=1.0}/wallets/")]
     [ApiVersion("1.0")]
     [Consumes("application/json")]
@@ -125,7 +125,7 @@ public class WalletsController : ControllerBase
         }).ToList());
     }
 
-    [ApiKeyUserAuthorization]
+    [ApiKeyOrUserRoleAuthorization]
     [HttpPost("api/v{version:apiVersion=1.0}/wallets/{walletId}/transactions")]
     [ApiVersion("1.0")]
     // [Consumes("application/octet-stream")]
@@ -176,7 +176,7 @@ public class WalletsController : ControllerBase
         }
     }
 
-    [ApiKeyUserAuthorization]
+    [ApiKeyOrUserRoleAuthorization]
     [HttpGet("api/v{version:apiVersion=1.0}/wallets/{walletId}/transactions")]
     [ApiVersion("1.0")]
     [Consumes("application/json")]
@@ -200,7 +200,7 @@ public class WalletsController : ControllerBase
         }));
     }
 
-    [ApiKeyUserAuthorization]
+    [ApiKeyOrUserRoleAuthorization]
     [HttpPost("api/v{version:apiVersion=1.0}/wallets/{walletId}/withdrawal/{withdrawalAddress}")]
     [ApiVersion("1.0")]
     [Consumes("application/json")]

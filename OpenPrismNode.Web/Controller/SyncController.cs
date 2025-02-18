@@ -35,7 +35,7 @@ public class SyncController : ControllerBase
     /// <returns>An ActionResult indicating the result of the operation</returns>
     /// <response code="200">The sync service has been successfully stopped</response>
     /// <response code="401">Unauthorized request</response>
-    [ApiKeyAdminAuthorization]
+    [ApiKeyOrAdminRoleAuthorizationAttribute]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [HttpPost("api/v{version:apiVersion=1.0}/sync/stop")]
@@ -60,7 +60,7 @@ public class SyncController : ControllerBase
     /// <returns>An ActionResult indicating the result of the operation</returns>
     /// <response code="200">The sync service has been successfully restarted</response>
     /// <response code="401">Unauthorized request</response>
-    [ApiKeyAdminAuthorization]
+    [ApiKeyOrAdminRoleAuthorizationAttribute]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [HttpPost("api/v{version:apiVersion=1.0}/sync/start")]

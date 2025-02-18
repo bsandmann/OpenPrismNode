@@ -38,7 +38,7 @@ public class StatisticsController : ControllerBase
         _mediator = mediator;
     }
 
-    [ApiKeyUserAuthorization]
+    [ApiKeyOrUserRoleAuthorization]
     [HttpGet("api/v{version:apiVersion=1.0}/statistics/{ledger}/stakeaddresses/{day}")]
     [ApiVersion("1.0")]
     [Consumes("application/json")]
