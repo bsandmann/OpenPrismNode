@@ -1,8 +1,10 @@
 using System.Net;
 using System.Reflection;
+using System.Security.Claims;
 using System.Text.Json.Serialization;
 using Asp.Versioning;
 using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
@@ -80,7 +82,7 @@ builder.Services.AddApiVersioning(options =>
 builder.WebHost.ConfigureKestrel(options =>
 {
     // Listen for REST endpoints over HTTPS
-    options.Listen(IPAddress.Any, appSettings!.ApiHttpsPort , listenOptions =>
+    options.Listen(IPAddress.Any, appSettings!.ApiHttpsPort, listenOptions =>
     {
         listenOptions.UseHttps(); // Enforce HTTPS
         listenOptions.Protocols = HttpProtocols.Http1AndHttp2;
@@ -100,6 +102,14 @@ builder.Services.AddScoped<IIngestionService, IngestionService>();
 builder.Services.AddSingleton<IWalletAddressCache>(new WalletAddressCache(appSettings!.WalletCacheSize));
 builder.Services.AddSingleton<IStakeAddressCache>(new StakeAddressCache(appSettings.WalletCacheSize));
 builder.Services.AddLazyCache();
+builder.Services.AddHttpClient("LocalApi")
+    .ConfigureHttpClient((serviceProvider, client) => { }).ConfigurePrimaryHttpMessageHandler(() =>
+    {
+        return new HttpClientHandler
+        {
+            ServerCertificateCustomValidationCallback = (message, cert, chain, sslPolicyErrors) => true // <-- Accept all
+        };
+    });
 builder.Services.AddHttpClient("CardanoWalletApi", client => { client.BaseAddress = new Uri($"{appSettings.CardanoWalletApiEndpoint}:{appSettings.CardanoWalletApiEndpointPort}/v2/"); });
 builder.Services.AddHttpClient("Ingestion", client => { client.BaseAddress = appSettings.IngestionEndpoint; });
 builder.Services.AddSingleton<BackgroundSyncService>();
@@ -128,6 +138,7 @@ builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationSc
     {
         options.LoginPath = "/login";
         options.AccessDeniedPath = "/access-denied";
+        options.ClaimsIssuer = "OpenPrismNode";
     });
 
 builder.Services.AddAuthorization(options =>

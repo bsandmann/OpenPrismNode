@@ -1,0 +1,122 @@
+@inject IHttpClientFactory HttpClientFactory
+@inject IHttpContextAccessor HttpContextAccessor
+@using System.Net.Http.Json
+@rendermode @(new InteractiveServerRenderMode(prerender: false))
+
+<div class="max-w-sm mx-auto mt-4 p-4 border rounded shadow-sm text-center">
+    <h4 class="text-xl font-semibold mb-4">
+        Sync Service Control
+    </h4>
+
+    @if (errorMessage is not null && errorMessage != string.Empty)
+    {
+        <div class="mb-4 text-red-600">
+            @errorMessage
+        </div>
+    }
+
+    <div class="mb-4">
+        <!-- Display current status -->
+        @if (isLocked)
+        {
+            <p class="text-gray-600 mb-2">
+                The service is locked, so changes cannot be made.
+            </p>
+        }
+        else
+        {
+            <p class="text-gray-600 mb-2">
+                Sync Service is currently: <strong>@(isRunning ? "Running" : "Stopped")</strong>
+            </p>
+        }
+    </div>
+
+    <!-- Toggle button -->
+    <button
+        class="px-4 py-2 bg-slate-700 text-white rounded hover:bg-slate-800 disabled:bg-gray-300 disabled:cursor-not-allowed"
+        @onclick="ToggleSync"
+        disabled="@isLocked"
+    >
+        @(isRunning ? "Stop Sync" : "(Re)Start Sync")
+    </button>
+</div>
+
+@code {
+    private HttpClient _httpClient;
+    private bool isRunning;
+    private bool isLocked;
+    private string errorMessage = "";
+
+    protected override async Task OnInitializedAsync()
+    {
+        // Create the client
+        _httpClient = HttpClientFactory.CreateClient("LocalApi");
+
+        // Set base address once
+        var request = HttpContextAccessor.HttpContext.Request;
+        var baseUrl = $"{request.Scheme}://{request.Host}";
+        _httpClient.BaseAddress = new Uri(baseUrl);
+
+        // Set the Cookie header once
+        var cookie = HttpContextAccessor.HttpContext.Request.Headers["Cookie"];
+        if (!string.IsNullOrEmpty(cookie))
+        {
+            // Remove any existing cookie header first to avoid duplicates
+            if (_httpClient.DefaultRequestHeaders.Contains("Cookie"))
+            {
+                _httpClient.DefaultRequestHeaders.Remove("Cookie");
+            }
+            _httpClient.DefaultRequestHeaders.Add("Cookie", cookie.ToString());
+        }
+
+        // Now make your first request
+        await LoadSyncStatus();
+    }
+
+    private async Task LoadSyncStatus()
+    {
+        errorMessage = string.Empty;
+        try
+        {
+            var statusDto = await _httpClient.GetFromJsonAsync<SyncStatusDto>("api/v1.0/sync/status");
+            if (statusDto is not null)
+            {
+                isRunning = statusDto.IsRunning;
+                isLocked = statusDto.IsLocked;
+            }
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Failed to load sync status: {ex.Message}";
+        }
+    }
+
+    private async Task ToggleSync()
+    {
+        if (isLocked) return;
+
+        errorMessage = string.Empty;
+        string endpoint = isRunning ? "api/v1.0/sync/stop" : "api/v1.0/sync/start";
+
+        try
+        {
+            var response = await _httpClient.PostAsync(endpoint, content: null);
+            if (response.IsSuccessStatusCode)
+            {
+                await LoadSyncStatus();
+            }
+            else
+            {
+                var content = await response.Content.ReadAsStringAsync();
+                errorMessage = $"Error from server: {content} (HTTP {response.StatusCode})";
+            }
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Failed to toggle sync: {ex.Message}";
+        }
+    }
+
+    private record SyncStatusDto(bool IsRunning, bool IsLocked);
+}
+

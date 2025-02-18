@@ -23,8 +23,8 @@ public class BackgroundSyncService : BackgroundService
     private readonly AppSettings _appSettings;
     private readonly IServiceScopeFactory _serviceScopeFactory;
     private CancellationTokenSource _cts;
-    private bool _isRunning = false;
-    private bool _isLocked = false;
+    public bool isRunning { get; private set; } = false;
+    public bool isLocked { get; private set; } = false;
 
     /// <inheritdoc />
     public BackgroundSyncService(IOptions<AppSettings> appSettings, ILogger<BackgroundSyncService> logger, IServiceScopeFactory serviceScopeFactory)
@@ -50,7 +50,7 @@ public class BackgroundSyncService : BackgroundService
            Open PRISM Node (v{version})
            """);
 
-        if (_isRunning)
+        if (isRunning)
         {
             return;
         }
@@ -91,12 +91,12 @@ public class BackgroundSyncService : BackgroundService
             return;
         }
 
-        if (_isLocked)
+        if (isLocked)
         {
             _logger.LogWarning("The automatic sync service is locked due to an ongoing operations. Wait or restart the node");
         }
 
-        _isRunning = true;
+        isRunning = true;
         using (IServiceScope scope = _serviceScopeFactory.CreateScope())
         {
             var mediator = scope.ServiceProvider.GetRequiredService<IMediator>();
@@ -156,8 +156,8 @@ public class BackgroundSyncService : BackgroundService
     {
         await _cts.CancelAsync();
         await this.StopAsync(_cts.Token);
-        _isRunning = false;
-        _isLocked = false;
+        isRunning = false;
+        isLocked = false;
     }
 
     /// <summary>
@@ -171,11 +171,11 @@ public class BackgroundSyncService : BackgroundService
 
     public void Lock()
     {
-        _isLocked = true;
+        isLocked = true;
     }
 
     public void Unlock()
     {
-        _isLocked = false;
+        isLocked = false;
     }
 }

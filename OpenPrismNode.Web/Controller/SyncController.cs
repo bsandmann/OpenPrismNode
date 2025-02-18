@@ -73,4 +73,22 @@ public class SyncController : ControllerBase
         _logger.LogInformation($"The automatic sync service has been restarted");
         return Ok();
     }
+
+    public record SyncStatusDto(bool IsRunning, bool IsLocked);
+
+    [ApiKeyOrAdminRoleAuthorizationAttribute]
+    [HttpGet("api/v{version:apiVersion=1.0}/sync/status")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ApiVersion("1.0")]
+    public ActionResult<SyncStatusDto> GetSyncStatus()
+    {
+        // Expose the current state of the background sync service
+        var status = new SyncStatusDto(
+            IsRunning: _backgroundSyncService.isRunning,
+            IsLocked: _backgroundSyncService.isLocked
+        );
+
+        return Ok(status);
+    }
 }

@@ -92,7 +92,7 @@
             CookieAuthenticationDefaults.AuthenticationScheme,
             principal);
 
-        Navigation.NavigateTo("/");
+        Navigation.NavigateTo("/", forceLoad: true);
     }
 
     private sealed class InputModel

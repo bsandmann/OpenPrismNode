@@ -1,7 +1,9 @@
 @page "/OnlyAdmin"
 @using Microsoft.AspNetCore.Authorization
+@using OpenPrismNode.Web.Components.Features.Admin
 @attribute [Authorize(Roles = "Admin")]
 <h3>Only Admin</h3>
+<StopAndStartSyncService />
 
 @code {
     
