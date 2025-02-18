@@ -397,7 +397,11 @@ module.exports = {
                 144: '36rem', // 576px
             },
             fontFamily: {
-            }
+                // 'font-roboto' => utility class: "font-roboto"
+                'roboto': ['Roboto', 'sans-serif'],
+                // 'font-roboto-slab' => utility class: "font-roboto-slab"
+                'roboto-slab': ['Roboto Slab', 'serif'],
+            },
         }
     },
     variants: {

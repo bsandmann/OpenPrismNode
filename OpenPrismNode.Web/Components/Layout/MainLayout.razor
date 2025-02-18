@@ -1,17 +1,13 @@
 ﻿@inherits LayoutComponentBase
 
+<div class="flex flex-col min-h-screen">
+    <!-- Top Bar (64px tall) -->
+    <TopBar />
 
-<div class="flex flex-col h-screen">
-    <TopBar/>
-    <div class="flex flex-1 overflow-hidden">
-        <main class="flex-1 overflow-x-hidden overflow-y-auto lg:pt-0 pt-16"> 
-            <div class="container mx-auto px-4 sm:px-6 lg:px-8 py-8">
-                @Body
-            </div>
-        </main>
-    </div>
+    <!-- Main content area: grows to fill leftover space, and scroll only if needed -->
+    <main class="flex-1 overflow-x-hidden overflow-y-auto">
+        <div class="container mx-auto px-4 sm:px-6 lg:px-8 py-8">
+            @Body
+        </div>
+    </main>
 </div>
-
-
-@code {
-}

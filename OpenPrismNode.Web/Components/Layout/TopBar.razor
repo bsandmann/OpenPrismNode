@@ -2,19 +2,22 @@
 @using OpenPrismNode.Web.Components.Pages.Shared
 @inject AuthenticationStateProvider AuthenticationStateProvider
 
-<div class="flex justify-between items-center bg-slate-700 h-16 pr-4">
-    <div class="">OpenPrismNode</div>
-    @if (User.Identity.IsAuthenticated)
+<div class="flex justify-between items-center bg-slate-700 h-16 px-4 text-white">
+    <div class="font-roboto-slab text-xl font-bold">
+        OpenPrismNode
+    </div>
+    @if (User.Identity is not null && User.Identity.IsAuthenticated)
     {
-        <span>Hello, @User.Identity.Name!</span>
-        <RedirectToLogout/>
+        <div class="flex items-center space-x-4">
+            <span>Hello, @User.Identity.Name!</span>
+            <RedirectToLogout/>
+        </div>
     }
     else
     {
-        <a href="/login">Login</a>
+        <a href="/login" class="hover:underline">Login</a>
     }
 </div>
-
 
 @code {
     private ClaimsPrincipal User { get; set; }

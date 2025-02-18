@@ -1,8 +1,64 @@
 ﻿@page "/"
 @layout MainLayout
+@using Microsoft.Extensions.Options
+@using OpenPrismNode.Core.Common
+@using OpenPrismNode.Web.Common
 @using OpenPrismNode.Web.Components.Layout
+@inject IOptions<AppSettings> AppSettingsOptions
 
-<PageTitle>Home</PageTitle>
-<div class="container mx-auto px-16">
-    <div class="">Hello</div>
+<PageTitle>OpenPrismNode</PageTitle>
+
+<!-- Full-width container with light background and centered text -->
+<div class="bg-gray-50 text-center">
+    <!-- Inner container to control max width and horizontal padding -->
+    <div class="container mx-auto px-4 sm:px-16 py-8">
+        <h1 class="text-4xl font-roboto font-bold text-gray-800 mb-2">
+            OpenPrismNode (OPN)
+        </h1>
+        <p class="text-lg text-gray-600 mb-4">
+            Version @OpnVersion.GetVersion()
+        </p>
+        <p class="text-md text-gray-600 mb-4">
+            Connected to: @AppSettingsOptions.Value.PrismLedger.Name
+        </p>
+
+        <p class="text-gray-700 mb-6">
+            This is the public-facing website of the OPN server.
+            Please
+            <a
+                href="/login"
+                target="_blank"
+                class="text-blue-600 hover:underline mx-1"
+            >
+                Login
+            </a>
+            to access more features or contact your Admin to get an API-Key.
+        </p>
+
+        <div class="text-gray-700 mb-6">
+            <h2 class="text-xl font-semibold text-gray-800 mb-2">
+                Use the following ports to connect to the node:
+            </h2>
+            <ul class="list-disc list-inside space-y-1">
+                <li class="leading-6">
+                    REST-API: @AppSettingsOptions.Value.ApiHttpsPort
+                </li>
+                <li class="leading-6">
+                    gRPC: @AppSettingsOptions.Value.GrpcPort
+                </li>
+            </ul>
+        </div>
+
+        <p class="text-gray-700">
+            For more information about the project, visit
+            <a
+                href="https://github.com/bsandmann/OpenPrismNode"
+                target="_blank"
+                rel="noopener noreferrer"
+                class="text-blue-600 hover:underline ml-1"
+            >
+                OpenPrismNode on GitHub
+            </a>.
+        </p>
+    </div>
 </div>
