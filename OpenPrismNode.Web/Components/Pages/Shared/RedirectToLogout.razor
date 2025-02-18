@@ -2,7 +2,7 @@
 @inject NavigationManager Navigation
 @rendermode @(new InteractiveServerRenderMode(prerender: false))
 
-<button @onclick="HandleLogout" class="btn btn-link">Logout</button>
+<button @onclick="HandleLogout" class="text-white hover:underline focus:outline-none">Logout</button>
 
 @code {
     private async Task HandleLogout()

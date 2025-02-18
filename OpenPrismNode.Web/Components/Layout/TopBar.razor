@@ -1,11 +1,15 @@
 ﻿@using System.Security.Claims
+@using OpenPrismNode.Web.Common
 @using OpenPrismNode.Web.Components.Pages.Shared
 @inject AuthenticationStateProvider AuthenticationStateProvider
 
 <div class="flex justify-between items-center bg-slate-700 h-16 px-4 text-white">
-    <div class="font-roboto-slab text-xl font-bold">
-        OpenPrismNode
-    </div>
+    <a href="/">
+        <div class="font-roboto-slab text-xl font-bold">
+            OpenPrismNode
+            <span class="text-xs text-slate-400">v<span>@OpnVersion.GetVersion()</span></span>
+        </div>
+    </a>
     @if (User.Identity is not null && User.Identity.IsAuthenticated)
     {
         <div class="flex items-center space-x-4">

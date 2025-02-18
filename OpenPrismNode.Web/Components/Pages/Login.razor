@@ -9,31 +9,53 @@
 @inject IOptions<AppSettings> AppSettings
 @inject NavigationManager Navigation
 
-<h3>Login</h3>
+<div class="flex flex-col justify-center items-center mx-auto my-8 sm:my-16 px-4 sm:px-6 lg:px-8 max-w-md w-full">
+    <h2 class="text-2xl font-bold text-gray-800 mb-6 text-center">Login</h2>
 
-@if (!string.IsNullOrEmpty(ErrorMessage))
-{
-    <div class="alert alert-danger">@ErrorMessage</div>
-}
+    @if (!string.IsNullOrEmpty(ErrorMessage))
+    {
+        <div class="w-full mb-4 bg-red-50 border border-red-400 text-red-700 px-4 py-3 rounded relative" role="alert">
+            <span class="block sm:inline">@ErrorMessage</span>
+        </div>
+    }
 
-<EditForm Model="Input" OnValidSubmit="HandleLogin" FormName="HandleLogin">
-    <DataAnnotationsValidator />
-    <ValidationSummary />
+    <div class="w-full bg-white p-6 rounded-md shadow-md">
+        <EditForm Model="Input" OnValidSubmit="HandleLogin" FormName="HandleLogin">
+            <DataAnnotationsValidator />
+            <ValidationSummary />
 
-    <div class="form-group">
-        <label>Password:</label>
-        <InputText @bind-Value="Input.Password" type="password" class="form-control" />
-        <ValidationMessage For="@(() => Input.Password)" />
+            <!-- Password Field -->
+            <div class="mb-4">
+                <label class="block text-sm font-medium text-gray-700 mb-1">
+                    Password (API-Key)
+                </label>
+                <InputText
+                    @bind-Value="Input.Password"
+                    type="password"
+                    class="block w-full px-3 py-2 border border-gray-300
+                           rounded-md focus:outline-none focus:ring-1
+                           focus:ring-slate-700 focus:border-slate-700" />
+                <ValidationMessage For="@(() => Input.Password)" class="text-red-600 text-sm mt-1" />
+            </div>
+
+            <!-- Submit Button using slate-700 -->
+            <button
+                type="submit"
+                class="w-full bg-slate-700 text-white font-medium py-2 px-4
+                       rounded-md hover:bg-slate-800 focus:outline-none focus:ring-2
+                       focus:ring-offset-2 focus:ring-slate-700"
+            >
+                Login
+            </button>
+        </EditForm>
     </div>
-
-    <button type="submit" class="btn btn-primary">Login</button>
-</EditForm>
+</div>
 
 @code {
-
     private string ErrorMessage { get; set; }
-    
-    [SupplyParameterFromForm] private InputModel Input { get; set; } = new();
+
+    [SupplyParameterFromForm]
+    private InputModel Input { get; set; } = new();
 
     private async Task HandleLogin()
     {
@@ -43,8 +65,6 @@
 
         string role = null;
 
-        Console.WriteLine("asdfasdf");
-        
         if (string.Equals(Input.Password, adminKey, StringComparison.InvariantCultureIgnoreCase))
         {
             role = "Admin";
@@ -55,7 +75,6 @@
         }
         else
         {
-            // Invalid password
             ErrorMessage = "Invalid password.";
             return;
         }
@@ -73,14 +92,13 @@
             CookieAuthenticationDefaults.AuthenticationScheme,
             principal);
 
-        // Redirect to home page or desired page
         Navigation.NavigateTo("/");
     }
+
     private sealed class InputModel
     {
         [Required]
         [DataType(DataType.Password)]
         public string Password { get; set; } = "";
     }
-    
 }
