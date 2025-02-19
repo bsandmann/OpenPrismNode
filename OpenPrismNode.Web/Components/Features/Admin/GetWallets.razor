@@ -94,6 +94,7 @@
                 {
                     _httpClient.DefaultRequestHeaders.Remove("Cookie");
                 }
+
                 _httpClient.DefaultRequestHeaders.Add("Cookie", cookie.ToString());
             }
         }
@@ -150,10 +151,13 @@
             return String.Empty;
         }
 
-        int percent = (int)(syncProgress.Value * 100);
+        int percent = (int)(syncProgress.Value);
         // Ensure it doesn't exceed 100 if partially synced
         if (percent >= 100)
+        {
             percent = 99;
+        }
+
         return $"{percent}%";
     }
 
@@ -168,7 +172,12 @@
             ? $"(~{adaWhole} ADA)"
             : "(<1 ADA)";
 
-        return $"{lovelacesStr} Lovelace {adaText}";
+        if (lovelaces > 0)
+        {
+            return $"{lovelacesStr} Lovelace {adaText}";
+        }
+
+        return "0 Lovelace";
     }
 
 }

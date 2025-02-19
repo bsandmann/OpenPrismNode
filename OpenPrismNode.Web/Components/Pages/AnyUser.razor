@@ -1,5 +1,6 @@
 @page "/AnyUser"
 @using Microsoft.AspNetCore.Authorization
+@using OpenPrismNode.Web.Components.Features.User
 @attribute [Authorize(Roles = "User,Admin")]
 
-<h3>Any User</h3>
+<CreateWallet />
