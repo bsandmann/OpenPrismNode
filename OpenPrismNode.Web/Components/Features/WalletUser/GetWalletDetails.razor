@@ -1,0 +1,86 @@
+@using MediatR
+@using OpenPrismNode.Core.Commands.GetWallet
+@inject IMediator Mediator
+
+<div class="border p-4 rounded shadow-sm space-y-2">
+    @if (!string.IsNullOrEmpty(ErrorMessage))
+    {
+        <div class="text-red-600">@ErrorMessage</div>
+    }
+
+    @if (Wallet == null)
+    {
+        <p class="text-gray-600">Loading wallet details...</p>
+    }
+    else
+    {
+        <h4 class="font-semibold text-lg">Wallet Info</h4>
+        <div><strong>Wallet ID:</strong> @Wallet.WalletId</div>
+        <div><strong>Balance:</strong> @FormatBalance(Wallet.Balance)</div>
+
+        @if (!string.IsNullOrEmpty(Wallet.FundingAddress))
+        {
+            <div>
+                <strong>Funding Address:</strong> @Wallet.FundingAddress
+            </div>
+        }
+
+        <div>
+            <strong>Syncing Complete:</strong> @(Wallet.SyncingComplete ? "Yes" : "No")
+        </div>
+        <div>
+            <strong>Sync Progress:</strong> @Wallet.SyncProgress
+        </div>
+    }
+</div>
+
+@code {
+    [Parameter] public string WalletId { get; set; } = string.Empty;
+
+    private GetWalletResponse? Wallet;
+    private string ErrorMessage { get; set; } = string.Empty;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadWallet();
+    }
+
+    private async Task LoadWallet()
+    {
+        if (string.IsNullOrWhiteSpace(WalletId))
+        {
+            ErrorMessage = "No wallet ID was provided.";
+            return;
+        }
+
+        try
+        {
+            var result = await Mediator.Send(new GetWalletRequest(WalletId));
+            if (result.IsFailed)
+            {
+                ErrorMessage = $"Failed to get wallet: {result.Errors.First().Message}";
+                return;
+            }
+
+            Wallet = result.Value;
+        }
+        catch (Exception ex)
+        {
+            ErrorMessage = $"Error retrieving wallet: {ex.Message}";
+        }
+    }
+
+    private string FormatBalance(long lovelaces)
+    {
+        // Format lovelaces with thousand separators (e.g. "3,345,003")
+        string lovelacesStr = lovelaces.ToString("N0");
+
+        // Convert to ADA by integer division
+        long adaWhole = lovelaces / 1_000_000;
+        string adaText = adaWhole > 0
+            ? $"(~{adaWhole} ADA)"
+            : "(<1 ADA)";
+
+        return $"{lovelacesStr} Lovelace {adaText}";
+    }
+}

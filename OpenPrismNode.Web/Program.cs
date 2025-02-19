@@ -145,6 +145,7 @@ builder.Services.AddAuthorization(options =>
 {
     options.AddPolicy("Admin", policy => policy.RequireRole("Admin"));
     options.AddPolicy("User", policy => policy.RequireRole("Admin", "User"));
+    options.AddPolicy("WalletUser", policy => policy.RequireRole("WalletUser"));
 });
 
 var app = builder.Build();

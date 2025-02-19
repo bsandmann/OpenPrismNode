@@ -1,13 +1,16 @@
 @page "/login"
 @using System.ComponentModel.DataAnnotations
 @using System.Security.Claims
+@using MediatR
 @using Microsoft.AspNetCore.Authentication
 @using Microsoft.AspNetCore.Authentication.Cookies
 @using Microsoft.Extensions.Options
+@using OpenPrismNode.Core.Commands.IsValidWalletId
 @using OpenPrismNode.Core.Common
 @inject IHttpContextAccessor HttpContextAccessor
 @inject IOptions<AppSettings> AppSettings
 @inject NavigationManager Navigation
+@inject IMediator Mediator
 
 <div class="flex flex-col justify-center items-center mx-auto my-8 sm:my-16 px-4 sm:px-6 lg:px-8 max-w-md w-full">
     <h2 class="text-2xl font-bold text-gray-800 mb-6 text-center">Login</h2>
@@ -21,24 +24,24 @@
 
     <div class="w-full bg-white p-6 rounded-md shadow-md">
         <EditForm Model="Input" OnValidSubmit="HandleLogin" FormName="HandleLogin">
-            <DataAnnotationsValidator />
-            <ValidationSummary />
+            <DataAnnotationsValidator/>
+            <ValidationSummary/>
 
             <!-- Password Field -->
             <div class="mb-4">
                 <label class="block text-sm font-medium text-gray-700 mb-1">
-                    Password (API-Key)
+                    Password (API-Key or Wallet ID)
                 </label>
                 <InputText
                     @bind-Value="Input.Password"
                     type="password"
                     class="block w-full px-3 py-2 border border-gray-300
                            rounded-md focus:outline-none focus:ring-1
-                           focus:ring-slate-700 focus:border-slate-700" />
-                <ValidationMessage For="@(() => Input.Password)" class="text-red-600 text-sm mt-1" />
+                           focus:ring-slate-700 focus:border-slate-700"/>
+                <ValidationMessage For="@(() => Input.Password)" class="text-red-600 text-sm mt-1"/>
             </div>
 
-            <!-- Submit Button using slate-700 -->
+            <!-- Submit Button -->
             <button
                 type="submit"
                 class="w-full bg-slate-700 text-white font-medium py-2 px-4
@@ -54,8 +57,7 @@
 @code {
     private string ErrorMessage { get; set; }
 
-    [SupplyParameterFromForm]
-    private InputModel Input { get; set; } = new();
+    [SupplyParameterFromForm] private InputModel Input { get; set; } = new();
 
     private async Task HandleLogin()
     {
@@ -64,26 +66,43 @@
         var userKey = appSettings.UserAuthorizationKey;
 
         string role = null;
+        // Construct the ClaimsPrincipal with the chosen role
+        var claims = new List<Claim>
+        {
+        };
 
+        // 1) Check for Admin
         if (string.Equals(Input.Password, adminKey, StringComparison.InvariantCultureIgnoreCase))
         {
             role = "Admin";
         }
+        // 2) Check for User
         else if (string.Equals(Input.Password, userKey, StringComparison.InvariantCultureIgnoreCase))
         {
             role = "User";
         }
         else
         {
-            ErrorMessage = "Invalid password.";
-            return;
+            // 3) Check if it's a valid Wallet ID
+            var result = await Mediator.Send(new IsValidWalletIdRequest(Input.Password));
+            if (result.IsSuccess && result.Value)
+            {
+                role = "WalletUser";
+                // Add the full wallet ID as a new claim
+                claims.Add(new Claim("FullWalletId", Input.Password));
+            }
+            else
+            {
+                ErrorMessage = "Invalid password / Wallet Id.";
+                return;
+            }
         }
 
-        var claims = new List<Claim>
-        {
-            new Claim(ClaimTypes.Name, "SharedUser"),
-            new Claim(ClaimTypes.Role, role)
-        };
+        claims.Add(
+            new Claim(ClaimTypes.Name, GetUsername(role, Input.Password)));
+        claims.Add(
+            new Claim(ClaimTypes.Role, role));
+
 
         var identity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
         var principal = new ClaimsPrincipal(identity);
@@ -92,6 +111,7 @@
             CookieAuthenticationDefaults.AuthenticationScheme,
             principal);
 
+        // Redirect after successful login
         Navigation.NavigateTo("/", forceLoad: true);
     }
 
@@ -101,4 +121,25 @@
         [DataType(DataType.Password)]
         public string Password { get; set; } = "";
     }
+
+    private string GetUsername(string role, string? walletId = null)
+    {
+        if (role.Equals("Admin"))
+        {
+            return "Admin";
+        }
+        else if (role.Equals("User"))
+        {
+            return "Public User";
+        }
+        else if (role.Equals("WalletUser"))
+        {
+            return $"ID: {walletId.Substring(0, 8)}...";
+        }
+        else
+        {
+            return "Unknown User";
+        }
+    }
+
 }
