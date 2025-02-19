@@ -8,7 +8,7 @@
         Sync Service Control
     </h4>
 
-    @if (errorMessage is not null && errorMessage != string.Empty)
+    @if (errorMessage != string.Empty)
     {
         <div class="mb-4 text-red-600">
             @errorMessage
@@ -42,7 +42,7 @@
 </div>
 
 @code {
-    private HttpClient _httpClient;
+    private HttpClient? _httpClient;
     private bool isRunning;
     private bool isLocked;
     private string errorMessage = "";
@@ -53,24 +53,28 @@
         _httpClient = HttpClientFactory.CreateClient("LocalApi");
 
         // Set base address once
-        var request = HttpContextAccessor.HttpContext.Request;
-        var baseUrl = $"{request.Scheme}://{request.Host}";
-        _httpClient.BaseAddress = new Uri(baseUrl);
-
-        // Set the Cookie header once
-        var cookie = HttpContextAccessor.HttpContext.Request.Headers["Cookie"];
-        if (!string.IsNullOrEmpty(cookie))
+        var request = HttpContextAccessor.HttpContext?.Request;
+        if (request is not null)
         {
-            // Remove any existing cookie header first to avoid duplicates
-            if (_httpClient.DefaultRequestHeaders.Contains("Cookie"))
-            {
-                _httpClient.DefaultRequestHeaders.Remove("Cookie");
-            }
-            _httpClient.DefaultRequestHeaders.Add("Cookie", cookie.ToString());
-        }
+            var baseUrl = $"{request.Scheme}://{request.Host}";
+            _httpClient.BaseAddress = new Uri(baseUrl);
 
-        // Now make your first request
-        await LoadSyncStatus();
+            // Set the Cookie header once
+            var cookie = HttpContextAccessor.HttpContext.Request.Headers["Cookie"];
+            if (!string.IsNullOrEmpty(cookie))
+            {
+                // Remove any existing cookie header first to avoid duplicates
+                if (_httpClient.DefaultRequestHeaders.Contains("Cookie"))
+                {
+                    _httpClient.DefaultRequestHeaders.Remove("Cookie");
+                }
+
+                _httpClient.DefaultRequestHeaders.Add("Cookie", cookie.ToString());
+            }
+
+            // Now make your first request
+            await LoadSyncStatus();
+        }
     }
 
     private async Task LoadSyncStatus()
@@ -118,5 +122,6 @@
     }
 
     private record SyncStatusDto(bool IsRunning, bool IsLocked);
+
 }
 

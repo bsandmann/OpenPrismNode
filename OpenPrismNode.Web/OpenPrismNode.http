@@ -29,6 +29,18 @@ Authorization: secretPhrase
 {}
 
 ###
+# Get sync progress
+GET {{OpenPrismNode_HostAddress}}/api/v1/sync/progress/{{ledger}}
+Accept: application/json
+Authorization: secretPhrase
+
+###
+# Get sync progress
+GET {{OpenPrismNode_HostAddress}}/api/v1/sync/status
+Accept: application/json
+Authorization: secretPhrase
+
+###
 # Delete entire ledger (e.g., preprod, mainnet, inmemory)
 DELETE {{OpenPrismNode_HostAddress}}/api/v1/ledgers/{{ledger}}
 Accept: application/json
