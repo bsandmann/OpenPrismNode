@@ -1,0 +1,133 @@
+@page "/admin/SyncProgressView"
+@using System.Net.Http.Json
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.Extensions.Options
+@using OpenPrismNode.Core.Common
+@using OpenPrismNode.Web.Models
+
+@attribute [Authorize(Roles = "Admin")]
+
+@inject IOptions<AppSettings> AppSettingsOptions
+@inject IHttpClientFactory HttpClientFactory
+@inject IHttpContextAccessor HttpContextAccessor
+
+@rendermode @(new InteractiveServerRenderMode(prerender: false))
+
+<div class="mx-auto mt-4 p-4 border rounded shadow-sm text-center">
+    <h4 class="text-xl font-semibold mb-4">
+        Sync Progress
+    </h4>
+
+    @if (!string.IsNullOrEmpty(errorMessage))
+    {
+        <div class="mb-4 text-red-600">
+            @errorMessage
+        </div>
+    }
+
+    <div class="mb-4">
+        <p class="text-gray-600 mb-2">
+            Ledger: @ledgerName
+        </p>
+
+        @if (isSynced)
+        {
+            <p class="text-green-600 mb-2">
+                Fully synced (Blockheight @blockHeightOpn)
+            </p>
+        }
+        else
+        {
+            <p class="text-yellow-600 mb-2">
+                @blocksBehind Block(s) behind <br/>(Blockheight @blockHeightDbSync / @blockHeightOpn)
+            </p>
+        }
+    </div>
+
+    <button
+        class="px-4 py-2 bg-slate-700 text-white rounded hover:bg-slate-800 disabled:bg-gray-300 disabled:cursor-not-allowed"
+        @onclick="Refresh">
+        Refresh
+    </button>
+</div>
+
+@code {
+    private HttpClient? _httpClient;
+    private string ledgerName = string.Empty;
+
+    private long blockHeightDbSync;
+    private long blockHeightOpn;
+    private bool isSynced;
+    private long blocksBehind;
+    private string errorMessage = string.Empty;
+
+    protected override async Task OnInitializedAsync()
+    {
+        // Capture the ledger name from AppSettings
+        ledgerName = AppSettingsOptions.Value.PrismLedger.Name;
+
+        // Create the HttpClient using the same approach as your existing component
+        _httpClient = HttpClientFactory.CreateClient("LocalApi");
+
+        var request = HttpContextAccessor.HttpContext?.Request;
+        if (request is not null)
+        {
+            var baseUrl = $"{request.Scheme}://{request.Host}";
+            _httpClient.BaseAddress = new Uri(baseUrl);
+
+            var cookie = HttpContextAccessor.HttpContext.Request.Headers["Cookie"];
+            if (!string.IsNullOrEmpty(cookie))
+            {
+                if (_httpClient.DefaultRequestHeaders.Contains("Cookie"))
+                {
+                    _httpClient.DefaultRequestHeaders.Remove("Cookie");
+                }
+                _httpClient.DefaultRequestHeaders.Add("Cookie", cookie.ToString());
+            }
+        }
+
+        // Initial load of sync progress
+        await LoadSyncProgress();
+    }
+
+    private async Task LoadSyncProgress()
+    {
+        errorMessage = string.Empty;
+
+        try
+        {
+            // GET: api/v1.0/sync/progress/{ledgerName}
+            var progress = await _httpClient.GetFromJsonAsync<SyncProgressModel>($"api/v1.0/sync/progress/{ledgerName}");
+            if (progress is not null)
+            {
+                blockHeightDbSync = progress.BlockHeightDbSync;
+                blockHeightOpn = progress.BlockHeightOpn;
+
+                if (blockHeightOpn == 0 || blockHeightDbSync == 0)
+                {
+                    isSynced = false;
+                    blocksBehind = 0;
+                }
+                else if (blockHeightOpn < blockHeightDbSync)
+                {
+                    isSynced = false;
+                    blocksBehind = blockHeightDbSync - blockHeightOpn;
+                }
+                else if( blockHeightOpn == blockHeightDbSync)
+                {
+                    isSynced = true;
+                    blocksBehind = 0;
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Failed to load sync progress: {ex.Message}";
+        }
+    }
+
+    private async Task Refresh()
+    {
+        await LoadSyncProgress();
+    }
+}

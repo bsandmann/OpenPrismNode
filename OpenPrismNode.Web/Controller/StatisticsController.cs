@@ -43,7 +43,7 @@ public class StatisticsController : ControllerBase
     [ApiVersion("1.0")]
     [Consumes("application/json")]
     [Produces("application/json")]
-    public async Task<ActionResult> CreateWallet(string ledger, DateOnly day)
+    public async Task<ActionResult> GetStakeAddresses(string ledger, DateOnly day)
     {
         if (string.IsNullOrEmpty(ledger))
         {

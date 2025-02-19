@@ -12,7 +12,7 @@ public record SyncProgressModel
         }
     }
 
-    public bool IsInSync { get; }
-    public int BlockHeightDbSync { get; }
-    public int BlockHeightOpn { get; }
+    public bool IsInSync { get; set; }
+    public int BlockHeightDbSync { get; set; }
+    public int BlockHeightOpn { get; set; }
 }
