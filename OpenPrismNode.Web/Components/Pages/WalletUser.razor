@@ -17,8 +17,9 @@
 }
 else
 {
-    <!-- Pass the wallet ID to the GetWalletDetails component -->
     <GetWalletDetails WalletId="@UserWalletId" />
+    <GetWalletTransactions WalletId="@UserWalletId" />
+    <ExecuteTransaction WalletId="@UserWalletId" />
 }
 
 @code {

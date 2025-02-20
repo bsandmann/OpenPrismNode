@@ -77,7 +77,7 @@ public class WalletsController : ControllerBase
         });
     }
 
-    [ApiKeyOrUserRoleAuthorization]
+    [ApiKeyOrWalletUserRoleAuthorization]
     [HttpGet("api/v{version:apiVersion=1.0}/wallets/{walletId}")]
     [ApiVersion("1.0")]
     [Consumes("application/json")]
@@ -125,43 +125,54 @@ public class WalletsController : ControllerBase
         }).ToList());
     }
 
-    [ApiKeyOrUserRoleAuthorization]
+    [ApiKeyOrWalletUserRoleAuthorization]
     [HttpPost("api/v{version:apiVersion=1.0}/wallets/{walletId}/transactions")]
     [ApiVersion("1.0")]
-    // [Consumes("application/octet-stream")]
-    [Consumes("text/plain")]
+    [Consumes("text/plain", "application/json")]
     [Produces("application/json")]
     public async Task<ActionResult> ExecuteTransaction(string walletId)
     {
         using var reader = new StreamReader(Request.Body);
-        var signedAtalaOperationAsBase64EncodedByteString = await reader.ReadToEndAsync();
+        var inputString = await reader.ReadToEndAsync();
 
-        if (string.IsNullOrWhiteSpace(signedAtalaOperationAsBase64EncodedByteString))
+        if (string.IsNullOrWhiteSpace(inputString))
         {
             return BadRequest("Input string is empty or null");
         }
 
-        // Validate base64
-        if (!IsValidBase64(signedAtalaOperationAsBase64EncodedByteString))
-        {
-            return BadRequest("Invalid base64 input");
-        }
-
-        // Attempt to decode base64 and parse protobuf
+        SignedAtalaOperation signedAtalaOperation;
         try
         {
-            var byteStringSignedAtalaOperation = PrismEncoding.Base64ToByteString(signedAtalaOperationAsBase64EncodedByteString);
-            if (byteStringSignedAtalaOperation == null)
+            // Decide how to parse based on whether it's valid Base64
+            if (IsValidBase64(inputString))
             {
-                return BadRequest("Unable to decode base64 input");
+                // Parse from Base64/Protobuf
+                var byteStringSignedAtalaOperation = PrismEncoding.Base64ToByteString(inputString);
+                if (byteStringSignedAtalaOperation == null)
+                {
+                    return BadRequest("Unable to decode base64 input");
+                }
+
+                signedAtalaOperation = SignedAtalaOperation.Parser.ParseFrom(byteStringSignedAtalaOperation);
+            }
+            else
+            {
+                // Parse from JSON
+                signedAtalaOperation = SignedAtalaOperation.Parser.ParseJson(inputString);
             }
 
-            var signedAtalaOperation = SignedAtalaOperation.Parser.ParseFrom(byteStringSignedAtalaOperation);
             if (signedAtalaOperation == null)
             {
-                return BadRequest("Unable to parse SignedAtalaOperation");
+                return BadRequest("Unable to parse SignedAtalaOperation from either base64 or JSON.");
             }
+        }
+        catch (Exception ex)
+        {
+            return BadRequest($"Error parsing the input: {ex.Message}");
+        }
 
+        try
+        {
             var transactionResult = await _mediator.Send(new WriteTransactionRequest(signedAtalaOperation, walletId));
             if (transactionResult.IsFailed)
             {
@@ -172,11 +183,11 @@ public class WalletsController : ControllerBase
         }
         catch (Exception ex)
         {
-            return BadRequest("Error processing the input: " + ex.Message);
+            return BadRequest($"Error processing the transaction: {ex.Message}");
         }
     }
 
-    [ApiKeyOrUserRoleAuthorization]
+    [ApiKeyOrWalletUserRoleAuthorization]
     [HttpGet("api/v{version:apiVersion=1.0}/wallets/{walletId}/transactions")]
     [ApiVersion("1.0")]
     [Consumes("application/json")]
@@ -200,7 +211,7 @@ public class WalletsController : ControllerBase
         }));
     }
 
-    [ApiKeyOrUserRoleAuthorization]
+    [ApiKeyOrWalletUserRoleAuthorization]
     [HttpPost("api/v{version:apiVersion=1.0}/wallets/{walletId}/withdrawal/{withdrawalAddress}")]
     [ApiVersion("1.0")]
     [Consumes("application/json")]

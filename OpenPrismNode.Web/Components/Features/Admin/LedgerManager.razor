@@ -1,9 +1,6 @@
-@page "/admin/LedgerManagement"
-@using System.Net.Http.Json
 @using Microsoft.AspNetCore.Authorization
 @using Microsoft.Extensions.Options
 @using OpenPrismNode.Core.Common
-@using OpenPrismNode.Web
 @attribute [Authorize(Roles = "Admin")]
 
 @inject IHttpClientFactory HttpClientFactory

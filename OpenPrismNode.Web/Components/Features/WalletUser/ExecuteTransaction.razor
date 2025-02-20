@@ -1,0 +1,230 @@
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.Extensions.Options
+@using OpenPrismNode.Core.Common
+
+@attribute [Authorize(Roles = "WalletUser,Admin")]
+
+@inject IHttpClientFactory HttpClientFactory
+@inject IHttpContextAccessor HttpContextAccessor
+@inject IOptions<AppSettings> AppSettingsOptions
+@inject IJSRuntime JS
+
+@rendermode @(new InteractiveServerRenderMode(prerender: false))
+
+<div class="border p-4 rounded shadow-sm space-y-4">
+    <h4 class="font-semibold text-lg">Execute Transaction</h4>
+
+    <!-- Label & "Get Example" button on the same line -->
+    <div class="flex justify-between items-center">
+        <label class="block text-sm font-medium text-gray-700">Transaction (Base64 or JSON)</label>
+        <div>
+            <button class="text-sm px-2 py-1 bg-gray-200 rounded hover:bg-gray-300"
+                    @onclick="ClearInput">
+                Clear
+            </button>
+            <button class="text-sm px-2 py-1 bg-gray-200 rounded hover:bg-gray-300"
+                    @onclick="LoadExample">
+                Get Example
+            </button>
+        </div>
+    </div>
+
+    <!-- Multiline input  -->
+    <div class="relative">
+        <textarea class="w-full h-40 border border-gray-300 rounded p-2 pr-6
+                       focus:outline-none focus:ring-1 focus:ring-slate-700 focus:border-slate-700"
+                  @bind="TransactionText">
+        </textarea>
+
+    </div>
+
+    <div class="flex justify-end">
+        <button class="px-4 py-2 bg-slate-700 text-white rounded hover:bg-slate-800"
+                @onclick="SendTransactionAsync">
+            Send Transaction
+        </button>
+    </div>
+
+    <!-- Error / Success messages -->
+    @if (!string.IsNullOrEmpty(ErrorMessage))
+    {
+        <div class="text-red-600">@ErrorMessage</div>
+    }
+    @if (!string.IsNullOrEmpty(SuccessMessage))
+    {
+        <div class="text-green-600 space-y-2">
+            <p>@SuccessMessage</p>
+
+            <!-- Show truncated operation ID with copy button -->
+            @if (!string.IsNullOrEmpty(OperationId))
+            {
+                <div class="flex items-center space-x-2">
+                    <span>@TruncateValue(OperationId)</span>
+                    <button class="px-2 py-1 text-xs bg-gray-200 rounded hover:bg-gray-300"
+                            @onclick="() => CopyToClipboard(OperationId)">
+                        Copy
+                    </button>
+                </div>
+            }
+        </div>
+    }
+</div>
+
+@code {
+    [Parameter]
+    public string WalletId { get; set; } = string.Empty;
+
+    private HttpClient? _httpClient;
+
+    private string TransactionText { get; set; } = string.Empty;
+    private string ErrorMessage { get; set; } = string.Empty;
+    private string SuccessMessage { get; set; } = string.Empty;
+    private string OperationId { get; set; } = string.Empty;
+
+    // Example JSON transaction
+    private const string ExampleJson = @"
+{
+  ""signedWith"": ""master0"",
+  ""signature"": ""MEQCIBX+BXDkRiSs0WiaXXlMvFzAtEJpfsVg29GOnKoPD8GeAiAxr5v6tGU0Fs5kAXUp2VF6TvqHXXqR4FINeGmmP/fWlg=="",
+  ""operation"": {
+    ""createDid"": {
+      ""didData"": {
+        ""publicKeys"": [
+          {
+            ""id"": ""key-1"",
+            ""usage"": ""AUTHENTICATION_KEY"",
+            ""compressedEcKeyData"": {
+              ""curve"": ""Ed25519"",
+              ""data"": ""YlGeiRRbOkoc9YVHmZoro1vzmYFxU6e0vFeh7DV5JBU=""
+            }
+          },
+          {
+            ""id"": ""master0"",
+            ""usage"": ""MASTER_KEY"",
+            ""compressedEcKeyData"": {
+              ""curve"": ""secp256k1"",
+              ""data"": ""AvHD42vYEWsqQJ5VSKo1SnIMtehaPfScMlTzyHZ/LSDW""
+            }
+          }
+        ],
+        ""services"": [
+          {
+            ""id"": ""service-1"",
+            ""type"": ""LinkedDomains"",
+            ""serviceEndpoint"": ""https://example.com/""
+          },
+          {
+            ""id"": ""agent-base-url"",
+            ""type"": ""LinkedResourceV1"",
+            ""serviceEndpoint"": ""http://cloud-agent:8085""
+          }
+        ],
+        ""context"": [
+          ""https://didcomm.org/messaging/contexts/v2""
+        ]
+      }
+    }
+  }
+}";
+
+    protected override void OnInitialized()
+    {
+        _httpClient = HttpClientFactory.CreateClient("LocalApi");
+
+        // Configure HttpClient base address and cookies
+        var request = HttpContextAccessor.HttpContext?.Request;
+        if (request is not null)
+        {
+            var baseUrl = $"{request.Scheme}://{request.Host}";
+            _httpClient.BaseAddress = new Uri(baseUrl);
+
+            var cookie = HttpContextAccessor.HttpContext.Request.Headers["Cookie"];
+            if (!string.IsNullOrEmpty(cookie))
+            {
+                if (_httpClient.DefaultRequestHeaders.Contains("Cookie"))
+                {
+                    _httpClient.DefaultRequestHeaders.Remove("Cookie");
+                }
+                _httpClient.DefaultRequestHeaders.Add("Cookie", cookie.ToString());
+            }
+        }
+    }
+
+    private async Task SendTransactionAsync()
+    {
+        ClearMessages();
+
+        if (string.IsNullOrWhiteSpace(WalletId))
+        {
+            ErrorMessage = "No wallet ID provided.";
+            return;
+        }
+        if (string.IsNullOrWhiteSpace(TransactionText))
+        {
+            ErrorMessage = "Transaction input is empty.";
+            return;
+        }
+
+        try
+        {
+            // Endpoint: POST /api/v1.0/wallets/{walletId}/transactions
+            var response = await _httpClient!.PostAsync(
+                $"api/v1.0/wallets/{WalletId}/transactions",
+                new StringContent(TransactionText));
+
+            if (!response.IsSuccessStatusCode)
+            {
+                var errorBody = await response.Content.ReadAsStringAsync();
+                ErrorMessage = $"Error: {errorBody} (HTTP {response.StatusCode})";
+                return;
+            }
+
+            // On success, the response contains the hex-encoded operationStatusId
+            var operationId = await response.Content.ReadAsStringAsync();
+            OperationId = operationId.Trim(); // For safety
+
+            SuccessMessage = "Transaction submitted successfully!";
+        }
+        catch (Exception ex)
+        {
+            ErrorMessage = $"Error sending transaction: {ex.Message}";
+        }
+    }
+
+    private void LoadExample()
+    {
+        TransactionText = ExampleJson.Trim();
+    }
+
+    private void ClearInput()
+    {
+        TransactionText = string.Empty;
+    }
+
+    private void ClearMessages()
+    {
+        ErrorMessage = string.Empty;
+        SuccessMessage = string.Empty;
+        OperationId = string.Empty;
+    }
+
+    private async Task CopyToClipboard(string text)
+    {
+        try
+        {
+            await JS.InvokeVoidAsync("navigator.clipboard.writeText", text);
+        }
+        catch (Exception ex)
+        {
+            ErrorMessage = $"Unable to copy: {ex.Message}";
+        }
+    }
+
+    private static string TruncateValue(string text, int maxLength = 20)
+    {
+        if (text.Length <= maxLength)
+            return text;
+
+        return text.Substring(0, maxLength) + "...";
+    }
+}
