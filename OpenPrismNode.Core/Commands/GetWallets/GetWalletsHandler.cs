@@ -27,7 +27,7 @@ public class GetWalletsHandler : IRequestHandler<GetWalletsRequest, Result<List<
         }
 
         var responses = new List<GetWalletResponse>();
-        foreach (var storedWallet in storedWallets)
+        foreach (var storedWallet in storedWallets.OrderBy(p=>p.CreatedUtc))
         {
             var walletState = await _walletService.GetWalletAsync(storedWallet.WalletId);
             if (walletState.IsFailed)

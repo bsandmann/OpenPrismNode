@@ -37,8 +37,9 @@
             @foreach (var w in Wallets)
             {
                 <tr class="border-b hover:bg-gray-50">
-                    <!-- Wallet ID with copy button -->
-                    <td class="p-2">
+                    <!-- Wallet ID & optional Funding Address -->
+                    <td class="p-2 align-top">
+                        <!-- Wallet ID row -->
                         <div class="flex items-center space-x-2">
                             <span>@w.WalletId</span>
                             <button class="px-2 py-1 text-xs bg-gray-200 rounded hover:bg-gray-300"
@@ -46,13 +47,25 @@
                                 Copy
                             </button>
                         </div>
+
+                        <!-- Funding address (only if syncing complete & address not empty) -->
+                        @if (w.SyncingComplete && !string.IsNullOrEmpty(w.FundingAddress))
+                        {
+                            <div class="flex items-center space-x-2 mt-1 text-sm text-gray-500">
+                                <span>Funding address: @TruncateAddress(w.FundingAddress)</span>
+                                <button class="px-2 py-1 text-xs bg-gray-200 rounded hover:bg-gray-300"
+                                        @onclick="() => CopyToClipboard(w.FundingAddress)">
+                                    Copy
+                                </button>
+                            </div>
+                        }
                     </td>
 
                     <!-- Formatted balance -->
-                    <td class="p-2">@FormatBalance(w.Balance)</td>
+                    <td class="p-2 align-top">@FormatBalance(w.Balance)</td>
 
                     <!-- Single Sync Status column -->
-                    <td class="p-2">@FormatSyncStatus(w.SyncingComplete, w.SyncProgress)</td>
+                    <td class="p-2 align-top">@FormatSyncStatus(w.SyncingComplete, w.SyncProgress)</td>
                 </tr>
             }
             </tbody>
@@ -94,7 +107,6 @@
                 {
                     _httpClient.DefaultRequestHeaders.Remove("Cookie");
                 }
-
                 _httpClient.DefaultRequestHeaders.Add("Cookie", cookie.ToString());
             }
         }
@@ -148,7 +160,7 @@
 
         if (syncProgress is null)
         {
-            return String.Empty;
+            return string.Empty;
         }
 
         int percent = (int)(syncProgress.Value);
@@ -180,4 +192,12 @@
         return "0 Lovelace";
     }
 
+    private static string TruncateAddress(string address, int maxLength = 20)
+    {
+        if (string.IsNullOrEmpty(address) || address.Length <= maxLength)
+        {
+            return address;
+        }
+        return address.Substring(0, maxLength) + "...";
+    }
 }

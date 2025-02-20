@@ -111,7 +111,20 @@
             CookieAuthenticationDefaults.AuthenticationScheme,
             principal);
 
-        // Redirect after successful login
+        if (role.Equals("Admin"))
+        {
+            Navigation.NavigateTo("/admin", forceLoad: true);
+        }
+
+        else if (role.Equals("User"))
+        {
+            Navigation.NavigateTo("/sharedUser", forceLoad: true);
+        }
+        else if (role.Equals("WalletUser"))
+        {
+            Navigation.NavigateTo("/walletUser", forceLoad: true);
+        }
+
         Navigation.NavigateTo("/", forceLoad: true);
     }
 

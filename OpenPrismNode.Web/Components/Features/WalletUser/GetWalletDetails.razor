@@ -1,8 +1,9 @@
 @using MediatR
 @using OpenPrismNode.Core.Commands.GetWallet
 @inject IMediator Mediator
+@inject Microsoft.JSInterop.IJSRuntime JS
 
-<div class="border p-4 rounded shadow-sm space-y-2">
+<div class="border p-4 rounded shadow-sm space-y-4">
     @if (!string.IsNullOrEmpty(ErrorMessage))
     {
         <div class="text-red-600">@ErrorMessage</div>
@@ -15,22 +16,62 @@
     else
     {
         <h4 class="font-semibold text-lg">Wallet Info</h4>
-        <div><strong>Wallet ID:</strong> @Wallet.WalletId</div>
-        <div><strong>Balance:</strong> @FormatBalance(Wallet.Balance)</div>
 
-        @if (!string.IsNullOrEmpty(Wallet.FundingAddress))
+        <!-- Wallet ID with copy button -->
+        <div class="flex items-center space-x-2">
+            <strong>Wallet ID:</strong>
+            <span>@TruncateAddress(@Wallet.WalletId)</span>
+            <button class="px-2 py-1 text-xs bg-gray-200 rounded hover:bg-gray-300"
+                    @onclick="() => CopyToClipboard(Wallet.WalletId)">
+                Copy
+            </button>
+        </div>
+
+        <!-- Balance -->
+        <div>
+            <strong>Balance:</strong> @FormatBalance(Wallet.Balance)
+        </div>
+
+        <!-- Sync Status -->
+        <div>
+            <strong>Sync Status:</strong>
+            @if (Wallet.SyncingComplete)
+            {
+                <span class="text-green-600 ml-1">Fully synced!</span>
+            }
+            else
+            {
+                if (Wallet.SyncProgress is not null)
+                {
+                    <span class="text-yellow-600 ml-1">
+                        Still syncing… @( (int)Wallet.SyncProgress )%
+                    </span>
+                }
+                else
+                {
+                    <span class="text-gray-500 ml-1">Syncing in progress…</span>
+                }
+            }
+        </div>
+
+        <!-- Funding Address (only if sync is complete and not empty) -->
+        @if (Wallet.SyncingComplete && !string.IsNullOrEmpty(Wallet.FundingAddress))
         {
-            <div>
-                <strong>Funding Address:</strong> @Wallet.FundingAddress
+            <div class="flex items-center space-x-2">
+                <strong>Funding Address:</strong>
+                <span>@TruncateAddress(@Wallet.FundingAddress)</span>
+                <button class="px-2 py-1 text-xs bg-gray-200 rounded hover:bg-gray-300"
+                        @onclick="() => CopyToClipboard(Wallet.FundingAddress)">
+                    Copy
+                </button>
             </div>
         }
-
-        <div>
-            <strong>Syncing Complete:</strong> @(Wallet.SyncingComplete ? "Yes" : "No")
-        </div>
-        <div>
-            <strong>Sync Progress:</strong> @Wallet.SyncProgress
-        </div>
+        else
+        {
+            <p class="text-sm text-gray-500">
+                The funding address will appear once the wallet is fully synced.
+            </p>
+        }
     }
 </div>
 
@@ -73,7 +114,7 @@
     private string FormatBalance(long lovelaces)
     {
         // Format lovelaces with thousand separators (e.g. "3,345,003")
-        string lovelacesStr = lovelaces.ToString("N0");
+        var lovelacesStr = lovelaces.ToString("N0");
 
         // Convert to ADA by integer division
         long adaWhole = lovelaces / 1_000_000;
@@ -81,6 +122,32 @@
             ? $"(~{adaWhole} ADA)"
             : "(<1 ADA)";
 
-        return $"{lovelacesStr} Lovelace {adaText}";
+        if (lovelaces > 0)
+        {
+            return $"{lovelacesStr} Lovelace {adaText}";
+        }
+
+        return "0 Lovelace";
+    }
+
+    private async Task CopyToClipboard(string text)
+    {
+        try
+        {
+            await JS.InvokeVoidAsync("navigator.clipboard.writeText", text);
+        }
+        catch (Exception ex)
+        {
+            ErrorMessage = $"Unable to copy to clipboard: {ex.Message}";
+        }
+    }
+
+    private static string TruncateAddress(string address, int maxLength = 20)
+    {
+        if (string.IsNullOrEmpty(address) || address.Length <= maxLength)
+        {
+            return address;
+        }
+        return address.Substring(0, maxLength) + "...";
     }
 }
