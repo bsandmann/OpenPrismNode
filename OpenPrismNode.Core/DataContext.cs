@@ -266,5 +266,23 @@ public class DataContext : DbContext
             .WithOne(o => o.WalletTransactionEntity)
             .HasForeignKey<WalletTransactionEntity>(e => e.OperationStatusEntityId)
             .IsRequired(false);
+
+        // modelBuilder.Entity<OperationStatusEntity>()
+        //     .HasOne(os => os.CreateDidEntity)
+        //     .WithOne(cd => cd.OperationStatus)
+        //     .HasForeignKey<OperationStatusEntity>(os => os.OperationHash)
+        //     .IsRequired(false);
+        //
+        // modelBuilder.Entity<OperationStatusEntity>()
+        //     .HasOne(os => os.UpdateDidEntity)
+        //     .WithOne(ud => ud.OperationStatus)
+        //     .HasForeignKey<OperationStatusEntity>(os => os.OperationHash)
+        //     .IsRequired(false);
+        //
+        // modelBuilder.Entity<OperationStatusEntity>()
+        //     .HasOne(os => os.DeactivateDidEntity)
+        //     .WithOne(dd => dd.OperationStatus)
+        //     .HasForeignKey<OperationStatusEntity>(os => os.OperationHash)
+        //     .IsRequired(false);
     }
 }

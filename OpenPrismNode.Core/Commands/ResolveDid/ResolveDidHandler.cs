@@ -285,6 +285,10 @@ public class ResolveDidHandler : IRequestHandler<ResolveDidRequest, Result<Resol
                         else
                         {
                             var keysXy = PrismEncoding.HexToPublicKeyPairByteArrays(PrismEncoding.ByteArrayToHex(addKeyAction.PublicKey));
+                            if (keysXy.IsFailed)
+                            {
+                                return keysXy.ToResult();
+                            }
                             var (keyX, keyY) = keysXy.Value;
                             prismPublicKeys.Add(new PrismPublicKey(
                                 keyUsage: addKeyAction.PrismKeyUsage,

@@ -12,7 +12,7 @@ using OpenPrismNode.Core;
 namespace OpenPrismNode.Web.Migrations
 {
     [DbContext(typeof(DataContext))]
-    [Migration("20240920175933_initial")]
+    [Migration("20250220150101_initial")]
     partial class initial
     {
         /// <inheritdoc />
@@ -20,7 +20,7 @@ namespace OpenPrismNode.Web.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "8.0.8")
+                .HasAnnotation("ProductVersion", "9.0.2")
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
@@ -567,7 +567,7 @@ namespace OpenPrismNode.Web.Migrations
                     b.Property<DateTime>("LastUpdatedUtc")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<int>("OperationStatusEntityId")
+                    b.Property<int?>("OperationStatusEntityId")
                         .HasColumnType("integer");
 
                     b.Property<string>("TransactionId")

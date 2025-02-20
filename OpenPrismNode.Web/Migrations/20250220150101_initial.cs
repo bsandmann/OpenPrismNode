@@ -117,7 +117,7 @@ namespace OpenPrismNode.Web.Migrations
                     Depth = table.Column<long>(type: "bigint", nullable: false),
                     Fee = table.Column<long>(type: "bigint", nullable: false),
                     WalletEntityId = table.Column<int>(type: "integer", nullable: false),
-                    OperationStatusEntityId = table.Column<int>(type: "integer", nullable: false)
+                    OperationStatusEntityId = table.Column<int>(type: "integer", nullable: true)
                 },
                 constraints: table =>
                 {

@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.OpenApi.Models;
 using OpenPrismNode;
 using OpenPrismNode.Core;
@@ -117,10 +118,12 @@ builder.Services.AddHostedService(provider => provider.GetRequiredService<Backgr
 builder.Services.AddMediatR(cfg => cfg.RegisterServicesFromAssemblies(AppDomain.CurrentDomain.GetAssemblies()));
 builder.Services.AddDbContext<DataContext>(options =>
     options.UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking)
-        .EnableSensitiveDataLogging(true)
+        // .EnableSensitiveDataLogging(true)
         .UseNpgsql(appSettings!.PrismLedger.PrismPostgresConnectionString)
+        .ConfigureWarnings(p=>p.Ignore(RelationalEventId.PendingModelChangesWarning))
         .UseNpgsql(p =>
         {
+
             p.MigrationsAssembly("OpenPrismNode.Web");
             p.EnableRetryOnFailure(
                 maxRetryCount: 5,
@@ -168,6 +171,12 @@ if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
     app.UseSwaggerUI();
+}
+
+using (var scope = app.Services.CreateScope())
+{
+    var dbContext = scope.ServiceProvider.GetRequiredService<DataContext>();
+    dbContext.Database.Migrate(); // Will create and apply migrations if needed
 }
 
 app.Run();

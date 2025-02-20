@@ -27,12 +27,12 @@
       <ProjectReference Include="..\OpenPrismNode.Sync\OpenPrismNode.Sync.csproj" />
     </ItemGroup>
 
+    <ItemGroup>
+      <Folder Include="Migrations\" />
+    </ItemGroup>
+
     <PropertyGroup>
         <GenerateDocumentationFile>true</GenerateDocumentationFile>
         <NoWarn>$(NoWarn);1591</NoWarn>
     </PropertyGroup>
-    
-    <ItemGroup>
-      <Folder Include="Migrations\" />
-    </ItemGroup>
 </Project>

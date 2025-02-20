@@ -123,6 +123,10 @@
             if (!response.IsSuccessStatusCode)
             {
                 var content = await response.Content.ReadAsStringAsync();
+                if (content.Contains("No wallets not found"))
+                {
+                    return;
+                }
                 ErrorMessage = $"Failed to get wallets: {content} (HTTP {response.StatusCode})";
                 return;
             }
