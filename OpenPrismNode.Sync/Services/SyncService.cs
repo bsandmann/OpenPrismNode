@@ -329,7 +329,7 @@ public static class SyncService
         return Result.Ok();
     }
 
-    private static async Task<Result<Hash>> FastSyncTo(IMediator mediator,AppSettings appSettings, LedgerType ledgerType, int firstBlockToRetrieve, int lastBlockToRetrieve, int lastEpochInDatabase)
+    private static async Task<Result<Hash>> FastSyncTo(IMediator mediator, AppSettings appSettings, LedgerType ledgerType, int firstBlockToRetrieve, int lastBlockToRetrieve, int lastEpochInDatabase)
     {
         var currentBlockStart = firstBlockToRetrieve;
         Hash? lastProcessedBlockHash = null;

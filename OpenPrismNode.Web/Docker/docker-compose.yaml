@@ -1,0 +1,59 @@
+version: '3.9'
+services:
+  openprismnode:
+    image: sandmanndockerreg.azurecr.io/openprismnode:latest
+    container_name: openprismnode
+    depends_on:
+      - prismdb
+      - seq
+    environment:
+      # --- Basic placeholders: adapt to your needs:
+      - AppSettings__PrismLedger__Name=preprod
+      - AppSettings__PrismLedger__PrismPostgresConnectionString=Host=prismdb;Database=prismdatabase;Username=postgres;Password=postgres
+      - AppSettings__PrismLedger__DbSyncPostgresConnectionString=Host=1.2.3.4;Port=5432;Database=cexplorer;User ID=<user>;Password=<password>
+      - AppSettings__CardanoWalletApiEndpoint=
+      - AppSettings__CardanoWalletApiEndpointPort=8090
+      - AppSettings__GrpcPort=50053
+      - AppSettings__ApiHttpsPort=5001
+      # Overriding Seq config so your app logs to seq container:
+      - Seq__ServerUrl=http://seq:5341
+
+    ports:
+      - "5001:5001"   # Host port 5001 -> Container port 5001
+      - "50053:50053" # Host port 50053 -> Container port 50053
+    networks:
+      - prismnet
+
+  prismdb:
+    image: postgres:15
+    container_name: prismdb
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=prismdatabase
+    expose:
+      - "5432"
+    volumes:
+      - prismdb_data:/var/lib/postgresql/data
+    networks:
+      - prismnet
+
+  seq:
+    image: datalust/seq:latest
+    container_name: seq
+    environment:
+      - ACCEPT_EULA=Y
+    ports:
+      - "5341:5341"
+    volumes:
+      - seq_data:/data
+    networks:
+      - prismnet
+
+volumes:
+  prismdb_data:
+  seq_data:
+
+networks:
+  prismnet:
+    driver: bridge

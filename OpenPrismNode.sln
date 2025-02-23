@@ -24,6 +24,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Documents", "Documents", "{
 		Documents\development_m1.md = Documents\development_m1.md
 		Documents\development_m2.md = Documents\development_m2.md
 		Documents\Sync_pattern_OpenPrismNode_May_2024.pdf = Documents\Sync_pattern_OpenPrismNode_May_2024.pdf
+		Documents\development_m3.md = Documents\development_m3.md
 	EndProjectSection
 EndProject
 Global

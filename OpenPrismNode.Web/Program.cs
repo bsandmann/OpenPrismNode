@@ -85,7 +85,7 @@ builder.WebHost.ConfigureKestrel(options =>
     // Listen for REST endpoints over HTTPS
     options.Listen(IPAddress.Any, appSettings!.ApiHttpsPort, listenOptions =>
     {
-        listenOptions.UseHttps(); // Enforce HTTPS
+        // listenOptions.UseHttps(); // Enforce HTTPS
         listenOptions.Protocols = HttpProtocols.Http1AndHttp2;
     });
 

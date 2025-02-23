@@ -8,6 +8,7 @@
         <RootNamespace>OpenPrismNode.Web</RootNamespace>
         <UserSecretsId>b14dc700-90f2-4cd0-b6bb-e84ecace5456</UserSecretsId>
         <Version>0.7.0</Version>
+        <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
     </PropertyGroup>
 
     <ItemGroup>
@@ -29,6 +30,12 @@
 
     <ItemGroup>
       <Folder Include="Migrations\" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <Content Include="..\.dockerignore">
+        <Link>.dockerignore</Link>
+      </Content>
     </ItemGroup>
 
     <PropertyGroup>

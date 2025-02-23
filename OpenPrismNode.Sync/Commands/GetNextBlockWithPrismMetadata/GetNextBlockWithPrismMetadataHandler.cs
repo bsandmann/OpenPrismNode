@@ -9,6 +9,8 @@ using OpenPrismNode.Sync.Services;
 
 namespace OpenPrismNode.Sync.Commands.GetNextBlockWithPrismMetadata;
 
+using System.Diagnostics;
+
 public class GetNextBlockWithPrismMetadataHandler : IRequestHandler<GetNextBlockWithPrismMetadataRequest, Result<GetNextBlockWithPrismMetadataResponse>>
 {
     private readonly INpgsqlConnectionFactory _connectionFactory;
@@ -111,12 +113,15 @@ public class GetNextBlockWithPrismMetadataHandler : IRequestHandler<GetNextBlock
         await using var connection = _connectionFactory.CreateConnection();
         _logger.LogInformation($"Checking for block with PRISM-metadata...");
 
-        const int batchSize = 5000;
+        var batchSize = 500;
         long lastId = 0;
         var allResults = new List<BlockMetadataInfo>();
 
+        Stopwatch stopwatch = new();
         while (true)
         {
+            stopwatch.Reset();
+            stopwatch.Start();
             // Step 1: Fetch relevant transaction IDs in batches
             const string metadataQuery = @"
             SELECT id, tx_id
@@ -127,6 +132,20 @@ public class GetNextBlockWithPrismMetadataHandler : IRequestHandler<GetNextBlock
 
             var txBatch = await connection.QueryAsync<(long Id, long TxId)>(metadataQuery,
                 new { MetadataKey = metadataKey, LastId = lastId, BatchSize = batchSize });
+
+            stopwatch.Stop();
+            if (stopwatch.ElapsedMilliseconds < 1000)
+            {
+                batchSize += 100;
+            }
+            if(stopwatch.ElapsedMilliseconds > 5000)
+            {
+                batchSize -= 200;
+                if (batchSize < 50)
+                {
+                    batchSize = 50;
+                }
+            }
 
             if (!txBatch.Any())
             {
