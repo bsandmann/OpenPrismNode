@@ -1,3 +1,5 @@
+# This is an Blocktrust internal configuration file which also used the ingestion endpoint
+
 version: '3.9'
 services:
   openprismnode:
@@ -50,10 +52,25 @@ services:
       - ACCEPT_EULA=Y
     ports:
       - "5341:5341"
-      # Seq UI
+    # Seq UI
       - "5002:80"
     volumes:
       - seq_data:/data
+    networks:
+      - prismnet
+
+  analyticsingest:
+    image: sandmanndockerreg.azurecr.io/analytics-ingest:latest
+    container_name: analyticsingest
+    depends_on:
+      - seq
+    ports:
+      - "5000:5000"
+    environment:
+      - AppSettings__PublicPoolIngestionKey=
+      - ConnectionStrings__DefaultConnection=
+      - Seq__ServerUrl=http://seq:5341
+      - AllowedHosts=*
     networks:
       - prismnet
 

@@ -40,15 +40,15 @@ public class BackgroundSyncService : BackgroundService
     {
         var version = OpnVersion.GetVersion();
         Console.WriteLine(
-           $"""
-             ____   _____  _   _ 
-            / __ \ |  __ \| \ | |
-           | |  | || |__) |  \| |
-           | |  | ||  ___/| . ` |
-           | |__| || |    | |\  |
-            \____/ |_|    |_| \_|
-           Open PRISM Node (v{version})
-           """);
+            $"""
+               ____   _____  _   _ 
+              / __ \ |  __ \| \ | |
+             | |  | || |__) |  \| |
+             | |  | ||  ___/| . ` |
+             | |__| || |    | |\  |
+              \____/ |_|    |_| \_|
+             Open PRISM Node (v{version})
+             """);
 
         if (isRunning)
         {
@@ -94,6 +94,7 @@ public class BackgroundSyncService : BackgroundService
         if (isLocked)
         {
             _logger.LogWarning("The automatic sync service is locked due to an ongoing operations. Wait or restart the node");
+            return;
         }
 
         isRunning = true;
