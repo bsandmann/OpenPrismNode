@@ -174,7 +174,7 @@ public class BackgroundSyncService : BackgroundService
                             else
                             {
                                 isInitialStartup = false;
-                                _logger.LogInformation($"Sync succussfully completed for {_appSettings.PrismLedger.Name}");
+                                _logger.LogInformation($"Sync successfully completed for {_appSettings.PrismLedger.Name}");
                             }
                         }
                         catch (OperationCanceledException)
