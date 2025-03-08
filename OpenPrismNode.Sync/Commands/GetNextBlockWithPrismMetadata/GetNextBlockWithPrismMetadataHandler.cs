@@ -113,7 +113,7 @@ public class GetNextBlockWithPrismMetadataHandler : IRequestHandler<GetNextBlock
         await using var connection = _connectionFactory.CreateConnection();
         _logger.LogInformation($"Checking for block with PRISM-metadata...");
 
-        var batchSize = 200;
+        var batchSize = 100;
         long lastId = 0;
         var allResults = new List<BlockMetadataInfo>();
 
