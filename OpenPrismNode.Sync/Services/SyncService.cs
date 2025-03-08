@@ -158,7 +158,7 @@ public static class SyncService
                 {
                     // No new PRISM block in front of the current block.
                     // We can fast-sync to the tip
-                    var fastSyncResult = await FastSyncTo(mediator, appsettings, ledgerType, i, postgresBlockTipResult.Value.block_no - 1, lastEpochInDatabase);
+                    var fastSyncResult = await FastSyncTo(mediator, appsettings, ledgerType, i, postgresBlockTipResult.Value.block_no - 1, lastEpochInDatabase, cancellationToken);
                     if (fastSyncResult.IsFailed)
                     {
                         logger.LogError(fastSyncResult.Errors.First().Message);
@@ -176,7 +176,7 @@ public static class SyncService
 
                     if (distanceToNextPrismBlock > 0)
                     {
-                        var fastSyncResult = await FastSyncTo(mediator, appsettings, ledgerType, i, getNextBlockWithPrismMetadataResult.Value.BlockHeight!.Value - 1, lastEpochInDatabase);
+                        var fastSyncResult = await FastSyncTo(mediator, appsettings, ledgerType, i, getNextBlockWithPrismMetadataResult.Value.BlockHeight!.Value - 1, lastEpochInDatabase, cancellationToken);
                         if (fastSyncResult.IsFailed)
                         {
                             logger.LogError(fastSyncResult.Errors.First().Message);
@@ -257,6 +257,12 @@ public static class SyncService
 
         while (true)
         {
+            // Check for cancellation before each iteration of potentially infinite loop
+            if (cancellationToken.IsCancellationRequested)
+            {
+                return Result.Fail("Handle fork operation was cancelled");
+            }
+            
             var prefixCurrentBlock = BlockEntity.CalculateBlockHashPrefix(currentBlock.hash) ?? 0;
             var blockInDatabase = await mediator.Send(new GetBlockByBlockHashRequest(currentBlock.block_no, prefixCurrentBlock, ledgerType), cancellationToken);
 
@@ -283,6 +289,12 @@ public static class SyncService
         // Now create all the forked blocks, starting from the earliest
         for (int i = blocksToCreate.Count - 1; i >= 0; i--)
         {
+            // Check for cancellation before processing each block
+            if (cancellationToken.IsCancellationRequested)
+            {
+                return Result.Fail("Handle fork operation was cancelled during block creation");
+            }
+            
             var blockToCreate = blocksToCreate[i];
             var previousBlock = i == blocksToCreate.Count - 1
                 ? await mediator.Send(new GetBlockByBlockHashRequest(currentBlock.block_no, BlockEntity.CalculateBlockHashPrefix(currentBlock.hash) ?? 0, ledgerType), cancellationToken)
@@ -329,16 +341,22 @@ public static class SyncService
         return Result.Ok();
     }
 
-    private static async Task<Result<Hash>> FastSyncTo(IMediator mediator, AppSettings appSettings, LedgerType ledgerType, int firstBlockToRetrieve, int lastBlockToRetrieve, int lastEpochInDatabase)
+    private static async Task<Result<Hash>> FastSyncTo(IMediator mediator, AppSettings appSettings, LedgerType ledgerType, int firstBlockToRetrieve, int lastBlockToRetrieve, int lastEpochInDatabase, CancellationToken cancellationToken = default)
     {
         var currentBlockStart = firstBlockToRetrieve;
         Hash? lastProcessedBlockHash = null;
 
         while (currentBlockStart <= lastBlockToRetrieve)
         {
+            // Check for cancellation before each iteration
+            if (cancellationToken.IsCancellationRequested)
+            {
+                return Result.Fail("Fast sync operation was cancelled");
+            }
+
             var currentChunkEnd = Math.Min(currentBlockStart + appSettings.FastSyncBatchSize - 1, lastBlockToRetrieve);
 
-            var blocksFromPostgresResult = await mediator.Send(new GetPostgresBlocksByBlockNosRequest(currentBlockStart, currentChunkEnd - currentBlockStart + 1));
+            var blocksFromPostgresResult = await mediator.Send(new GetPostgresBlocksByBlockNosRequest(currentBlockStart, currentChunkEnd - currentBlockStart + 1), cancellationToken);
             if (blocksFromPostgresResult.IsFailed)
             {
                 return Result.Fail($"Unable to retrieve blocks {currentBlockStart} to {currentChunkEnd} from dbSync postgres database: {blocksFromPostgresResult.Errors.First().Message}");
@@ -360,7 +378,13 @@ public static class SyncService
             {
                 for (int i = lastEpochInDatabase + 1; i <= highestEpochInChunk; i++)
                 {
-                    var createEpochResult = await mediator.Send(new CreateEpochRequest(ledgerType, i));
+                    // Check for cancellation before creating epochs
+                    if (cancellationToken.IsCancellationRequested)
+                    {
+                        return Result.Fail("Fast sync operation was cancelled during epoch creation");
+                    }
+
+                    var createEpochResult = await mediator.Send(new CreateEpochRequest(ledgerType, i), cancellationToken);
                     if (createEpochResult.IsFailed)
                     {
                         return createEpochResult.ToResult();
@@ -370,7 +394,7 @@ public static class SyncService
                 lastEpochInDatabase = highestEpochInChunk;
             }
 
-            var createBlocksAsBatchResult = await mediator.Send(new CreateBlocksAsBatchRequest(ledgerType, retrievedBlocks));
+            var createBlocksAsBatchResult = await mediator.Send(new CreateBlocksAsBatchRequest(ledgerType, retrievedBlocks), cancellationToken);
             if (createBlocksAsBatchResult.IsFailed)
             {
                 return createBlocksAsBatchResult;

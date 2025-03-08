@@ -120,7 +120,7 @@
         }
         catch (Exception ex)
         {
-            errorMessage = $"Failed to load sync progress: {ex.Message}";
+            errorMessage = $"Failed to load sync progress: {ex.Message}. This message might also appear if the database is not yet initialized (after a refresh start).";
         }
     }
 

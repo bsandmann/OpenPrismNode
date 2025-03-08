@@ -67,7 +67,7 @@ public class LedgersController : ControllerBase
         }
 
         _backgroundSyncService.Lock();
-        await _backgroundSyncService.StopAsync(CancellationToken.None);
+        await _backgroundSyncService.StopService();
         _logger.LogInformation($"The automatic sync service is stopped. Restart the service after the deletion is completed if needed");
         _logger.LogInformation($"Deleting {ledger} ledger...");
 
@@ -132,7 +132,7 @@ public class LedgersController : ControllerBase
         }
 
         _backgroundSyncService.Lock();
-        await _backgroundSyncService.StopAsync(CancellationToken.None);
+        await _backgroundSyncService.StopService();
         _logger.LogInformation($"The automatic sync service is stopped. Restart the service after the deletion is completed if needed");
 
         var isParseable = Enum.TryParse<LedgerType>("cardano" + ledger, ignoreCase: true, out var ledgerType);
@@ -298,7 +298,7 @@ public class LedgersController : ControllerBase
         }
 
         _backgroundSyncService.Lock();
-        await _backgroundSyncService.StopAsync(CancellationToken.None);
+        await _backgroundSyncService.StopService();
         _logger.LogInformation($"The automatic sync service is stopped. Restart the service after the deletion is completed if needed");
 
         var isParseable = Enum.TryParse<LedgerType>("cardano" + ledger, ignoreCase: true, out var ledgerType);
