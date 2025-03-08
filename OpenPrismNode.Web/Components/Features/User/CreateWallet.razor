@@ -18,7 +18,8 @@
 
     <!-- Always show this general info -->
     <p class="text-sm text-gray-700 text-align-center text-center">
-        Create a wallet and wait until synchronization. After that you can use the Wallet-ID to sign in into the application again.
+        Create a wallet and wait until synchronization. After that you can use the Wallet-ID to sign in into the
+        application again.
     </p>
 
     @if (!string.IsNullOrEmpty(ErrorMessage))
@@ -48,7 +49,7 @@
             <label class="block text-gray-700 font-semibold mb-1">Wallet Name</label>
             <input class="border w-full px-2 py-1 rounded"
                    @bind="WalletName"
-                   placeholder="Enter wallet name..." />
+                   placeholder="Enter wallet name..."/>
         </div>
 
         <div class="flex justify-end">
@@ -113,7 +114,8 @@
                             </div>
                             <p class="text-xs text-gray-600">
                                 The Funding address will be generated when the synchronisation is complete.
-                                Use the provided address to provide ada to your account to pay for transactions on chain.
+                                Use the provided address to provide ada to your account to pay for transactions on
+                                chain.
                             </p>
                         </div>
                     }
@@ -141,6 +143,7 @@
 </div>
 
 @code {
+
     // Local state
     private HttpClient? _httpClient;
 
@@ -148,8 +151,8 @@
     private string ErrorMessage { get; set; } = string.Empty;
     private string SuccessMessage { get; set; } = string.Empty;
 
-    private bool IsCreating { get; set; } = false;         // True while calling API to create wallet
-    private bool HasCreatedWallet { get; set; } = false;   // Once a wallet is created, we don't allow creation again
+    private bool IsCreating { get; set; } = false; // True while calling API to create wallet
+    private bool HasCreatedWallet { get; set; } = false; // Once a wallet is created, we don't allow creation again
     private bool IsCreateButtonDisabled => HasCreatedWallet || IsCreating;
 
     // Created wallet from server response
@@ -177,6 +180,7 @@
                 {
                     _httpClient.DefaultRequestHeaders.Remove("Cookie");
                 }
+
                 _httpClient.DefaultRequestHeaders.Add("Cookie", cookie.ToString());
             }
         }
@@ -185,8 +189,8 @@
     private async Task Create()
     {
         ClearMessages();
-        IsCreating = true;            // Show spinner
-        HasCreatedWallet = false;     // We are about to create a wallet
+        IsCreating = true; // Show spinner
+        HasCreatedWallet = false; // We are about to create a wallet
 
         if (string.IsNullOrWhiteSpace(WalletName))
         {
@@ -245,7 +249,15 @@
             if (!response.IsSuccessStatusCode)
             {
                 var content = await response.Content.ReadAsStringAsync();
-                ErrorMessage = $"Failed to load wallet info: {content} (HTTP {response.StatusCode})";
+                if (content.Contains("Unauthorized"))
+                {
+                    ErrorMessage = $"";
+                }
+                else
+                {
+                    ErrorMessage = $"Failed to load wallet info: {content} (HTTP {response.StatusCode})";
+                }
+
                 return;
             }
 
@@ -301,4 +313,5 @@
         ErrorMessage = string.Empty;
         SuccessMessage = string.Empty;
     }
+
 }

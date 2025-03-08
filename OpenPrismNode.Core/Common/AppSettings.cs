@@ -90,5 +90,11 @@ public class AppSettings
     /// Port for the gRPC endpoint
     /// </summary>
     public int GrpcPort { get; set; } = 50053;
-    
+
+    /// <summary>
+    /// Display of Port for the gRPC endpoint in the UI
+    /// Useful if some redirection happens because of a firewall
+    /// </summary>
+    public int GrpcPortUi { get; set; } = 50053;
+
 }

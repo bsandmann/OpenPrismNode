@@ -5,6 +5,7 @@ using System.Text.Json.Serialization;
 using Asp.Versioning;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
@@ -33,6 +34,17 @@ builder.Services.AddControllers()
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddRazorComponents(o => o.DetailedErrors = builder.Environment.IsDevelopment())
     .AddInteractiveServerComponents();
+
+builder.Services.Configure<ForwardedHeadersOptions>(options =>
+{
+    // We want to forward the X-Forwarded-For and X-Forwarded-Proto headers
+    options.ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto;
+
+    // Optional but often recommended: if you do not know the exact proxies,
+    // clear these so the middleware processes all forwarding headers.
+    options.KnownNetworks.Clear();
+    options.KnownProxies.Clear();
+});
 
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddSwaggerGen(c =>
@@ -120,10 +132,9 @@ builder.Services.AddDbContext<DataContext>(options =>
     options.UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking)
         // .EnableSensitiveDataLogging(true)
         .UseNpgsql(appSettings!.PrismLedger.PrismPostgresConnectionString)
-        .ConfigureWarnings(p=>p.Ignore(RelationalEventId.PendingModelChangesWarning))
+        .ConfigureWarnings(p => p.Ignore(RelationalEventId.PendingModelChangesWarning))
         .UseNpgsql(p =>
         {
-
             p.MigrationsAssembly("OpenPrismNode.Web");
             p.EnableRetryOnFailure(
                 maxRetryCount: 5,
@@ -142,6 +153,7 @@ builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationSc
         options.LoginPath = "/login";
         options.AccessDeniedPath = "/access-denied";
         options.ClaimsIssuer = "OpenPrismNode";
+        options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
     });
 
 builder.Services.AddAuthorization(options =>
@@ -152,6 +164,8 @@ builder.Services.AddAuthorization(options =>
 });
 
 var app = builder.Build();
+
+app.UseForwardedHeaders();
 
 app.UseStaticFiles();
 app.UseRouting();
@@ -166,12 +180,8 @@ app.UseAntiforgery();
 app.MapRazorComponents<App>()
     .AddInteractiveServerRenderMode();
 
-// Enable Swagger in development
-if (app.Environment.IsDevelopment())
-{
-    app.UseSwagger();
-    app.UseSwaggerUI();
-}
+app.UseSwagger();
+app.UseSwaggerUI();
 
 using (var scope = app.Services.CreateScope())
 {
