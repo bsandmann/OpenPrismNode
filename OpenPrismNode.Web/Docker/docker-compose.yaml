@@ -18,6 +18,7 @@ services:
       - AppSettings__GrpcPort=50053
       - AppSettings__GrpcPortUi=50053
       - AppSettings__ApiHttpsPort=5001
+      - AppSettings__ApiHttpPortUi=5001
       # Overriding Seq config so your app logs to seq container:
       - Seq__ServerUrl=http://seq:5341
       # Blocktrust specific configurations

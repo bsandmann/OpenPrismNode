@@ -84,6 +84,20 @@ builder.Services.AddSwaggerGen(c =>
 var appSettingsSection = builder.Configuration.GetSection("AppSettings");
 builder.Services.Configure<AppSettings>(appSettingsSection);
 var appSettings = appSettingsSection.Get<AppSettings>();
+
+// Set UI port values to their default if they're not specified
+if (appSettings != null)
+{
+    if (appSettings.ApiHttpPortUi == 0)
+    {
+        appSettings.ApiHttpPortUi = appSettings.ApiHttpsPort;
+    }
+    
+    if (appSettings.GrpcPortUi == 0)
+    {
+        appSettings.GrpcPortUi = appSettings.GrpcPort;
+    }
+}
 builder.Services.AddApiVersioning(options =>
 {
     options.DefaultApiVersion = new ApiVersion(1, 0);

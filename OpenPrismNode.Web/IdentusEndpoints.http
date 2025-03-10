@@ -1,5 +1,5 @@
 @IdentusCloudAgent_HostAdress = http://localhost:8085
-@didRef = did:prism:9dbd9f428c39c91884b22dbaeeef6bf4817d524c96d59885d7e5ffb268775428
+@didRef = did:prism:f67bdb0cf700e0443d78f20c47cb2d6eac160fce9b67d0c1e00fc223b9ebf42b
 
 ###
 # Creates a new DID locally inside the Identus Cloud Agent
@@ -20,7 +20,7 @@ Content-Type: application/json
       {
         "id": "service-1",
         "type": "LinkedDomains",
-        "serviceEndpoint": "https://example.com"
+        "serviceEndpoint": "https://opn.blocktrust.dev"
       }
     ],
     "contexts": [

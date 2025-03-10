@@ -85,6 +85,12 @@ public class AppSettings
     /// Port for the API
     /// </summary>
     public int ApiHttpsPort { get; set; } = 5001;
+    
+    /// <summary>
+    /// Display of Port for the HTTP API endpoint in the UI
+    /// Useful if some redirection happens because of a firewall
+    /// </summary>
+    public int ApiHttpPortUi { get; set; } = 5001;
 
     /// <summary>
     /// Port for the gRPC endpoint
