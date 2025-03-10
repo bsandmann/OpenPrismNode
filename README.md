@@ -25,6 +25,9 @@ The project is currently under development, but already in beta testing.
       `PRISM_NODE_HOST: opn.mainnet.blocktrust.dev`
       `PRISM_NODE_PORT: 50053`
 - Note that the gRPC connection currently uses a preconfigured shared wallet (which is funded, at least for preprod), since Identus currently does not allow to provide an API-key (in our case the `wallet-Id`) via gRPC.
+
+## Get the image
+`docker pull ghcr.io/bsandmann/openprismnode:latest`
      
 
 ## Development
