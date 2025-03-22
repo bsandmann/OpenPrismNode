@@ -3,6 +3,8 @@ namespace OpenPrismNode.Sync.Commands.ApiSync.GetApiBlockTip;
 using System;
 using System.Net;
 using System.Net.Http;
+using System.Net.Http.Headers;
+using System.Net.Http.Json;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
@@ -21,7 +23,7 @@ using OpenPrismNode.Sync.Implementations.Blockfrost;
 /// </summary>
 public class GetApiBlockTipHandler : IRequestHandler<GetApiBlockTipRequest, Result<Block>>
 {
-    private readonly BlockfrostApiClient _apiClient;
+    private readonly IHttpClientFactory _httpClientFactory;
     private readonly ILogger<GetApiBlockTipHandler> _logger;
     private readonly AppSettings _appSettings;
     
@@ -29,11 +31,11 @@ public class GetApiBlockTipHandler : IRequestHandler<GetApiBlockTipRequest, Resu
     /// Initializes a new instance of the <see cref="GetApiBlockTipHandler"/> class.
     /// </summary>
     public GetApiBlockTipHandler(
-        BlockfrostApiClient apiClient,
+        IHttpClientFactory httpClientFactory,
         ILogger<GetApiBlockTipHandler> logger,
         IOptions<AppSettings> appSettings)
     {
-        _apiClient = apiClient;
+        _httpClientFactory = httpClientFactory;
         _logger = logger;
         _appSettings = appSettings.Value;
     }
@@ -50,19 +52,31 @@ public class GetApiBlockTipHandler : IRequestHandler<GetApiBlockTipRequest, Resu
         {
             _logger.LogDebug("Fetching latest block from Blockfrost API");
             
-            // Get the latest block from the Blockfrost API
-            var ff = _apiClient.BaseAddress;
-            var result = await _apiClient.GetAsync<BlockfrostLatestBlockResponse>("blocks/latest", cancellationToken);
+            // Create HttpClient
+            var client = _httpClientFactory.CreateClient();
+            
+            // Create request using the helper
+            var httpRequest = BlockfrostHelper.CreateBlockfrostRequest(
+                _appSettings.Blockfrost.BaseUrl,
+                _appSettings.Blockfrost.ApiKey,
+                "blocks/latest");
+            
+            // Send the request and get the result
+            var result = await BlockfrostHelper.SendBlockfrostRequestAsync<BlockfrostLatestBlockResponse>(
+                client,
+                httpRequest,
+                _logger,
+                cancellationToken);
             
             if (result.IsFailed)
             {
-                _logger.LogError("Failed to get latest block from Blockfrost API: {Error}", 
-                    result.Errors.Count > 0 ? result.Errors[0].Message : "Unknown error");
-                return result.ToResult();
+                return Result.Fail<Block>(result.Errors);
             }
             
+            var blockResponse = result.Value;
+            
             // Map the API response to our Block model
-            var block = MapToBlock(result.Value);
+            var block = MapToBlock(blockResponse);
             
             _logger.LogDebug("Successfully retrieved latest block #{BlockNo} from Blockfrost API", block.block_no);
             return Result.Ok(block);
@@ -139,55 +153,4 @@ public class GetApiBlockTipHandler : IRequestHandler<GetApiBlockTipRequest, Resu
         
         return bytes;
     }
-}
-
-/// <summary>
-/// Response model for the Blockfrost latest block API endpoint.
-/// </summary>
-public class BlockfrostLatestBlockResponse
-{
-    /// <summary>
-    /// Block creation time in UNIX time
-    /// </summary>
-    public long Time { get; set; }
-    
-    /// <summary>
-    /// Block number
-    /// </summary>
-    public int Height { get; set; }
-    
-    /// <summary>
-    /// Block hash (hex encoded)
-    /// </summary>
-    public string Hash { get; set; } = string.Empty;
-    
-    /// <summary>
-    /// Slot number
-    /// </summary>
-    public int Slot { get; set; }
-    
-    /// <summary>
-    /// Epoch number
-    /// </summary>
-    public int Epoch { get; set; }
-    
-    /// <summary>
-    /// Slot within the epoch
-    /// </summary>
-    public int EpochSlot { get; set; }
-    
-    /// <summary>
-    /// Transaction count
-    /// </summary>
-    public int TxCount { get; set; }
-    
-    /// <summary>
-    /// Previous block hash (hex encoded)
-    /// </summary>
-    public string PreviousBlock { get; set; } = string.Empty;
-    
-    /// <summary>
-    /// Next block hash (hex encoded)
-    /// </summary>
-    public string NextBlock { get; set; } = string.Empty;
 }

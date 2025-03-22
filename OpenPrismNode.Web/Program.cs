@@ -166,16 +166,8 @@ builder.Services.AddHttpClient("LocalApi")
     });
 builder.Services.AddHttpClient("CardanoWalletApi", client => { client.BaseAddress = new Uri($"{appSettings.CardanoWalletApiEndpoint}:{appSettings.CardanoWalletApiEndpointPort}/v2/"); });
 builder.Services.AddHttpClient("Ingestion", client => { client.BaseAddress = appSettings.IngestionEndpoint; });
-// Register HTTP client for Blockfrost API
-builder.Services.AddHttpClient("BlockfrostApi")
-    .ConfigurePrimaryHttpMessageHandler(() => new HttpClientHandler
-    {
-        // Accept all SSL certificates (only for development)
-        ServerCertificateCustomValidationCallback = (sender, cert, chain, sslPolicyErrors) => true
-    });
-
-// Register Blockfrost API client
-builder.Services.AddScoped<OpenPrismNode.Sync.Implementations.Blockfrost.BlockfrostApiClient>();
+// Register HTTP client factory for Blockfrost API requests
+builder.Services.AddHttpClient();
 
 // Register the BackgroundSyncService as a hosted service
 builder.Services.AddHostedService(provider => provider.GetRequiredService<BackgroundSyncService>());
