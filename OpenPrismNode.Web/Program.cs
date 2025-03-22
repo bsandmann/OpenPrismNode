@@ -92,12 +92,13 @@ if (appSettings != null)
     {
         appSettings.ApiHttpPortUi = appSettings.ApiHttpsPort;
     }
-    
+
     if (appSettings.GrpcPortUi == 0)
     {
         appSettings.GrpcPortUi = appSettings.GrpcPort;
     }
 }
+
 builder.Services.AddApiVersioning(options =>
 {
     options.DefaultApiVersion = new ApiVersion(1, 0);
@@ -128,11 +129,6 @@ builder.Services.AddSingleton<BackgroundSyncService>();
 builder.Services.AddScoped<ICardanoWalletService, CardanoWalletService>();
 builder.Services.AddScoped<IIngestionService, IngestionService>();
 
-// Register HTTP client for Blockfrost API
-builder.Services.AddHttpClient("BlockfrostApi");
-
-// Register Blockfrost API client
-builder.Services.AddScoped<OpenPrismNode.Sync.Implementations.Blockfrost.BlockfrostApiClient>();
 
 // Configure data source providers based on configuration
 var syncDataSourceProvider = appSettings?.SyncDataSource?.Provider ?? "DbSync";
@@ -144,10 +140,10 @@ if (syncDataSourceProvider.Equals("Blockfrost", StringComparison.OrdinalIgnoreCa
 {
     // Register transaction provider
     builder.Services.AddScoped<OpenPrismNode.Sync.Abstractions.ITransactionProvider, OpenPrismNode.Sync.Implementations.Blockfrost.BlockfrostTransactionProvider>();
-    
+
     // Register API handlers
     builder.Services.AddMediatR(cfg => cfg.RegisterServicesFromAssemblyContaining<OpenPrismNode.Sync.Commands.ApiSync.GetApiBlockTip.GetApiBlockTipHandler>());
-    
+
     // Register block provider that uses dedicated API handlers
     builder.Services.AddScoped<OpenPrismNode.Sync.Abstractions.IBlockProvider, OpenPrismNode.Sync.Implementations.Blockfrost.BlockfrostBlockProvider>();
 }
@@ -156,6 +152,7 @@ else
     builder.Services.AddScoped<OpenPrismNode.Sync.Abstractions.ITransactionProvider, OpenPrismNode.Sync.Implementations.DbSync.DbSyncTransactionProvider>();
     builder.Services.AddScoped<OpenPrismNode.Sync.Abstractions.IBlockProvider, OpenPrismNode.Sync.Implementations.DbSync.DbSyncBlockProvider>();
 }
+
 builder.Services.AddSingleton<IWalletAddressCache>(new WalletAddressCache(appSettings!.WalletCacheSize));
 builder.Services.AddSingleton<IStakeAddressCache>(new StakeAddressCache(appSettings.WalletCacheSize));
 builder.Services.AddLazyCache();
@@ -169,6 +166,17 @@ builder.Services.AddHttpClient("LocalApi")
     });
 builder.Services.AddHttpClient("CardanoWalletApi", client => { client.BaseAddress = new Uri($"{appSettings.CardanoWalletApiEndpoint}:{appSettings.CardanoWalletApiEndpointPort}/v2/"); });
 builder.Services.AddHttpClient("Ingestion", client => { client.BaseAddress = appSettings.IngestionEndpoint; });
+// Register HTTP client for Blockfrost API
+builder.Services.AddHttpClient("BlockfrostApi")
+    .ConfigurePrimaryHttpMessageHandler(() => new HttpClientHandler
+    {
+        // Accept all SSL certificates (only for development)
+        ServerCertificateCustomValidationCallback = (sender, cert, chain, sslPolicyErrors) => true
+    });
+
+// Register Blockfrost API client
+builder.Services.AddScoped<OpenPrismNode.Sync.Implementations.Blockfrost.BlockfrostApiClient>();
+
 // Register the BackgroundSyncService as a hosted service
 builder.Services.AddHostedService(provider => provider.GetRequiredService<BackgroundSyncService>());
 builder.Services.AddMediatR(cfg => cfg.RegisterServicesFromAssemblies(AppDomain.CurrentDomain.GetAssemblies()));

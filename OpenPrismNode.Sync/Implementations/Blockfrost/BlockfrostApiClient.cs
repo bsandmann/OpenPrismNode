@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
+using Microsoft.Extensions.DependencyInjection;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
@@ -20,10 +21,14 @@ public class BlockfrostApiClient
     private readonly HttpClient _httpClient;
     private readonly string _apiKey;
     private readonly JsonSerializerOptions _jsonOptions;
+    
+    /// <summary>
+    /// Gets the base address of the Blockfrost API.
+    /// </summary>
+    public Uri? BaseAddress => _httpClient?.BaseAddress;
 
-    public BlockfrostApiClient(HttpClient httpClient, IOptions<AppSettings> appSettings)
+    public BlockfrostApiClient(IHttpClientFactory httpClientFactory, IOptions<AppSettings> appSettings)
     {
-        _httpClient = httpClient;
         var blockfrostConfig = appSettings.Value.Blockfrost;
         
         if (string.IsNullOrEmpty(blockfrostConfig?.BaseUrl))
@@ -37,9 +42,20 @@ public class BlockfrostApiClient
         }
         
         _apiKey = blockfrostConfig.ApiKey;
+        
+        // Get the named HttpClient from the factory
+        _httpClient = httpClientFactory.CreateClient("BlockfrostApi");
         _httpClient.BaseAddress = new Uri(blockfrostConfig.BaseUrl);
+        _httpClient.DefaultRequestHeaders.Accept.Clear();
         _httpClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
-        _httpClient.DefaultRequestHeaders.Add("project_id", _apiKey);
+        
+        // Make sure we don't have duplicate headers
+        if (_httpClient.DefaultRequestHeaders.Contains("Project_id"))
+        {
+            _httpClient.DefaultRequestHeaders.Remove("Project_id");
+        }
+        
+        _httpClient.DefaultRequestHeaders.Add("Project_id", _apiKey);
         
         _jsonOptions = new JsonSerializerOptions
         {
@@ -58,9 +74,11 @@ public class BlockfrostApiClient
             if (!response.IsSuccessStatusCode)
             {
                 string errorContent = await response.Content.ReadAsStringAsync(cancellationToken);
-                return Result.Fail($"Blockfrost API request failed with status {response.StatusCode}: {errorContent}");
+                string headers = string.Join(", ", response.Headers.Select(h => $"{h.Key}: {string.Join(", ", h.Value)}"));
+                return Result.Fail($"Blockfrost API request failed with status {response.StatusCode}. Headers: {headers}. Content: {errorContent}");
             }
 
+            var ff = await response.Content.ReadAsStringAsync();
             var result = await response.Content.ReadFromJsonAsync<T>(_jsonOptions, cancellationToken);
             return result != null 
                 ? Result.Ok(result) 

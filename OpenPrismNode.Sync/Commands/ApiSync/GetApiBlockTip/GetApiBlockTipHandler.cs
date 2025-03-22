@@ -51,6 +51,7 @@ public class GetApiBlockTipHandler : IRequestHandler<GetApiBlockTipRequest, Resu
             _logger.LogDebug("Fetching latest block from Blockfrost API");
             
             // Get the latest block from the Blockfrost API
+            var ff = _apiClient.BaseAddress;
             var result = await _apiClient.GetAsync<BlockfrostLatestBlockResponse>("blocks/latest", cancellationToken);
             
             if (result.IsFailed)
