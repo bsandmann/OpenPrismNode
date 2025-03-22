@@ -10,8 +10,8 @@ using FluentResults;
 using MediatR;
 using Microsoft.Extensions.Options;
 using OpenPrismNode.Core.Common;
+using OpenPrismNode.Sync.Abstractions;
 using OpenPrismNode.Sync.Services;
-using Sync.Commands.DbSync.GetPostgresBlockTip;
 
 /// <summary>
 /// Service than automatically syncs the entire ledger.
@@ -29,7 +29,10 @@ public class BackgroundSyncService : BackgroundService
     private readonly SemaphoreSlim _restartSemaphore = new SemaphoreSlim(1, 1);
 
     /// <inheritdoc />
-    public BackgroundSyncService(IOptions<AppSettings> appSettings, ILogger<BackgroundSyncService> logger, IServiceScopeFactory serviceScopeFactory)
+    public BackgroundSyncService(
+        IOptions<AppSettings> appSettings, 
+        ILogger<BackgroundSyncService> logger, 
+        IServiceScopeFactory serviceScopeFactory)
     {
         _logger = logger;
         _appSettings = appSettings.Value;
@@ -145,14 +148,18 @@ public class BackgroundSyncService : BackgroundService
                     var isInitialStartup = true;
 
                     _logger.LogInformation($"Starting background sync for {_appSettings.PrismLedger.Name}");
-                    var postgresSqlTip = await mediator.Send(new GetPostgresBlockTipRequest(), stoppingToken);
-                    if (postgresSqlTip.IsFailed)
+                    
+                    // Get the block provider from the scope
+                    var initialBlockProvider = scope.ServiceProvider.GetRequiredService<IBlockProvider>();
+                    
+                    var blockTip = await initialBlockProvider.GetBlockTip(stoppingToken);
+                    if (blockTip.IsFailed)
                     {
-                        _logger.LogCritical($"Cannot get the postgres tip (dbSync) for syncing {_appSettings.PrismLedger.Name}: {postgresSqlTip.Errors.First().Message}");
+                        _logger.LogCritical($"Cannot get the blockchain tip for syncing {_appSettings.PrismLedger.Name}: {blockTip.Errors.First().Message}");
                         return;
                     }
 
-                    _logger.LogInformation($"Postgres (dbSync) tip for {_appSettings.PrismLedger.Name}: {postgresSqlTip.Value.block_no} in epoch {postgresSqlTip.Value.epoch_no}");
+                    _logger.LogInformation($"Blockchain tip for {_appSettings.PrismLedger.Name}: {blockTip.Value.block_no} in epoch {blockTip.Value.epoch_no}");
 
                     // Create a linked token source that will be cancelled if either the service is stopping
                     // or our manual cancellation is requested
@@ -166,7 +173,21 @@ public class BackgroundSyncService : BackgroundService
 
                             _logger.LogInformation($"Sync running for {_appSettings.PrismLedger.Name}");
 
-                            var syncResult = await SyncService.RunSync(mediator, _appSettings, _logger, _appSettings.PrismLedger.Name, linkedCts.Token, _appSettings.PrismLedger.StartAtEpochNumber, isInitialStartup);
+                            // Get the providers from the current scope
+                            var blockProvider = scope.ServiceProvider.GetRequiredService<IBlockProvider>();
+                            var transactionProvider = scope.ServiceProvider.GetRequiredService<ITransactionProvider>();
+
+                            var syncResult = await SyncService.RunSync(
+                                mediator, 
+                                _appSettings, 
+                                _logger, 
+                                _appSettings.PrismLedger.Name, 
+                                linkedCts.Token, 
+                                blockProvider, 
+                                transactionProvider,
+                                _appSettings.PrismLedger.StartAtEpochNumber, 
+                                isInitialStartup);
+                                
                             if (syncResult.IsFailed)
                             {
                                 _logger.LogCritical($"Sync failed for {_appSettings.PrismLedger.Name}: {syncResult.Errors.SingleOrDefault()}");

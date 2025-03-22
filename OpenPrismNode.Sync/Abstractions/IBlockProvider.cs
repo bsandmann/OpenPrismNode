@@ -2,6 +2,7 @@ namespace OpenPrismNode.Sync.Abstractions;
 
 using System.Threading;
 using System.Threading.Tasks;
+using Core.Models;
 using FluentResults;
 using OpenPrismNode.Core.DbSyncModels;
 
@@ -30,7 +31,7 @@ public interface IBlockProvider
     /// <summary>
     /// Gets multiple blocks by their block numbers
     /// </summary>
-    Task<Result<IEnumerable<Block>>> GetBlocksByNumbers(IEnumerable<int> blockNos, CancellationToken cancellationToken = default);
+    Task<Result<List<Block>>> GetBlocksByNumbers(int firstBlockNo, int count, CancellationToken cancellationToken = default);
     
     /// <summary>
     /// Gets the first block of an epoch
@@ -40,5 +41,5 @@ public interface IBlockProvider
     /// <summary>
     /// Gets the next block containing PRISM metadata after a specified block height
     /// </summary>
-    Task<Result<Block>> GetNextBlockWithPrismMetadata(int afterBlockNo, CancellationToken cancellationToken = default);
+    Task<Result<Block>> GetNextBlockWithPrismMetadata(int afterBlockNo, int maxBlockNo, LedgerType ledgerType, int metadataKey, CancellationToken cancellationToken = default);
 }

@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Core.Models;
 using FluentResults;
 using MediatR;
 using Microsoft.Extensions.Logging;
@@ -56,11 +57,11 @@ public class BlockfrostBlockProvider : IBlockProvider
     }
 
     /// <inheritdoc />
-    public async Task<Result<IEnumerable<Block>>> GetBlocksByNumbers(IEnumerable<int> blockNos, CancellationToken cancellationToken = default)
+    public async Task<Result<List<Block>>> GetBlocksByNumbers(int firstBlockNo, int count, CancellationToken cancellationToken = default)
     {
         // TODO: Implement GetApiBlocksByNumbersRequest/Handler
         _logger.LogWarning("GetBlocksByNumbers is not yet implemented for BlockfrostBlockProviderV2");
-        return Result.Fail<IEnumerable<Block>>("Not implemented yet");
+        return Result.Fail<List<Block>>("Not implemented yet");
     }
 
     /// <inheritdoc />
@@ -72,7 +73,7 @@ public class BlockfrostBlockProvider : IBlockProvider
     }
 
     /// <inheritdoc />
-    public async Task<Result<Block>> GetNextBlockWithPrismMetadata(int afterBlockNo, CancellationToken cancellationToken = default)
+    public async Task<Result<Block>> GetNextBlockWithPrismMetadata(int afterBlockNo, int maxBlockNo, LedgerType ledgerType,int metadataKey, CancellationToken cancellationToken = default)
     {
         // TODO: Implement GetApiNextBlockWithPrismMetadataRequest/Handler
         _logger.LogWarning("GetNextBlockWithPrismMetadata is not yet implemented for BlockfrostBlockProviderV2");

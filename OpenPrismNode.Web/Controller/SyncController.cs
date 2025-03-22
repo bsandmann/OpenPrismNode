@@ -11,8 +11,8 @@ using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Primitives;
 using Models;
 using OpenPrismNode.Core.Common;
+using OpenPrismNode.Sync.Abstractions;
 using OpenPrismNode.Web;
-using Sync.Commands.DbSync.GetPostgresBlockTip;
 
 /// <inheritdoc />
 [ApiController]
@@ -22,16 +22,24 @@ public class SyncController : ControllerBase
     private readonly AppSettings _appSettings;
     private readonly ILogger<SyncController> _logger;
     private readonly BackgroundSyncService _backgroundSyncService;
-    private IMediator _mediator;
+    private readonly IMediator _mediator;
+    private readonly IServiceProvider _serviceProvider;
 
     /// <inheritdoc />
-    public SyncController(IHttpContextAccessor httpContextAccessor, IOptions<AppSettings> appSettings, ILogger<SyncController> logger, BackgroundSyncService backgroundSyncService, IMediator mediator)
+    public SyncController(
+        IHttpContextAccessor httpContextAccessor, 
+        IOptions<AppSettings> appSettings, 
+        ILogger<SyncController> logger, 
+        BackgroundSyncService backgroundSyncService, 
+        IMediator mediator,
+        IServiceProvider serviceProvider)
     {
         _httpContextAccessor = httpContextAccessor;
         _appSettings = appSettings.Value;
         _logger = logger;
         _backgroundSyncService = backgroundSyncService;
         _mediator = mediator;
+        _serviceProvider = serviceProvider;
     }
 
     /// <summary>
@@ -117,12 +125,17 @@ public class SyncController : ControllerBase
             return BadRequest("The valid network identifier must be provided: 'preprod','mainnet', or 'inmemory'");
         }
 
-        var postgresSqlTip = await _mediator.Send(new GetPostgresBlockTipRequest());
-        if (postgresSqlTip.IsFailed)
+        // Use the abstracted IBlockProvider instead of direct request
+        // Get the IBlockProvider from service provider (respecting scoped lifetime)
+        using var scope = _serviceProvider.CreateScope();
+        var blockProvider = scope.ServiceProvider.GetRequiredService<IBlockProvider>();
+        
+        var blockTipResult = await blockProvider.GetBlockTip();
+        if (blockTipResult.IsFailed)
         {
-            var mesage = $"Cannot get the postgres tip (dbSync) for syncing {_appSettings.PrismLedger.Name}: {postgresSqlTip.Errors.First().Message}";
-            _logger.LogCritical(mesage);
-            return BadRequest(mesage);
+            var message = $"Cannot get the blockchain tip for syncing {_appSettings.PrismLedger.Name}: {blockTipResult.Errors.First().Message}";
+            _logger.LogCritical(message);
+            return BadRequest(message);
         }
 
         var mostRecentBlockResult = await _mediator.Send(new GetMostRecentBlockRequest(ledgerType));
@@ -133,8 +146,7 @@ public class SyncController : ControllerBase
             return BadRequest(message);
         }
 
-        var progess = new SyncProgressModel(postgresSqlTip.Value.block_no, mostRecentBlockResult.Value.BlockHeight);
-        return Ok(progess
-        );
+        var progress = new SyncProgressModel(blockTipResult.Value.block_no, mostRecentBlockResult.Value.BlockHeight);
+        return Ok(progress);
     }
 }

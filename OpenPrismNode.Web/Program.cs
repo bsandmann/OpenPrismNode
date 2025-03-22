@@ -123,7 +123,8 @@ builder.Services.AddGrpc(options => { options.EnableDetailedErrors = true; });
 builder.Services.AddSingleton<IEcService, EcServiceBouncyCastle>();
 builder.Services.AddSingleton<ISha256Service, Sha256ServiceBouncyCastle>();
 builder.Services.AddScoped<INpgsqlConnectionFactory, NpgsqlConnectionFactory>();
-builder.Services.AddScoped<BackgroundSyncService>();
+// Background service must be a singleton
+builder.Services.AddSingleton<BackgroundSyncService>();
 builder.Services.AddScoped<ICardanoWalletService, CardanoWalletService>();
 builder.Services.AddScoped<IIngestionService, IngestionService>();
 
@@ -168,7 +169,7 @@ builder.Services.AddHttpClient("LocalApi")
     });
 builder.Services.AddHttpClient("CardanoWalletApi", client => { client.BaseAddress = new Uri($"{appSettings.CardanoWalletApiEndpoint}:{appSettings.CardanoWalletApiEndpointPort}/v2/"); });
 builder.Services.AddHttpClient("Ingestion", client => { client.BaseAddress = appSettings.IngestionEndpoint; });
-builder.Services.AddSingleton<BackgroundSyncService>();
+// Register the BackgroundSyncService as a hosted service
 builder.Services.AddHostedService(provider => provider.GetRequiredService<BackgroundSyncService>());
 builder.Services.AddMediatR(cfg => cfg.RegisterServicesFromAssemblies(AppDomain.CurrentDomain.GetAssemblies()));
 builder.Services.AddDbContext<DataContext>(options =>

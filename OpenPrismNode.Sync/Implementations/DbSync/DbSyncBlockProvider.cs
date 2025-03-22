@@ -3,6 +3,7 @@ namespace OpenPrismNode.Sync.Implementations.DbSync;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using Core.Models;
 using FluentResults;
 using MediatR;
 using OpenPrismNode.Core.DbSyncModels;
@@ -45,16 +46,16 @@ public class DbSyncBlockProvider : IBlockProvider
     }
 
     /// <inheritdoc />
-    public async Task<Result<IEnumerable<Block>>> GetBlocksByNumbers(IEnumerable<int> blockNos, CancellationToken cancellationToken = default)
+    public async Task<Result<List<Block>>> GetBlocksByNumbers(int firstBlockNo, int count, CancellationToken cancellationToken = default)
     {
-        // For simplicity, just get the first block number and count - this may need to be adjusted
-        // based on how the actual request handler works
-        var firstBlockNo = blockNos.Min();
-        var count = blockNos.Count();
         var result = await _mediator.Send(new GetPostgresBlocksByBlockNosRequest(firstBlockNo, count), cancellationToken);
-        
-        // Convert List<Block> to IEnumerable<Block>
-        return result.ToResult<IEnumerable<Block>>();
+        if (result.IsFailed)
+        {
+            return Result.Fail(result.Errors);
+        }
+
+        // Return the blocks as IEnumerable<Block>
+        return Result.Ok(result.Value.ToList());
     }
 
     /// <inheritdoc />
@@ -64,23 +65,9 @@ public class DbSyncBlockProvider : IBlockProvider
     }
 
     /// <inheritdoc />
-    public async Task<Result<Block>> GetNextBlockWithPrismMetadata(int afterBlockNo, CancellationToken cancellationToken = default)
+    public async Task<Result<Block>> GetNextBlockWithPrismMetadata(int afterBlockNo, int maxBlockNo, LedgerType ledgerType, int metadataKey, CancellationToken cancellationToken = default)
     {
-        // This may need adjustments based on actual parameters expected by the handler
-        var result = await _mediator.Send(new GetNextBlockWithPrismMetadataRequest(afterBlockNo, 21325, Int32.MaxValue, Core.Models.LedgerType.CardanoPreprod), cancellationToken);
-        
-        if (result.IsFailed)
-        {
-            return Result.Fail<Block>(result.Errors);
-        }
-        
-        // If result has BlockHeight, get that block
-        if (result.Value.BlockHeight.HasValue)
-        {
-            return await GetBlockByNumber(result.Value.BlockHeight.Value, cancellationToken);
-        }
-        
-        // No block with PRISM metadata found
-        return Result.Fail<Block>("No block with PRISM metadata found after the specified block number");
+        var result = await _mediator.Send(new GetNextBlockWithPrismMetadataRequest(afterBlockNo, metadataKey, maxBlockNo, ledgerType), cancellationToken);
+        return result.ToResult();
     }
 }
