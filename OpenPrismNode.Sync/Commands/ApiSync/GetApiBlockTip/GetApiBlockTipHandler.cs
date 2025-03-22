@@ -1,10 +1,7 @@
 namespace OpenPrismNode.Sync.Commands.ApiSync.GetApiBlockTip;
 
 using System;
-using System.Net;
 using System.Net.Http;
-using System.Net.Http.Headers;
-using System.Net.Http.Json;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
@@ -75,8 +72,8 @@ public class GetApiBlockTipHandler : IRequestHandler<GetApiBlockTipRequest, Resu
             
             var blockResponse = result.Value;
             
-            // Map the API response to our Block model
-            var block = MapToBlock(blockResponse);
+            // Map the API response to our Block model using the shared mapper
+            var block = BlockfrostBlockMapper.MapToBlock(blockResponse);
             
             _logger.LogDebug("Successfully retrieved latest block #{BlockNo} from Blockfrost API", block.block_no);
             return Result.Ok(block);
@@ -84,73 +81,17 @@ public class GetApiBlockTipHandler : IRequestHandler<GetApiBlockTipRequest, Resu
         catch (HttpRequestException ex)
         {
             _logger.LogError(ex, "HTTP error occurred while fetching latest block from Blockfrost API");
-            return Result.Fail($"HTTP error: {ex.Message}");
+            return Result.Fail<Block>($"HTTP error: {ex.Message}");
         }
         catch (JsonException ex)
         {
             _logger.LogError(ex, "JSON parsing error occurred while fetching latest block from Blockfrost API");
-            return Result.Fail($"JSON parsing error: {ex.Message}");
+            return Result.Fail<Block>($"JSON parsing error: {ex.Message}");
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Unexpected error occurred while fetching latest block from Blockfrost API");
-            return Result.Fail($"Unexpected error: {ex.Message}");
+            return Result.Fail<Block>($"Unexpected error: {ex.Message}");
         }
-    }
-    
-    /// <summary>
-    /// Maps the Blockfrost API response to our internal Block model.
-    /// </summary>
-    /// <param name="response">The API response containing block data</param>
-    /// <returns>A Block object with mapped properties</returns>
-    private Block MapToBlock(BlockfrostBlockResponse response)
-    {
-        return new Block
-        {
-            // We don't have a direct equivalent for id in the API, so we use a placeholder
-            // In a real implementation, you might want to use a different strategy or store this mapping
-            id = -1, 
-            
-            // Convert UNIX timestamp to DateTime
-            time = DateTimeOffset.FromUnixTimeSeconds(response.Time).DateTime,
-            
-            // Map directly from response
-            block_no = response.Height,
-            epoch_no = response.Epoch,
-            tx_count = response.TxCount,
-            
-            // Convert hex strings to byte arrays
-            hash = ConvertHexStringToByteArray(response.Hash),
-            
-            // No direct mapping for previous_id, use a placeholder
-            previous_id = -1,
-            
-            // Convert hex string to byte array
-            previousHash = ConvertHexStringToByteArray(response.PreviousBlock)
-        };
-    }
-    
-    /// <summary>
-    /// Converts a hexadecimal string to a byte array.
-    /// </summary>
-    /// <param name="hex">The hexadecimal string to convert</param>
-    /// <returns>A byte array representing the hexadecimal string</returns>
-    private byte[] ConvertHexStringToByteArray(string hex)
-    {
-        if (string.IsNullOrEmpty(hex))
-            return new byte[0];
-
-        // Remove "0x" prefix if present
-        if (hex.StartsWith("0x", StringComparison.OrdinalIgnoreCase))
-            hex = hex.Substring(2);
-
-        // Create byte array
-        byte[] bytes = new byte[hex.Length / 2];
-        for (int i = 0; i < hex.Length; i += 2)
-        {
-            bytes[i / 2] = Convert.ToByte(hex.Substring(i, 2), 16);
-        }
-        
-        return bytes;
     }
 }

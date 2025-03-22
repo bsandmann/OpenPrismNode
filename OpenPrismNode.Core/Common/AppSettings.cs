@@ -52,7 +52,7 @@ public class AppSettings
     /// <summary>
     /// The number of blocks that the current database tip must be behind the network tip before the node will start fast syncing through batching
     /// </summary>
-    public int FastSyncBlockDistanceRequirement { get; set; } = 150;
+    public int FastSyncBlockDistanceRequirement { get; set; } = 1500;
 
     /// <summary>
     /// The number of blocks to batch together when fast syncing
