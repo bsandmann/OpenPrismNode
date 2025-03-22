@@ -3,6 +3,7 @@ using MediatR;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using OpenPrismNode.Core.Models;
+using OpenPrismNode.Sync.Abstractions;
 using OpenPrismNode.Sync.Commands.ProcessTransaction;
 
 namespace OpenPrismNode.Sync.Commands.ProcessBlock;
@@ -12,17 +13,22 @@ using Core.Commands.CreateBlock;
 using Core.Commands.GetBlockByBlockHash;
 using Core.Common;
 using Core.Entities;
-using DbSync.GetTransactionsWithPrismMetadataForBlockId;
 
 public class ProcessBlockHandler : IRequestHandler<ProcessBlockRequest, Result<ProcessBlockResponse>>
 {
     private readonly IMediator _mediator;
     private readonly ILogger _logger;
+    private readonly ITransactionProvider _transactionProvider;
 
-    public ProcessBlockHandler(IMediator mediator, IOptions<AppSettings> appSettings, ILogger<ProcessBlockHandler> logger)
+    public ProcessBlockHandler(
+        IMediator mediator, 
+        IOptions<AppSettings> appSettings, 
+        ILogger<ProcessBlockHandler> logger,
+        ITransactionProvider transactionProvider)
     {
         _mediator = mediator;
         _logger = logger;
+        _transactionProvider = transactionProvider;
     }
 
     public async Task<Result<ProcessBlockResponse>> Handle(ProcessBlockRequest request, CancellationToken cancellationToken)
@@ -63,7 +69,8 @@ public class ProcessBlockHandler : IRequestHandler<ProcessBlockRequest, Result<P
             response = new ProcessBlockResponse(block.Value.BlockHash, block.Value.BlockHeight);
         }
 
-        var blockTransactions = await _mediator.Send(new GetTransactionsWithPrismMetadataForBlockIdRequest(request.Block.id), cancellationToken);
+        // Use the transaction provider to get transactions with PRISM metadata for this block
+        var blockTransactions = await _transactionProvider.GetTransactionsWithPrismMetadataForBlockId(request.Block.id, request.Block.block_no, cancellationToken);
         if (blockTransactions.IsFailed)
         {
             _logger.LogError($"Failed while reading transactions of block # {request.Block.block_no}: {blockTransactions.Errors.First().Message}");

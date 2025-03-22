@@ -8,7 +8,7 @@ using OpenPrismNode.Core.DbSyncModels;
 
 public class GetMetadataFromTransactionRequest : IRequest<Result<Metadata>>
 {
-    public GetMetadataFromTransactionRequest(int txId, int key)
+    public GetMetadataFromTransactionRequest(int txId,  int key)
     {
         TxId = txId;
         Key = key;
@@ -16,4 +16,5 @@ public class GetMetadataFromTransactionRequest : IRequest<Result<Metadata>>
 
     public int TxId { get; }
     public int Key { get; }
+
 }

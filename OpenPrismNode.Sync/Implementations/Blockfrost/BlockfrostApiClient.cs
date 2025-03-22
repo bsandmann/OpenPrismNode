@@ -163,6 +163,8 @@ public static class BlockfrostHelper
                         return Result.Fail<T>($"API call failed with status {response.StatusCode}: {errorMessage}");
                 }
             }
+
+            var ff = await response.Content.ReadAsStringAsync();
             
             // Deserialize the response
             var result = await response.Content.ReadFromJsonAsync<T>(

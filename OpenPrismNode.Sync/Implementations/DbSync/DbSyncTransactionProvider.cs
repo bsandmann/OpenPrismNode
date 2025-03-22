@@ -37,20 +37,20 @@ public class DbSyncTransactionProvider : ITransactionProvider
         {
             return Result.Fail<IEnumerable<Payment>>(result.Errors);
         }
-        
+
         // Convert single Payment to IEnumerable<Payment>
         return Result.Ok<IEnumerable<Payment>>(new[] { result.Value });
     }
 
     /// <inheritdoc />
-    public async Task<Result<IEnumerable<Transaction>>> GetTransactionsWithPrismMetadataForBlockId(int blockId, CancellationToken cancellationToken = default)
+    public async Task<Result<IEnumerable<Transaction>>> GetTransactionsWithPrismMetadataForBlockId(int blockId, int blockNo, CancellationToken cancellationToken = default)
     {
         var result = await _mediator.Send(new GetTransactionsWithPrismMetadataForBlockIdRequest(blockId), cancellationToken);
         if (result.IsFailed)
         {
             return Result.Fail<IEnumerable<Transaction>>(result.Errors);
         }
-        
+
         // Convert List<Transaction> to IEnumerable<Transaction>
         return Result.Ok<IEnumerable<Transaction>>(result.Value);
     }

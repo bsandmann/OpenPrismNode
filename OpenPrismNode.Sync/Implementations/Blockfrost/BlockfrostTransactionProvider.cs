@@ -4,10 +4,16 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
+using System.Net.Http.Json;
 using System.Text;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
+using Commands.ApiSync.GetApiBlockTip;
+using Commands.ApiSync.GetApiTransactionMetadata;
+using Commands.ApiSync.GetApiTransactionWithPrismMetadataForBlockNo;
 using FluentResults;
+using MediatR;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using OpenPrismNode.Core.Common;
@@ -20,18 +26,20 @@ using OpenPrismNode.Sync.Implementations.Blockfrost.Models;
 /// </summary>
 public class BlockfrostTransactionProvider : ITransactionProvider
 {
+
+    private readonly IMediator _mediator;
     private readonly IHttpClientFactory _httpClientFactory;
     private readonly ILogger<BlockfrostTransactionProvider> _logger;
     private readonly AppSettings _appSettings;
 
     // PRISM metadata key
-    private const long PRISM_METADATA_KEY = 1587;
-    
     public BlockfrostTransactionProvider(
-        IHttpClientFactory httpClientFactory, 
+        IMediator mediator,
+        IHttpClientFactory httpClientFactory,
         ILogger<BlockfrostTransactionProvider> logger,
         IOptions<AppSettings> appSettings)
     {
+        _mediator = mediator;
         _httpClientFactory = httpClientFactory;
         _logger = logger;
         _appSettings = appSettings.Value;
@@ -50,8 +58,10 @@ public class BlockfrostTransactionProvider : ITransactionProvider
     }
 
     /// <inheritdoc />
-    public async Task<Result<IEnumerable<Transaction>>> GetTransactionsWithPrismMetadataForBlockId(int blockId, CancellationToken cancellationToken = default)
+    public async Task<Result<IEnumerable<Transaction>>> GetTransactionsWithPrismMetadataForBlockId(int blockId, int blockNo, CancellationToken cancellationToken = default)
     {
-        throw new NotImplementedException();
+        // Use the new API handler to get the block tip
+        var ff =  await _mediator.Send(new GetApiTransactionsWithPrismMetadataForBlockNoRequest(blockNo), cancellationToken);
+        return null;
     }
 }

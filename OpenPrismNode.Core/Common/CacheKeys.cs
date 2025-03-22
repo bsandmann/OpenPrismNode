@@ -7,4 +7,6 @@ public static class CacheKeys
    public const string PrismMetadata_LowestBlock = "PrismMetadata_LowestBlock_";
    public const string PrismMetadata_HighestKnownBlock = "PrismMetadata_HighestKnownBlock_";
    public const string PrismMetadata_AllBlocks = "PrismMetadata_AllBlocks_";
+   public const string MetadataFromPrismTransaction = "MetadataFromPrismTransaction_";
+   public const string TransactionIdOfBlockNo = "TransactionId_of_BlockNo_";
 }
