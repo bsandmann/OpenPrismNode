@@ -6,6 +6,10 @@ using MediatR;
 using OpenPrismNode.Core.DbSyncModels;
 using OpenPrismNode.Sync.Services;
 
+/// <summary>
+/// Retrieves the first block of a specific epoch from the Cardano DB Sync PostgreSQL database.
+/// This handler is used during the initial sync process to establish epoch boundaries.
+/// </summary>
 public class GetPostgresFirstBlockOfEpochHandler : IRequestHandler<GetPostgresFirstBlockOfEpochRequest, Result<Block>>
 {
     private readonly INpgsqlConnectionFactory _connectionFactory;
@@ -19,6 +23,11 @@ public class GetPostgresFirstBlockOfEpochHandler : IRequestHandler<GetPostgresFi
     {
         await using (var connection = _connectionFactory.CreateConnection())
         {
+            // SQL Query: Retrieves the first block of a specific epoch
+            // - Selects all block information
+            // - Filters blocks by epoch number
+            // - Orders by block_no ascending to get the first block in the epoch
+            // - Limits to 1 row to return only the first block
             string commandText = @"
                 SELECT b.* 
                 FROM public.block b

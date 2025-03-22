@@ -10,6 +10,11 @@ using OpenPrismNode.Core.Common;
 using OpenPrismNode.Core.Models;
 using OpenPrismNode.Sync.Services;
 
+/// <summary>
+/// Finds the next block in the chain that contains PRISM metadata in the Cardano DB Sync PostgreSQL database.
+/// This handler is essential for the fast-sync process as it allows skipping blocks without PRISM transactions.
+/// Uses caching to improve performance when repeatedly searching for blocks with PRISM metadata.
+/// </summary>
 public class GetNextBlockWithPrismMetadataHandler : IRequestHandler<GetNextBlockWithPrismMetadataRequest, Result<GetNextBlockWithPrismMetadataResponse>>
 {
     private readonly INpgsqlConnectionFactory _connectionFactory;
@@ -121,7 +126,12 @@ public class GetNextBlockWithPrismMetadataHandler : IRequestHandler<GetNextBlock
         {
             stopwatch.Reset();
             stopwatch.Start();
-            // Step 1: Fetch relevant transaction IDs in batches
+            // SQL Query: Retrieves transaction metadata entries for the PRISM metadata key
+            // - Selects metadata ID and transaction ID
+            // - Filters by the configured PRISM metadata key and IDs greater than the last processed ID
+            // - Orders by ID ascending to ensure sequential processing
+            // - Uses pagination with configurable batch size to avoid memory issues with large result sets
+            // - Used to build a cache of blocks containing PRISM metadata
             const string metadataQuery = @"
             SELECT id, tx_id
             FROM public.tx_metadata
@@ -154,7 +164,12 @@ public class GetNextBlockWithPrismMetadataHandler : IRequestHandler<GetNextBlock
             var txIds = txBatch.Select(t => t.TxId).ToArray();
             lastId = txBatch.Last().Id;
 
-            // Step 2: Get all the blocks matching these metadata-transactions
+            // SQL Query: Retrieves block information for transactions containing PRISM metadata
+            // - Selects block number and epoch number
+            // - Joins transaction table with block table to get block information
+            // - Filters by transaction IDs that have PRISM metadata
+            // - Orders by block number to ensure sequential processing
+            // - Uses PostgreSQL's ANY operator for efficient filtering with arrays
             const string blockQuery = @"
             SELECT b.block_no, b.epoch_no
             FROM public.tx t
@@ -203,6 +218,12 @@ public class GetNextBlockWithPrismMetadataHandler : IRequestHandler<GetNextBlock
         while (true)
         {
             _logger.LogInformation($"Checking for block with PRISM-metadata between {currentBlockHeight} and {currentBlockHeight + batchSize}");
+            // SQL Query: Finds the next block containing PRISM metadata within a specific range
+            // - Selects block number and epoch number
+            // - Filters blocks within a range from StartBlockHeight to EndBlockHeight
+            // - Uses EXISTS subquery to find blocks containing transactions with PRISM metadata
+            // - Orders by block number ascending and limits to 1 to get the first matching block
+            // - This query allows efficient fast-syncing by skipping blocks without PRISM transactions
             const string commandText = @"
                  SELECT b.block_no, b.epoch_no
                  FROM public.block b

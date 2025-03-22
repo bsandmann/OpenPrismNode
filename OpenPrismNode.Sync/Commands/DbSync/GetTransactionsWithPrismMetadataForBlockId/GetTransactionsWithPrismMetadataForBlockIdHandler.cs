@@ -8,6 +8,10 @@ using OpenPrismNode.Core.Common;
 using OpenPrismNode.Core.DbSyncModels;
 using OpenPrismNode.Sync.Services;
 
+/// <summary>
+/// Retrieves all transactions that contain PRISM metadata for a specific block from the Cardano DB Sync PostgreSQL database.
+/// This handler is critical for the block processing pipeline as it identifies which transactions in a block contain PRISM operations.
+/// </summary>
 public class GetTransactionsWithPrismMetadataForBlockIdHandler : IRequestHandler<GetTransactionsWithPrismMetadataForBlockIdRequest, Result<List<Transaction>>>
 {
     private readonly INpgsqlConnectionFactory _connectionFactory;
@@ -24,6 +28,11 @@ public class GetTransactionsWithPrismMetadataForBlockIdHandler : IRequestHandler
     {
         await using (var connection = _connectionFactory.CreateConnection())
         {
+            // SQL Query: Retrieves transactions in a specific block that contain PRISM metadata
+            // - Selects transaction data (id, hash, block_index, fee, size)
+            // - Joins with tx_metadata table to find transactions with PRISM metadata
+            // - Filters by block ID and the configured PRISM metadata key
+            // - Orders by block_index to process transactions in the correct sequence
             string commandText = @"
             SELECT t.id,t.hash, t.block_index, t.fee, t.size
             FROM tx t

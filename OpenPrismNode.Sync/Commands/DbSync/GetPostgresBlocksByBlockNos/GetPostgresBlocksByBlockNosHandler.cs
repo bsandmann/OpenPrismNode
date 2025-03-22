@@ -6,6 +6,10 @@ namespace OpenPrismNode.Sync.Commands.DbSync.GetPostgresBlocksByBlockNos
     using OpenPrismNode.Core.DbSyncModels;
     using OpenPrismNode.Sync.Services;
 
+    /// <summary>
+    /// Retrieves a range of blocks from the Cardano DB Sync PostgreSQL database by a range of block numbers.
+    /// This handler is primarily used for batch operations during fast-sync to efficiently retrieve multiple blocks at once.
+    /// </summary>
     public class GetPostgresBlocksByBlockNosHandler : IRequestHandler<GetPostgresBlocksByBlockNosRequest, Result<List<Block>>>
     {
         private readonly INpgsqlConnectionFactory _connectionFactory;
@@ -19,6 +23,11 @@ namespace OpenPrismNode.Sync.Commands.DbSync.GetPostgresBlocksByBlockNos
         {
             await using var connection = _connectionFactory.CreateConnection();
 
+            // SQL Query: Retrieves a range of blocks within a specified block number range
+            // - Selects core block information (id, hash, epoch, block number, time, tx count, etc.)
+            // - Filters blocks by a range from StartBlockNo to EndBlockNo (exclusive upper bound)
+            // - Orders results by block_no to ensure sequential processing
+            // - Used for batch processing during fast-sync operations
             string commandText = @"
                 SELECT id, hash, epoch_no, block_no, time, tx_count, previous_id
                 FROM public.block
