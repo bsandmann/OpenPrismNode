@@ -126,6 +126,35 @@ builder.Services.AddScoped<INpgsqlConnectionFactory, NpgsqlConnectionFactory>();
 builder.Services.AddScoped<BackgroundSyncService>();
 builder.Services.AddScoped<ICardanoWalletService, CardanoWalletService>();
 builder.Services.AddScoped<IIngestionService, IngestionService>();
+
+// Register HTTP client for Blockfrost API
+builder.Services.AddHttpClient("BlockfrostApi");
+
+// Register Blockfrost API client
+builder.Services.AddScoped<OpenPrismNode.Sync.Implementations.Blockfrost.BlockfrostApiClient>();
+
+// Configure data source providers based on configuration
+var syncDataSourceProvider = appSettings?.SyncDataSource?.Provider ?? "DbSync";
+
+// Configuration is set up to use Blockfrost or DbSync based on appsettings.json
+
+// Register the appropriate implementation based on configuration
+if (syncDataSourceProvider.Equals("Blockfrost", StringComparison.OrdinalIgnoreCase))
+{
+    // Register transaction provider
+    builder.Services.AddScoped<OpenPrismNode.Sync.Abstractions.ITransactionProvider, OpenPrismNode.Sync.Implementations.Blockfrost.BlockfrostTransactionProvider>();
+    
+    // Register API handlers
+    builder.Services.AddMediatR(cfg => cfg.RegisterServicesFromAssemblyContaining<OpenPrismNode.Sync.Commands.ApiSync.GetApiBlockTip.GetApiBlockTipHandler>());
+    
+    // Register block provider that uses dedicated API handlers
+    builder.Services.AddScoped<OpenPrismNode.Sync.Abstractions.IBlockProvider, OpenPrismNode.Sync.Implementations.Blockfrost.BlockfrostBlockProvider>();
+}
+else
+{
+    builder.Services.AddScoped<OpenPrismNode.Sync.Abstractions.ITransactionProvider, OpenPrismNode.Sync.Implementations.DbSync.DbSyncTransactionProvider>();
+    builder.Services.AddScoped<OpenPrismNode.Sync.Abstractions.IBlockProvider, OpenPrismNode.Sync.Implementations.DbSync.DbSyncBlockProvider>();
+}
 builder.Services.AddSingleton<IWalletAddressCache>(new WalletAddressCache(appSettings!.WalletCacheSize));
 builder.Services.AddSingleton<IStakeAddressCache>(new StakeAddressCache(appSettings.WalletCacheSize));
 builder.Services.AddLazyCache();

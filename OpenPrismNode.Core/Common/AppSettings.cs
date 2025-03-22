@@ -103,4 +103,42 @@ public class AppSettings
     /// </summary>
     public int GrpcPortUi { get; set; } = 50053;
 
+    /// <summary>
+    /// The data source provider to use for blockchain data retrieval
+    /// </summary>
+    public SyncDataSourceOptions SyncDataSource { get; set; } = new();
+    
+    /// <summary>
+    /// Configuration for the Blockfrost API
+    /// </summary>
+    public BlockfrostOptions Blockfrost { get; set; } = new();
+}
+
+/// <summary>
+/// Configuration options for the sync data source
+/// </summary>
+#pragma warning disable CS8618
+public class SyncDataSourceOptions
+{
+    /// <summary>
+    /// The provider to use for blockchain data retrieval: "DbSync" or "Blockfrost"
+    /// </summary>
+    public string Provider { get; set; } = "DbSync";
+}
+
+/// <summary>
+/// Configuration options for the Blockfrost API
+/// </summary>
+#pragma warning disable CS8618
+public class BlockfrostOptions
+{
+    /// <summary>
+    /// The base URL for the Blockfrost API
+    /// </summary>
+    public string? BaseUrl { get; set; }
+    
+    /// <summary>
+    /// The API key for the Blockfrost API
+    /// </summary>
+    public string? ApiKey { get; set; }
 }
