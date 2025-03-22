@@ -1,7 +1,6 @@
 using FluentAssertions;
 using FluentResults.Extensions.FluentAssertions;
-using OpenPrismNode.Sync.Commands.GetPostgresBlockByBlockId;
-using OpenPrismNode.Sync.Commands.GetPostgresBlockByBlockNo;
+using OpenPrismNode.Sync.Commands.DbSync.GetPostgresBlockByBlockId;
 using OpenPrismNode.Sync.IntegrationTests;
 
 public class GetPostgresBlockByBlockId

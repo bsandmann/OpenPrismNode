@@ -1,10 +1,10 @@
-﻿namespace OpenPrismNode.Sync.Commands.GetPostgresBlockByBlockNo;
+﻿namespace OpenPrismNode.Sync.Commands.DbSync.GetPostgresBlockByBlockNo;
 
-using Core.DbSyncModels;
 using Dapper;
 using FluentResults;
 using MediatR;
-using Services;
+using OpenPrismNode.Core.DbSyncModels;
+using OpenPrismNode.Sync.Services;
 
 public class GetPostgresBlockByBlockNoHandler : IRequestHandler<GetPostgresBlockByBlockNoRequest, Result<Block>>
 {

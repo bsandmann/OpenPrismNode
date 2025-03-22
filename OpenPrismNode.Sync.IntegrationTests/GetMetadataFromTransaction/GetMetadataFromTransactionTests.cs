@@ -1,9 +1,9 @@
 namespace OpenPrismNode.Sync.IntegrationTests.GetMetadataFromTransaction;
 
+using Commands.DbSync.GetMetadataFromTransaction;
 using Core;
 using FluentAssertions;
 using FluentResults.Extensions.FluentAssertions;
-using OpenPrismNode.Sync.Commands.GetMetadataFromTransaction;
 using OpenPrismNode.Core.Models;
 
 public class GetMetadataFromTransactionTests

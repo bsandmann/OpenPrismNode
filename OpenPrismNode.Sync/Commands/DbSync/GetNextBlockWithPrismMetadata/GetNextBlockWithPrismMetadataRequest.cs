@@ -1,8 +1,8 @@
+namespace OpenPrismNode.Sync.Commands.DbSync.GetNextBlockWithPrismMetadata;
+
 using FluentResults;
 using MediatR;
 using OpenPrismNode.Core.Models;
-
-namespace OpenPrismNode.Sync.Commands.GetNextBlockWithPrismMetadata;
 
 public class GetNextBlockWithPrismMetadataRequest : IRequest<Result<GetNextBlockWithPrismMetadataResponse>>
 {

@@ -1,4 +1,4 @@
-﻿namespace OpenPrismNode.Sync.Commands.GetPostgresBlockByBlockId;
+﻿namespace OpenPrismNode.Sync.Commands.DbSync.GetPostgresBlockByBlockId;
 
 using Dapper;
 using FluentResults;

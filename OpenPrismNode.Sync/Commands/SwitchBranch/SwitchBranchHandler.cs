@@ -3,10 +3,11 @@ using MediatR;
 using Microsoft.EntityFrameworkCore;
 using OpenPrismNode.Core;
 using OpenPrismNode.Core.Entities;
-using OpenPrismNode.Sync.Commands.GetPostgresBlockByBlockNo;
 using OpenPrismNode.Sync.Commands.ProcessBlock;
 
 namespace OpenPrismNode.Sync.Commands.SwitchBranch;
+
+using DbSync.GetPostgresBlockByBlockNo;
 
 public class SwitchBranchHandler : IRequestHandler<SwitchBranchRequest, Result>
 {
@@ -127,9 +128,6 @@ public class SwitchBranchHandler : IRequestHandler<SwitchBranchRequest, Result>
                     return Result.Fail($"Error processing block {nonForkedBlock.BlockHeight} from {request.Ledger} dbsync database for rescan after fork");
                 }
             }
-
-
-            // TODO cache cleaning
 
             return Result.Ok();
         }

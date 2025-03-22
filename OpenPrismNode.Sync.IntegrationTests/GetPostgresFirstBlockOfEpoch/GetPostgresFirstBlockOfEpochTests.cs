@@ -1,9 +1,9 @@
 namespace OpenPrismNode.Sync.IntegrationTests.GetPostgresFirstBlockOfEpoch;
 
-using Commands.GetPostgresBlockByBlockNo;
+using Commands.DbSync.GetPostgresBlockByBlockNo;
+using Commands.DbSync.GetPostgresFirstBlockOfEpoch;
 using FluentAssertions;
 using FluentResults.Extensions.FluentAssertions;
-using OpenPrismNode.Sync.Commands.GetPostgresFirstBlockOfEpoch;
 using OpenPrismNode.Core.Models;
 
 public class GetPostgresFirstBlockOfEpochTests

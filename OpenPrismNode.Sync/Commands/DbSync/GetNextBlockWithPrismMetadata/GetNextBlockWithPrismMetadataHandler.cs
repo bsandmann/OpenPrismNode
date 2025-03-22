@@ -1,3 +1,6 @@
+namespace OpenPrismNode.Sync.Commands.DbSync.GetNextBlockWithPrismMetadata;
+
+using System.Diagnostics;
 using Dapper;
 using FluentResults;
 using LazyCache;
@@ -6,10 +9,6 @@ using Microsoft.Extensions.Logging;
 using OpenPrismNode.Core.Common;
 using OpenPrismNode.Core.Models;
 using OpenPrismNode.Sync.Services;
-
-namespace OpenPrismNode.Sync.Commands.GetNextBlockWithPrismMetadata;
-
-using System.Diagnostics;
 
 public class GetNextBlockWithPrismMetadataHandler : IRequestHandler<GetNextBlockWithPrismMetadataRequest, Result<GetNextBlockWithPrismMetadataResponse>>
 {

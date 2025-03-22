@@ -1,8 +1,8 @@
-namespace OpenPrismNode.Sync.Commands.GetPostgresFirstBlockOfEpoch;
+namespace OpenPrismNode.Sync.Commands.DbSync.GetPostgresFirstBlockOfEpoch;
 
-using Core.DbSyncModels;
 using FluentResults;
 using MediatR;
+using OpenPrismNode.Core.DbSyncModels;
 
 public class GetPostgresFirstBlockOfEpochRequest : IRequest<Result<Block>>
 {

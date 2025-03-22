@@ -1,8 +1,8 @@
 namespace OpenPrismNode.Sync.IntegrationTests.GetPostgresBlocksByBlockNos;
 
+using Commands.DbSync.GetPostgresBlocksByBlockNos;
 using FluentAssertions;
 using FluentResults.Extensions.FluentAssertions;
-using OpenPrismNode.Sync.Commands.GetPostgresBlocksByBlockNos;
 using OpenPrismNode.Core.Models;
 
 public class GetPostgresBlocksByBlockNosTests

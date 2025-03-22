@@ -1,4 +1,4 @@
-namespace OpenPrismNode.Sync.Commands.GetNextBlockWithPrismMetadata;
+namespace OpenPrismNode.Sync.Commands.DbSync.GetNextBlockWithPrismMetadata;
 
 public class GetNextBlockWithPrismMetadataResponse
 {

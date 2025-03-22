@@ -10,8 +10,8 @@ using FluentResults;
 using MediatR;
 using Microsoft.Extensions.Options;
 using OpenPrismNode.Core.Common;
-using OpenPrismNode.Sync.Commands.GetPostgresBlockTip;
 using OpenPrismNode.Sync.Services;
+using Sync.Commands.DbSync.GetPostgresBlockTip;
 
 /// <summary>
 /// Service than automatically syncs the entire ledger.

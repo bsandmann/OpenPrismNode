@@ -12,7 +12,7 @@ using Microsoft.Extensions.Primitives;
 using Models;
 using OpenPrismNode.Core.Common;
 using OpenPrismNode.Web;
-using Sync.Commands.GetPostgresBlockTip;
+using Sync.Commands.DbSync.GetPostgresBlockTip;
 
 /// <inheritdoc />
 [ApiController]

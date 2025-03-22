@@ -1,9 +1,9 @@
+using System.Net;
+using Microsoft.Extensions.Logging;
 using Polly;
 using Polly.Retry;
-using System;
-using System.Net;
-using System.Net.Http;
-using Microsoft.Extensions.Logging;
+
+namespace OpenPrismNode.Sync;
 
 public static class ResiliencePolicies
 {

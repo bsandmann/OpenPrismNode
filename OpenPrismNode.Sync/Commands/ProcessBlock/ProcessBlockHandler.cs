@@ -12,19 +12,16 @@ using Core.Commands.CreateBlock;
 using Core.Commands.GetBlockByBlockHash;
 using Core.Common;
 using Core.Entities;
-using GetTransactionsWithPrismMetadataForBlockId;
+using DbSync.GetTransactionsWithPrismMetadataForBlockId;
 
 public class ProcessBlockHandler : IRequestHandler<ProcessBlockRequest, Result<ProcessBlockResponse>>
 {
     private readonly IMediator _mediator;
-    private readonly AppSettings _appSettings;
     private readonly ILogger _logger;
-    // private Hash? _previousBlockHash = null;
 
     public ProcessBlockHandler(IMediator mediator, IOptions<AppSettings> appSettings, ILogger<ProcessBlockHandler> logger)
     {
         _mediator = mediator;
-        _appSettings = appSettings.Value;
         _logger = logger;
     }
 

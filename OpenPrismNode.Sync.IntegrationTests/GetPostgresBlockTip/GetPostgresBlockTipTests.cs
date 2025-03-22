@@ -1,6 +1,6 @@
 namespace OpenPrismNode.Sync.IntegrationTests.GetPostgresBlockTip;
 
-using Commands.GetPostgresBlockTip;
+using Commands.DbSync.GetPostgresBlockTip;
 using Core.Models;
 using FluentAssertions;
 using FluentResults.Extensions.FluentAssertions;

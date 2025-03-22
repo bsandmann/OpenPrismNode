@@ -1,11 +1,11 @@
 namespace OpenPrismNode.Sync.Services;
 
-using Commands.GetNextBlockWithPrismMetadata;
-using Commands.GetPostgresBlockByBlockId;
-using Commands.GetPostgresBlockByBlockNo;
-using Commands.GetPostgresBlocksByBlockNos;
-using Commands.GetPostgresBlockTip;
-using Commands.GetPostgresFirstBlockOfEpoch;
+using Commands.DbSync.GetNextBlockWithPrismMetadata;
+using Commands.DbSync.GetPostgresBlockByBlockId;
+using Commands.DbSync.GetPostgresBlockByBlockNo;
+using Commands.DbSync.GetPostgresBlocksByBlockNos;
+using Commands.DbSync.GetPostgresBlockTip;
+using Commands.DbSync.GetPostgresFirstBlockOfEpoch;
 using Commands.ProcessBlock;
 using Commands.SwitchBranch;
 using Core;

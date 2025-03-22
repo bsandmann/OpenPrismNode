@@ -1,8 +1,8 @@
-﻿namespace OpenPrismNode.Sync.Commands.GetMetadataFromTransaction;
+﻿namespace OpenPrismNode.Sync.Commands.DbSync.GetMetadataFromTransaction;
 
-using Core.DbSyncModels;
 using FluentResults;
 using MediatR;
+using OpenPrismNode.Core.DbSyncModels;
 
 // using global::Grpc.Core;
 

@@ -1,10 +1,10 @@
 namespace OpenPrismNode.Sync.IntegrationTests.GetTransactionsWithPrismMetadataForBlockId;
 
+using Commands.DbSync.GetTransactionsWithPrismMetadataForBlockId;
 using Core.Common;
 using FluentAssertions;
 using FluentResults.Extensions.FluentAssertions;
 using Microsoft.Extensions.Options;
-using OpenPrismNode.Sync.Commands.GetTransactionsWithPrismMetadataForBlockId;
 using OpenPrismNode.Core.Models;
 
 public class GetTransactionsWithPrismMetadataForBlockIdTests

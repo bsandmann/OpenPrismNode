@@ -1,11 +1,10 @@
-﻿using Dapper;
+﻿namespace OpenPrismNode.Sync.Commands.DbSync.GetMetadataFromTransaction;
+
+using Dapper;
 using FluentResults;
 using MediatR;
+using OpenPrismNode.Core.DbSyncModels;
 using OpenPrismNode.Sync.Services;
-
-namespace OpenPrismNode.Sync.Commands.GetMetadataFromTransaction;
-
-using Core.DbSyncModels;
 
 public class GetMetadataFromTransactionHandler : IRequestHandler<GetMetadataFromTransactionRequest, Result<Metadata>>
 {

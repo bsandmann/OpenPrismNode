@@ -1,8 +1,8 @@
-﻿namespace OpenPrismNode.Sync.Commands.GetTransactionsWithPrismMetadataForBlockId;
+﻿namespace OpenPrismNode.Sync.Commands.DbSync.GetTransactionsWithPrismMetadataForBlockId;
 
-using Core.DbSyncModels;
 using FluentResults;
 using MediatR;
+using OpenPrismNode.Core.DbSyncModels;
 
 public class GetTransactionsWithPrismMetadataForBlockIdRequest : IRequest<Result<List<Transaction>>>
 {

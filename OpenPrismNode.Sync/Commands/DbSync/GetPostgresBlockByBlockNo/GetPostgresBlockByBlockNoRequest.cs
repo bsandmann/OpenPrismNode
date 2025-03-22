@@ -1,8 +1,8 @@
-﻿namespace OpenPrismNode.Sync.Commands.GetPostgresBlockByBlockNo;
+﻿namespace OpenPrismNode.Sync.Commands.DbSync.GetPostgresBlockByBlockNo;
 
-using Core.DbSyncModels;
 using FluentResults;
 using MediatR;
+using OpenPrismNode.Core.DbSyncModels;
 
 public class GetPostgresBlockByBlockNoRequest : IRequest<Result<Block>>
 {

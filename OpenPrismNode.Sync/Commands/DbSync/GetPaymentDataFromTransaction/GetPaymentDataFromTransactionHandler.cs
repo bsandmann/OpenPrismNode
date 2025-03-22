@@ -1,14 +1,13 @@
-﻿using Dapper;
+﻿namespace OpenPrismNode.Sync.Commands.DbSync.GetPaymentDataFromTransaction;
+
+using Dapper;
 using FluentResults;
 using MediatR;
 using Microsoft.Extensions.Options;
 using Npgsql;
 using OpenPrismNode.Core.Common;
-
-namespace OpenPrismNode.Sync.Commands.GetPaymentDataFromTransaction;
-
-using Core.DbSyncModels;
-using Core.Models;
+using OpenPrismNode.Core.DbSyncModels;
+using OpenPrismNode.Core.Models;
 using Utxo = Core.DbSyncModels.Utxo;
 
 public class GetPaymentDataFromTransactionHandler : IRequestHandler<GetPaymentDataFromTransactionRequest, Result<Payment>>

@@ -1,6 +1,6 @@
 namespace OpenPrismNode.Sync.IntegrationTests.GetNextBlockWithPrismMetadata;
 
-using Commands.GetNextBlockWithPrismMetadata;
+using Commands.DbSync.GetNextBlockWithPrismMetadata;
 using FluentAssertions;
 using FluentResults;
 using FluentResults.Extensions.FluentAssertions;

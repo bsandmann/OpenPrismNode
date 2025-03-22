@@ -1,9 +1,9 @@
 namespace OpenPrismNode.Sync.IntegrationTests.GetPaymentDataFromTransaction;
 
+using Commands.DbSync.GetPaymentDataFromTransaction;
 using Core.Common;
 using FluentAssertions;
 using FluentResults.Extensions.FluentAssertions;
-using OpenPrismNode.Sync.Commands.GetPaymentDataFromTransaction;
 using OpenPrismNode.Core.Models;
 
 public class GetPaymentDataFromTransactionTests

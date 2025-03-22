@@ -4,7 +4,7 @@ using System.Text.Json;
 using FluentResults;
 using MediatR;
 using Models;
-using OpenPrismNode.Core.Common;
+using Core.Common;
 using OpenPrismNode.Grpc.Models;
 
 /// <summary>

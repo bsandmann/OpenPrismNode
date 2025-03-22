@@ -1,12 +1,12 @@
-﻿namespace OpenPrismNode.Sync.Commands.GetPostgresBlockTip;
+﻿namespace OpenPrismNode.Sync.Commands.DbSync.GetPostgresBlockTip;
 
 using System.Threading;
 using System.Threading.Tasks;
-using Core.DbSyncModels;
+using Dapper;
 using FluentResults;
 using MediatR;
-using Dapper;
-using Services;
+using OpenPrismNode.Core.DbSyncModels;
+using OpenPrismNode.Sync.Services;
 
 public class GetPostgresBlockTipHandler : IRequestHandler<GetPostgresBlockTipRequest, Result<Block>>
 {
