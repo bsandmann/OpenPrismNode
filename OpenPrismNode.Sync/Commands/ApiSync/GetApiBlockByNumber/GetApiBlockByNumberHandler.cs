@@ -1,10 +1,7 @@
-namespace OpenPrismNode.Sync.Commands.ApiSync.GetApiBlockTip;
+namespace OpenPrismNode.Sync.Commands.ApiSync.GetApiBlockByNumber;
 
 using System;
-using System.Net;
 using System.Net.Http;
-using System.Net.Http.Headers;
-using System.Net.Http.Json;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
@@ -14,25 +11,25 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using OpenPrismNode.Core.Common;
 using OpenPrismNode.Core.DbSyncModels;
+using OpenPrismNode.Sync.Commands.ApiSync.GetApiBlockTip;
 using OpenPrismNode.Sync.Implementations.Blockfrost;
 
 /// <summary>
-/// Retrieves the latest block (tip) from the Blockfrost API.
-/// This handler is responsible for finding the latest block in the blockchain to determine
-/// how far the syncing process needs to go.
+/// Retrieves a specific block by its number from the Blockfrost API.
+/// This handler fetches a block with a specific height from the blockchain.
 /// </summary>
-public class GetApiBlockTipHandler : IRequestHandler<GetApiBlockTipRequest, Result<Block>>
+public class GetApiBlockByNumberHandler : IRequestHandler<GetApiBlockByNumberRequest, Result<Block>>
 {
     private readonly IHttpClientFactory _httpClientFactory;
-    private readonly ILogger<GetApiBlockTipHandler> _logger;
+    private readonly ILogger<GetApiBlockByNumberHandler> _logger;
     private readonly AppSettings _appSettings;
     
     /// <summary>
-    /// Initializes a new instance of the <see cref="GetApiBlockTipHandler"/> class.
+    /// Initializes a new instance of the <see cref="GetApiBlockByNumberHandler"/> class.
     /// </summary>
-    public GetApiBlockTipHandler(
+    public GetApiBlockByNumberHandler(
         IHttpClientFactory httpClientFactory,
-        ILogger<GetApiBlockTipHandler> logger,
+        ILogger<GetApiBlockByNumberHandler> logger,
         IOptions<AppSettings> appSettings)
     {
         _httpClientFactory = httpClientFactory;
@@ -41,16 +38,16 @@ public class GetApiBlockTipHandler : IRequestHandler<GetApiBlockTipRequest, Resu
     }
     
     /// <summary>
-    /// Handles the request to retrieve the latest block from the Blockfrost API.
+    /// Handles the request to retrieve a block by its number from the Blockfrost API.
     /// </summary>
-    /// <param name="request">The request object (not used in this case as we always fetch the latest block)</param>
+    /// <param name="request">The request containing the block number to retrieve</param>
     /// <param name="cancellationToken">Cancellation token</param>
-    /// <returns>A result containing the latest block or an error</returns>
-    public async Task<Result<Block>> Handle(GetApiBlockTipRequest request, CancellationToken cancellationToken)
+    /// <returns>A result containing the requested block or an error</returns>
+    public async Task<Result<Block>> Handle(GetApiBlockByNumberRequest request, CancellationToken cancellationToken)
     {
         try
         {
-            _logger.LogDebug("Fetching latest block from Blockfrost API");
+            _logger.LogDebug("Fetching block #{BlockNumber} from Blockfrost API", request.BlockNumber);
             
             // Create HttpClient
             var client = _httpClientFactory.CreateClient();
@@ -59,7 +56,7 @@ public class GetApiBlockTipHandler : IRequestHandler<GetApiBlockTipRequest, Resu
             var httpRequest = BlockfrostHelper.CreateBlockfrostRequest(
                 _appSettings.Blockfrost.BaseUrl,
                 _appSettings.Blockfrost.ApiKey,
-                "blocks/latest");
+                $"blocks/{request.BlockNumber}");
             
             // Send the request and get the result
             var result = await BlockfrostHelper.SendBlockfrostRequestAsync<BlockfrostBlockResponse>(
@@ -78,23 +75,23 @@ public class GetApiBlockTipHandler : IRequestHandler<GetApiBlockTipRequest, Resu
             // Map the API response to our Block model
             var block = MapToBlock(blockResponse);
             
-            _logger.LogDebug("Successfully retrieved latest block #{BlockNo} from Blockfrost API", block.block_no);
+            _logger.LogDebug("Successfully retrieved block #{BlockNo} from Blockfrost API", block.block_no);
             return Result.Ok(block);
         }
         catch (HttpRequestException ex)
         {
-            _logger.LogError(ex, "HTTP error occurred while fetching latest block from Blockfrost API");
-            return Result.Fail($"HTTP error: {ex.Message}");
+            _logger.LogError(ex, "HTTP error occurred while fetching block #{BlockNumber} from Blockfrost API", request.BlockNumber);
+            return Result.Fail<Block>($"HTTP error: {ex.Message}");
         }
         catch (JsonException ex)
         {
-            _logger.LogError(ex, "JSON parsing error occurred while fetching latest block from Blockfrost API");
-            return Result.Fail($"JSON parsing error: {ex.Message}");
+            _logger.LogError(ex, "JSON parsing error occurred while fetching block #{BlockNumber} from Blockfrost API", request.BlockNumber);
+            return Result.Fail<Block>($"JSON parsing error: {ex.Message}");
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Unexpected error occurred while fetching latest block from Blockfrost API");
-            return Result.Fail($"Unexpected error: {ex.Message}");
+            _logger.LogError(ex, "Unexpected error occurred while fetching block #{BlockNumber} from Blockfrost API", request.BlockNumber);
+            return Result.Fail<Block>($"Unexpected error: {ex.Message}");
         }
     }
     

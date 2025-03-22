@@ -12,6 +12,7 @@ using Microsoft.Extensions.Logging;
 using OpenPrismNode.Core.DbSyncModels;
 using OpenPrismNode.Sync.Abstractions;
 using OpenPrismNode.Sync.Commands.ApiSync.GetApiBlockTip;
+using OpenPrismNode.Sync.Commands.ApiSync.GetApiBlockByNumber;
 
 /// <summary>
 /// Implementation of the IBlockProvider interface that retrieves data from the Blockfrost API.
@@ -43,9 +44,8 @@ public class BlockfrostBlockProvider : IBlockProvider
     /// <inheritdoc />
     public async Task<Result<Block>> GetBlockByNumber(int blockNo, CancellationToken cancellationToken = default)
     {
-        // TODO: Implement GetApiBlockByNumberRequest/Handler
-        _logger.LogWarning("GetBlockByNumber is not yet implemented for BlockfrostBlockProviderV2");
-        return Result.Fail<Block>("Not implemented yet");
+        // Use the new API handler to get a block by its number
+        return await _mediator.Send(new GetApiBlockByNumberRequest(blockNo), cancellationToken);
     }
 
     /// <inheritdoc />
