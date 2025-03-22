@@ -54,18 +54,4 @@ public class BlockfrostTransactionProvider : ITransactionProvider
     {
         throw new NotImplementedException();
     }
-
-    private async Task<string> GetTransactionHashById(int txId, CancellationToken cancellationToken)
-    {
-        throw new NotImplementedException();
-    }
-
-    // Helper to get a block hash by ID
-    // In a real implementation, this would need to access a mapping table or service
-    private async Task<string> GetBlockHashById(int blockId, CancellationToken cancellationToken)
-    {
-        throw new NotImplementedException();
-    }
-
-
 }
