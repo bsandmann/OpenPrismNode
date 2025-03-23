@@ -22,7 +22,7 @@ using OpenPrismNode.Sync.Implementations.Blockfrost;
 public class GetApiTransactionIdsForBlockHandler : IRequestHandler<GetApiTransactionIdsForBlockRequest, Result<List<string>>>
 {
     private readonly IHttpClientFactory _httpClientFactory;
-    private readonly ILogger<GetApiTransactionMetadataHandler> _logger;
+    private readonly ILogger<GetApiTransactionHandler> _logger;
     private readonly AppSettings _appSettings;
     private readonly IAppCache _cache;
 
@@ -31,7 +31,7 @@ public class GetApiTransactionIdsForBlockHandler : IRequestHandler<GetApiTransac
     /// </summary>
     public GetApiTransactionIdsForBlockHandler(
         IHttpClientFactory httpClientFactory,
-        ILogger<GetApiTransactionMetadataHandler> logger,
+        ILogger<GetApiTransactionHandler> logger,
         IOptions<AppSettings> appSettings,
         IAppCache cache)
     {

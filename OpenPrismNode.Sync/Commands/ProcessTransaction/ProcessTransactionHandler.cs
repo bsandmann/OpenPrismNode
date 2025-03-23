@@ -5,8 +5,6 @@ using Core.Commands.CreateAddresses;
 using Core.Commands.CreateTransaction;
 using Core.Common;
 using Core.Models;
-using DbSync.GetMetadataFromTransaction;
-using DbSync.GetPaymentDataFromTransaction;
 using DecodeTransaction;
 using FluentResults;
 using MediatR;
@@ -15,6 +13,7 @@ using Microsoft.Extensions.Options;
 using Models;
 using ParseTransaction;
 using Services;
+using Abstractions;
 
 public class ProcessTransactionHandler : IRequestHandler<ProcessTransactionRequest, Result>
 {
@@ -22,21 +21,25 @@ public class ProcessTransactionHandler : IRequestHandler<ProcessTransactionReque
     private readonly ILogger<ProcessTransactionHandler> _logger;
     private readonly AppSettings _appSettings;
     private readonly IIngestionService _ingestionService;
-    
+    private readonly ITransactionProvider _transactionProvider;
 
-    public ProcessTransactionHandler(IMediator mediator, ILogger<ProcessTransactionHandler> logger, IOptions<AppSettings> appSettings, IIngestionService ingestionService)
+    public ProcessTransactionHandler(
+        IMediator mediator, 
+        ILogger<ProcessTransactionHandler> logger, 
+        IOptions<AppSettings> appSettings, 
+        IIngestionService ingestionService,
+        ITransactionProvider transactionProvider)
     {
         _mediator = mediator;
         _logger = logger;
         _appSettings = appSettings.Value;
         _ingestionService = ingestionService;
+        _transactionProvider = transactionProvider;
     }
 
     public async Task<Result> Handle(ProcessTransactionRequest request, CancellationToken cancellationToken)
     {
-
-        //TODO hier weiter
-        var metadata = await _mediator.Send(new GetMetadataFromTransactionRequest(request.Transaction.id, _appSettings.MetadataKey), cancellationToken);
+        var metadata = await _transactionProvider.GetMetadataFromTransaction(request.Transaction.id, request.Transaction.hash, _appSettings.MetadataKey, cancellationToken);
         if (metadata.IsFailed)
         {
             _logger.LogError($"Failed while reading metadata of transaction # {request.Transaction.block_index} in block # {request.Block.block_no}: {metadata.Errors.First().Message}");
@@ -64,7 +67,7 @@ public class ProcessTransactionHandler : IRequestHandler<ProcessTransactionReque
                 else if (decodeResult.IsSuccess)
                 {
                     // Create all wallet-addresses upfront
-                    var paymentdata = await _mediator.Send(new GetPaymentDataFromTransactionRequest(request.Transaction.id), cancellationToken);
+                    var paymentdata = await _transactionProvider.GetPaymentDataFromTransaction(request.Transaction.id, cancellationToken);
                     if (paymentdata.IsFailed)
                     {
                         _logger.LogError($"Failed while reading payment data of transaction # {request.Transaction.block_index} in block # {request.Block.block_no}: {paymentdata.Errors.First().Message}");
@@ -84,7 +87,7 @@ public class ProcessTransactionHandler : IRequestHandler<ProcessTransactionReque
                     foreach (var operation in decodeResult.Value)
                     {
                         var resolveMode = new ResolveMode(request.Block.block_no, request.Transaction.block_index, operationSequenceIndex);
-                        var parsingResult = await _mediator.Send(new ParseTransactionRequest(operation, request.Ledger,  operationSequenceIndex, resolveMode), cancellationToken);
+                        var parsingResult = await _mediator.Send(new ParseTransactionRequest(operation, request.Ledger, operationSequenceIndex, resolveMode), cancellationToken);
                         if (parsingResult.IsSuccess)
                         {
                             var utxos = paymentdata.Value.Incoming
@@ -182,8 +185,7 @@ public class ProcessTransactionHandler : IRequestHandler<ProcessTransactionReque
                     _logger.LogInformation($"Successfully processed block {request.Block.block_no}");
                 }
             }
-            catch
-                (Exception e)
+            catch (Exception e)
             {
                 _logger.LogError($"Failed while parsing transaction {request.Transaction.id} in Block #: {request.Block.block_no}: {e.Message}");
             }

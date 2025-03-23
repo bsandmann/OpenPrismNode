@@ -4,17 +4,18 @@ using FluentResults;
 using MediatR;
 using OpenPrismNode.Core.DbSyncModels;
 
-// using global::Grpc.Core;
 
 public class GetMetadataFromTransactionRequest : IRequest<Result<Metadata>>
 {
-    public GetMetadataFromTransactionRequest(int txId,  int key)
+    public GetMetadataFromTransactionRequest(int? txId, byte[]? txHash,  int key)
     {
         TxId = txId;
+        TxHash = txHash;
         Key = key;
     }
 
-    public int TxId { get; }
+    public int? TxId { get; }
+    public byte[]? TxHash { get; }
     public int Key { get; }
 
 }

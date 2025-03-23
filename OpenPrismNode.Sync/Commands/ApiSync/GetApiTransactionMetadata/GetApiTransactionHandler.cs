@@ -21,21 +21,21 @@ using OpenPrismNode.Sync.Implementations.Blockfrost;
 /// <summary>
 /// Retrieves transaction metadata from the Blockfrost API using a transaction hash.
 /// </summary>
-public class GetApiTransactionMetadataHandler : IRequestHandler<GetApiTransactionMetadataRequest, Result<Transaction?>>
+public class GetApiTransactionHandler : IRequestHandler<GetApiTransactionRequest, Result<Transaction?>>
 {
     private readonly IMediator _mediator;
     private readonly IHttpClientFactory _httpClientFactory;
-    private readonly ILogger<GetApiTransactionMetadataHandler> _logger;
+    private readonly ILogger<GetApiTransactionHandler> _logger;
     private readonly AppSettings _appSettings;
     private readonly IAppCache _cache;
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="GetApiTransactionMetadataHandler"/> class.
+    /// Initializes a new instance of the <see cref="GetApiTransactionHandler"/> class.
     /// </summary>
-    public GetApiTransactionMetadataHandler(
+    public GetApiTransactionHandler(
         IMediator mediator,
         IHttpClientFactory httpClientFactory,
-        ILogger<GetApiTransactionMetadataHandler> logger,
+        ILogger<GetApiTransactionHandler> logger,
         IOptions<AppSettings> appSettings,
         IAppCache cache)
     {
@@ -52,7 +52,7 @@ public class GetApiTransactionMetadataHandler : IRequestHandler<GetApiTransactio
     /// <param name="request">The request object containing the transaction hash</param>
     /// <param name="cancellationToken">Cancellation token</param>
     /// <returns>A result containing the transaction data or an error</returns>
-    public async Task<Result<Transaction?>> Handle(GetApiTransactionMetadataRequest request, CancellationToken cancellationToken)
+    public async Task<Result<Transaction?>> Handle(GetApiTransactionRequest request, CancellationToken cancellationToken)
     {
         // if (string.IsNullOrWhiteSpace(request.TxHash))
         // {
@@ -436,5 +436,4 @@ public class GetApiTransactionMetadataHandler : IRequestHandler<GetApiTransactio
         }
     }
 
-    private record TransactionMetadataWrapper(string txHash, string transactionJson);
 }

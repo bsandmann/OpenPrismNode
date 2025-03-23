@@ -15,12 +15,12 @@ public interface ITransactionProvider
     /// <summary>
     /// Gets PRISM metadata from a transaction
     /// </summary>
-    Task<Result<Metadata>> GetMetadataFromTransaction(int txId, long key, CancellationToken cancellationToken = default);
+    Task<Result<Metadata>> GetMetadataFromTransaction(int txId, byte[] txHash, long key, CancellationToken cancellationToken = default);
     
     /// <summary>
     /// Gets payment data from a transaction
     /// </summary>
-    Task<Result<List<Payment>>> GetPaymentDataFromTransaction(int txId, CancellationToken cancellationToken = default);
+    Task<Result<Payment>> GetPaymentDataFromTransaction(int txId, CancellationToken cancellationToken = default);
     
     /// <summary>
     /// Gets all transactions with PRISM metadata in a specific block

@@ -45,13 +45,13 @@ public class BlockfrostTransactionProvider : ITransactionProvider
     }
 
     /// <inheritdoc />
-    public async Task<Result<Metadata>> GetMetadataFromTransaction(int txId, long key, CancellationToken cancellationToken = default)
+    public async Task<Result<Metadata>> GetMetadataFromTransaction(int txId, byte[] txHash, long key, CancellationToken cancellationToken = default)
     {
-        throw new NotImplementedException();
+        return await _mediator.Send(new GetApiMetadataRequest(PrismEncoding.ByteArrayToHex(txHash)), cancellationToken);
     }
 
     /// <inheritdoc />
-    public async Task<Result<List<Payment>>> GetPaymentDataFromTransaction(int txId, CancellationToken cancellationToken = default)
+    public async Task<Result<Payment>> GetPaymentDataFromTransaction(int txId, CancellationToken cancellationToken = default)
     {
         throw new NotImplementedException();
     }

@@ -21,7 +21,7 @@ public class GetApiTransactionWithPrismMetadataForBlockNoHandler : IRequestHandl
 {
     private readonly IMediator _mediator;
     private readonly IHttpClientFactory _httpClientFactory;
-    private readonly ILogger<GetApiTransactionMetadataHandler> _logger;
+    private readonly ILogger<GetApiTransactionHandler> _logger;
     private readonly AppSettings _appSettings;
     private readonly IAppCache _cache;
 
@@ -31,7 +31,7 @@ public class GetApiTransactionWithPrismMetadataForBlockNoHandler : IRequestHandl
     public GetApiTransactionWithPrismMetadataForBlockNoHandler(
         IMediator mediator,
         IHttpClientFactory httpClientFactory,
-        ILogger<GetApiTransactionMetadataHandler> logger,
+        ILogger<GetApiTransactionHandler> logger,
         IOptions<AppSettings> appSettings,
         IAppCache cache)
     {
@@ -55,7 +55,7 @@ public class GetApiTransactionWithPrismMetadataForBlockNoHandler : IRequestHandl
         var transactions = new List<Transaction>();
         foreach (var transactionid in transactionIds.Value)
         {
-            var transactionResults = await _mediator.Send(new GetApiTransactionMetadataRequest(transactionid, request.BlockNo), cancellationToken);
+            var transactionResults = await _mediator.Send(new GetApiTransactionRequest(transactionid, request.BlockNo), cancellationToken);
             if (transactionResults.IsFailed)
             {
                 return transactionResults.ToResult();
