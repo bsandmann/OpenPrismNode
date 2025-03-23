@@ -1,6 +1,7 @@
 namespace OpenPrismNode.Sync.Commands.ApiSync;
 
 using System;
+using Core.Common;
 using OpenPrismNode.Core.DbSyncModels;
 using OpenPrismNode.Sync.Commands.ApiSync.GetApiBlockTip;
 
@@ -31,37 +32,13 @@ public static class BlockfrostBlockMapper
             tx_count = response.TxCount,
             
             // Convert hex strings to byte arrays
-            hash = ConvertHexStringToByteArray(response.Hash),
+            hash = PrismEncoding.HexToByteArray(response.Hash),
             
             // No direct mapping for previous_id, use a placeholder
             previous_id = -1,
             
             // Convert hex string to byte array
-            previousHash = ConvertHexStringToByteArray(response.PreviousBlock)
+            previousHash = PrismEncoding.HexToByteArray(response.PreviousBlock)
         };
-    }
-    
-    /// <summary>
-    /// Converts a hexadecimal string to a byte array.
-    /// </summary>
-    /// <param name="hex">The hexadecimal string to convert</param>
-    /// <returns>A byte array representing the hexadecimal string</returns>
-    public static byte[] ConvertHexStringToByteArray(string hex)
-    {
-        if (string.IsNullOrEmpty(hex))
-            return new byte[0];
-
-        // Remove "0x" prefix if present
-        if (hex.StartsWith("0x", StringComparison.OrdinalIgnoreCase))
-            hex = hex.Substring(2);
-
-        // Create byte array
-        byte[] bytes = new byte[hex.Length / 2];
-        for (int i = 0; i < hex.Length; i += 2)
-        {
-            bytes[i / 2] = Convert.ToByte(hex.Substring(i, 2), 16);
-        }
-        
-        return bytes;
     }
 }

@@ -19,7 +19,6 @@ using Microsoft.Extensions.Options;
 using OpenPrismNode.Core.Common;
 using OpenPrismNode.Core.DbSyncModels;
 using OpenPrismNode.Sync.Abstractions;
-using OpenPrismNode.Sync.Implementations.Blockfrost.Models;
 
 /// <summary>
 /// Implementation of the ITransactionProvider interface that retrieves data from the Blockfrost API.
@@ -52,16 +51,20 @@ public class BlockfrostTransactionProvider : ITransactionProvider
     }
 
     /// <inheritdoc />
-    public async Task<Result<IEnumerable<Payment>>> GetPaymentDataFromTransaction(int txId, CancellationToken cancellationToken = default)
+    public async Task<Result<List<Payment>>> GetPaymentDataFromTransaction(int txId, CancellationToken cancellationToken = default)
     {
         throw new NotImplementedException();
     }
 
     /// <inheritdoc />
-    public async Task<Result<IEnumerable<Transaction>>> GetTransactionsWithPrismMetadataForBlockId(int blockId, int blockNo, CancellationToken cancellationToken = default)
+    public async Task<Result<List<Transaction>>> GetTransactionsWithPrismMetadataForBlockId(int blockId, int blockNo, CancellationToken cancellationToken = default)
     {
         // Use the new API handler to get the block tip
-        var ff =  await _mediator.Send(new GetApiTransactionsWithPrismMetadataForBlockNoRequest(blockNo), cancellationToken);
-        return null;
+        var results = await _mediator.Send(new GetApiTransactionsWithPrismMetadataForBlockNoRequest(blockNo), cancellationToken);
+        if (results.IsFailed)
+        {
+            return results.ToResult();
+        }
+        return Result.Ok(results.Value);
     }
 }

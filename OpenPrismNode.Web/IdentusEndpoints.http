@@ -1,5 +1,5 @@
 @IdentusCloudAgent_HostAdress = http://localhost:8085
-@didRef = did:prism:0b451f79ea893010d78f44275dea41f8a7e36973452da6fb467401a220735004
+@didRef = did:prism:572bd324364745a9fc8c06fc62eb43f7766118edc4c9f63d88580400282f61f0
 
 ###
 # Creates a new DID locally inside the Identus Cloud Agent

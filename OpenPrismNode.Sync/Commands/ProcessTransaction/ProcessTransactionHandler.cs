@@ -34,6 +34,8 @@ public class ProcessTransactionHandler : IRequestHandler<ProcessTransactionReque
 
     public async Task<Result> Handle(ProcessTransactionRequest request, CancellationToken cancellationToken)
     {
+
+        //TODO hier weiter
         var metadata = await _mediator.Send(new GetMetadataFromTransactionRequest(request.Transaction.id, _appSettings.MetadataKey), cancellationToken);
         if (metadata.IsFailed)
         {

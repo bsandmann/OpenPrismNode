@@ -1,22 +1,18 @@
-namespace OpenPrismNode.Sync.Commands.ApiSync.GetApiTransactionIdsForBlock;
+namespace OpenPrismNode.Sync.Commands.ApiSync.GetApiTransactionWithPrismMetadataForBlockNo;
 
-using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Net.Http;
-using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
-using Core.DbSyncModels;
 using FluentResults;
-using GetApiTransactionMetadata;
-using GetApiTransactionWithPrismMetadataForBlockNo;
+using GetApiTransactionIdsForBlock;
 using LazyCache;
 using MediatR;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using OpenPrismNode.Core.Common;
-using OpenPrismNode.Sync.Implementations.Blockfrost;
+using OpenPrismNode.Core.DbSyncModels;
+using OpenPrismNode.Sync.Commands.ApiSync.GetApiTransactionMetadata;
 
 /// <summary>
 /// Retrieves all transaction IDs contained within a specific block from the Blockfrost API.
@@ -49,24 +45,40 @@ public class GetApiTransactionWithPrismMetadataForBlockNoHandler : IRequestHandl
 
     public async Task<Result<List<Transaction>>> Handle(GetApiTransactionsWithPrismMetadataForBlockNoRequest request, CancellationToken cancellationToken)
     {
+        // Get all the transactionid for the specific block
+        var transactionIds = await _mediator.Send(new GetApiTransactionIdsForBlockRequest(request.BlockNo), cancellationToken);
+        if (transactionIds.IsFailed)
+        {
+            return transactionIds.ToResult();
+        }
 
-       // Get all the transactionid for the specific block
-       var transactionIds = await _mediator.Send(new GetApiTransactionIdsForBlockRequest(request.BlockNo), cancellationToken);
+        var transactions = new List<Transaction>();
+        foreach (var transactionid in transactionIds.Value)
+        {
+            var transactionResults = await _mediator.Send(new GetApiTransactionMetadataRequest(transactionid, request.BlockNo), cancellationToken);
+            if (transactionResults.IsFailed)
+            {
+                return transactionResults.ToResult();
+            }
 
-       // ask the cache for the time when the list with all prism transactions was updated (that is the blockno)
-       // if it hasnt been updated, we need to completly refresh the list (or we can do it from the back and check inbetween)
+            if (transactionResults.Value != null)
+            {
+                transactions.Add(transactionResults.Value);
+            }
+        }
 
-       // When we can be sure that the list up to date there are two scenarios:
-
-       // we find the transaction in the list
-       // that means we acutally have a Prism trasaction and can return it here
-
-       // we don't find it in the list
-       // we retunrn an empty result here
+        return Result.Ok(transactions);
 
 
+        // ask the cache for the time when the list with all prism transactions was updated (that is the blockno)
+        // if it hasnt been updated, we need to completly refresh the list (or we can do it from the back and check inbetween)
 
+        // When we can be sure that the list up to date there are two scenarios:
 
-       return null;
+        // we find the transaction in the list
+        // that means we acutally have a Prism trasaction and can return it here
+
+        // we don't find it in the list
+        // we retunrn an empty result here
     }
 }

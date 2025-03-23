@@ -30,28 +30,28 @@ public class DbSyncTransactionProvider : ITransactionProvider
     }
 
     /// <inheritdoc />
-    public async Task<Result<IEnumerable<Payment>>> GetPaymentDataFromTransaction(int txId, CancellationToken cancellationToken = default)
+    public async Task<Result<List<Payment>>> GetPaymentDataFromTransaction(int txId, CancellationToken cancellationToken = default)
     {
         var result = await _mediator.Send(new GetPaymentDataFromTransactionRequest(txId), cancellationToken);
         if (result.IsFailed)
         {
-            return Result.Fail<IEnumerable<Payment>>(result.Errors);
+            return Result.Fail<List<Payment>>(result.Errors);
         }
 
         // Convert single Payment to IEnumerable<Payment>
-        return Result.Ok<IEnumerable<Payment>>(new[] { result.Value });
+        return Result.Ok<List<Payment>>(new List<Payment>() { result.Value });
     }
 
     /// <inheritdoc />
-    public async Task<Result<IEnumerable<Transaction>>> GetTransactionsWithPrismMetadataForBlockId(int blockId, int blockNo, CancellationToken cancellationToken = default)
+    public async Task<Result<List<Transaction>>> GetTransactionsWithPrismMetadataForBlockId(int blockId, int blockNo, CancellationToken cancellationToken = default)
     {
         var result = await _mediator.Send(new GetTransactionsWithPrismMetadataForBlockIdRequest(blockId), cancellationToken);
         if (result.IsFailed)
         {
-            return Result.Fail<IEnumerable<Transaction>>(result.Errors);
+            return Result.Fail<List<Transaction>>(result.Errors);
         }
 
         // Convert List<Transaction> to IEnumerable<Transaction>
-        return Result.Ok<IEnumerable<Transaction>>(result.Value);
+        return Result.Ok<List<Transaction>>(result.Value);
     }
 }

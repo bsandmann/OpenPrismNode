@@ -1,4 +1,4 @@
-namespace OpenPrismNode.Sync.Commands.ApiSync.GetApiBlockTip;
+namespace OpenPrismNode.Sync.Commands.ApiSync;
 
 using System.Text.Json.Serialization;
 
