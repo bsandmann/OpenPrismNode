@@ -22,7 +22,7 @@ public class GetMetadataFromTransactionTests
     public async Task Getting_metadata_for_valid_transaction_and_key_succeeds()
     {
         // Arrange
-        var request = new GetMetadataFromTransactionRequest(TestTxId, null, 21325);
+        var request = new GetMetadataFromTransactionRequest(TestTxId, 21325);
 
         // Act
         var result = await _handler.Handle(request, CancellationToken.None);
@@ -31,15 +31,14 @@ public class GetMetadataFromTransactionTests
         result.Should().BeSuccess();
         result.Value.Should().NotBeNull();
         result.Value.json.Should().NotBeNullOrEmpty();
-      
     }
 
     [Fact]
     public async Task Getting_metadata_for_transaction_without_metadata_returns_failure()
     {
         // Arrange
-        int txIdWithoutMetadata = 123;  // No related metadata in the test database
-        var request = new GetMetadataFromTransactionRequest(txIdWithoutMetadata,null, 21325);
+        int txIdWithoutMetadata = 123; // No related metadata in the test database
+        var request = new GetMetadataFromTransactionRequest(txIdWithoutMetadata, 21325);
 
         // Act
         var result = await _handler.Handle(request, CancellationToken.None);
@@ -54,7 +53,7 @@ public class GetMetadataFromTransactionTests
     {
         // Arrange
         int nonexistentTxId = int.MaxValue; // Assume this transaction doesn't exist
-        var request = new GetMetadataFromTransactionRequest(nonexistentTxId,null, 21325);
+        var request = new GetMetadataFromTransactionRequest(nonexistentTxId, 21325);
 
         // Act
         var result = await _handler.Handle(request, CancellationToken.None);
@@ -70,7 +69,7 @@ public class GetMetadataFromTransactionTests
     public async Task Getting_metadata_with_invalid_txId_returns_failure(int invalidTxId)
     {
         // Arrange
-        var request = new GetMetadataFromTransactionRequest(invalidTxId,null, 21325);
+        var request = new GetMetadataFromTransactionRequest(invalidTxId, 21325);
 
         // Act
         var result = await _handler.Handle(request, CancellationToken.None);
@@ -86,7 +85,7 @@ public class GetMetadataFromTransactionTests
     public async Task Getting_metadata_with_invalid_key_returns_failure(int invalidKey)
     {
         // Arrange
-        var request = new GetMetadataFromTransactionRequest(TestTxId, null, invalidKey);
+        var request = new GetMetadataFromTransactionRequest(TestTxId, invalidKey);
 
         // Act
         var result = await _handler.Handle(request, CancellationToken.None);

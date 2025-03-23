@@ -10,6 +10,7 @@ using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Commands.ApiSync.GetApiBlockTip;
+using Commands.ApiSync.GetApiPaymentDataFromTransaction;
 using Commands.ApiSync.GetApiTransactionMetadata;
 using Commands.ApiSync.GetApiTransactionWithPrismMetadataForBlockNo;
 using FluentResults;
@@ -25,7 +26,6 @@ using OpenPrismNode.Sync.Abstractions;
 /// </summary>
 public class BlockfrostTransactionProvider : ITransactionProvider
 {
-
     private readonly IMediator _mediator;
     private readonly IHttpClientFactory _httpClientFactory;
     private readonly ILogger<BlockfrostTransactionProvider> _logger;
@@ -51,9 +51,9 @@ public class BlockfrostTransactionProvider : ITransactionProvider
     }
 
     /// <inheritdoc />
-    public async Task<Result<Payment>> GetPaymentDataFromTransaction(int txId, CancellationToken cancellationToken = default)
+    public async Task<Result<Payment>> GetPaymentDataFromTransaction(int txId, byte[] txHash, CancellationToken cancellationToken = default)
     {
-        throw new NotImplementedException();
+        return await _mediator.Send(new GetApiPaymentDataFromTransactionRequest(PrismEncoding.ByteArrayToHex(txHash)), cancellationToken);
     }
 
     /// <inheritdoc />
@@ -65,6 +65,7 @@ public class BlockfrostTransactionProvider : ITransactionProvider
         {
             return results.ToResult();
         }
+
         return Result.Ok(results.Value);
     }
 }

@@ -11,4 +11,6 @@ public static class CacheKeys
     public const string TransactionIdOfBlockNo = "TransactionId_of_BlockNo_";
     public const string BlockNoOfMetadataCacheUpdate = "BlockNoOfMetadataCacheUpdate";
     public const string Transaction_by_Id = "Transaction_by_Id_";
+    public const string Transaction_Utxos_By_Id = "Transaction_Utxos_By_Id_";
+    public const string Address_Details_By_Id = "Address_Details_By_Id_";
 }

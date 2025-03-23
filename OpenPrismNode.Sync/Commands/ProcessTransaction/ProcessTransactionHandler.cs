@@ -24,9 +24,9 @@ public class ProcessTransactionHandler : IRequestHandler<ProcessTransactionReque
     private readonly ITransactionProvider _transactionProvider;
 
     public ProcessTransactionHandler(
-        IMediator mediator, 
-        ILogger<ProcessTransactionHandler> logger, 
-        IOptions<AppSettings> appSettings, 
+        IMediator mediator,
+        ILogger<ProcessTransactionHandler> logger,
+        IOptions<AppSettings> appSettings,
         IIngestionService ingestionService,
         ITransactionProvider transactionProvider)
     {
@@ -67,7 +67,7 @@ public class ProcessTransactionHandler : IRequestHandler<ProcessTransactionReque
                 else if (decodeResult.IsSuccess)
                 {
                     // Create all wallet-addresses upfront
-                    var paymentdata = await _transactionProvider.GetPaymentDataFromTransaction(request.Transaction.id, cancellationToken);
+                    var paymentdata = await _transactionProvider.GetPaymentDataFromTransaction(request.Transaction.id, request.Transaction.hash, cancellationToken);
                     if (paymentdata.IsFailed)
                     {
                         _logger.LogError($"Failed while reading payment data of transaction # {request.Transaction.block_index} in block # {request.Block.block_no}: {paymentdata.Errors.First().Message}");

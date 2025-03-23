@@ -20,7 +20,7 @@ public interface ITransactionProvider
     /// <summary>
     /// Gets payment data from a transaction
     /// </summary>
-    Task<Result<Payment>> GetPaymentDataFromTransaction(int txId, CancellationToken cancellationToken = default);
+    Task<Result<Payment>> GetPaymentDataFromTransaction(int txId, byte[] txHash, CancellationToken cancellationToken = default);
     
     /// <summary>
     /// Gets all transactions with PRISM metadata in a specific block

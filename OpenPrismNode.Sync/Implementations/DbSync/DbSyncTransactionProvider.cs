@@ -26,11 +26,11 @@ public class DbSyncTransactionProvider : ITransactionProvider
     /// <inheritdoc />
     public async Task<Result<Metadata>> GetMetadataFromTransaction(int txId, byte[] txHash, long key, CancellationToken cancellationToken = default)
     {
-        return await _mediator.Send(new GetMetadataFromTransactionRequest(txId, null, (int)key), cancellationToken);
+        return await _mediator.Send(new GetMetadataFromTransactionRequest(txId, (int)key), cancellationToken);
     }
 
     /// <inheritdoc />
-    public async Task<Result<Payment>> GetPaymentDataFromTransaction(int txId, CancellationToken cancellationToken = default)
+    public async Task<Result<Payment>> GetPaymentDataFromTransaction(int txId, byte[] txHash, CancellationToken cancellationToken = default)
     {
         var result = await _mediator.Send(new GetPaymentDataFromTransactionRequest(txId), cancellationToken);
         return result.ToResult();

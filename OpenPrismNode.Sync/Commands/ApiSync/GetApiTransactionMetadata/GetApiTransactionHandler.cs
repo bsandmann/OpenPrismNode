@@ -212,7 +212,7 @@ public class GetApiTransactionHandler : IRequestHandler<GetApiTransactionRequest
 
             // Now we have all the transaction metadata responses, parse them
             var transactionMetadataWrappers = new List<TransactionMetadataWrapper>();
-            ReadTransactionMetadata(allTransactionMetadataResponses, transactionMetadataWrappers);
+            this.ReadTransactionMetadata(allTransactionMetadataResponses, transactionMetadataWrappers);
 
             // Add everything to the cache
             foreach (var transactionMetadataWrapper in transactionMetadataWrappers)
@@ -320,7 +320,7 @@ public class GetApiTransactionHandler : IRequestHandler<GetApiTransactionRequest
                     }
 
                     var transactionMetadataWrappers = new List<TransactionMetadataWrapper>();
-                    ReadTransactionMetadata(new List<BlockfrostTransactionMetadataResponse>() { txData }, transactionMetadataWrappers);
+                    this.ReadTransactionMetadata(new List<BlockfrostTransactionMetadataResponse>() { txData }, transactionMetadataWrappers);
                     // Otherwise, add new transaction data to cache
                     foreach (var transactionMetadataWrapper in transactionMetadataWrappers)
                     {
@@ -368,30 +368,38 @@ public class GetApiTransactionHandler : IRequestHandler<GetApiTransactionRequest
     }
 
 
-    private static void ReadTransactionMetadata(List<BlockfrostTransactionMetadataResponse> txResponse, List<TransactionMetadataWrapper> transactionMetadataWrappers)
+    private void ReadTransactionMetadata(List<BlockfrostTransactionMetadataResponse> txResponse, List<TransactionMetadataWrapper> transactionMetadataWrappers)
     {
         foreach (var transactionMetadataResponse in txResponse)
         {
-            if (transactionMetadataResponse.JsonMetadata is not null)
+            try
             {
-                var hasCProp = transactionMetadataResponse.JsonMetadata.Value.TryGetProperty("c", out var cProp);
-                var hasVProp = transactionMetadataResponse.JsonMetadata.Value.TryGetProperty("v", out var vProp);
-
-                if (hasCProp && hasVProp && cProp.ValueKind == JsonValueKind.Array)
+                if (transactionMetadataResponse.JsonMetadata is not null)
                 {
-                    // Validate that 'c' is an array of strings that can safely be processed
-                    var hexStrings = new List<string>();
-                    var cIsValid = true;
+                    var hasCProp = transactionMetadataResponse.JsonMetadata.Value.TryGetProperty("c", out var cProp);
+                    var hasVProp = transactionMetadataResponse.JsonMetadata.Value.TryGetProperty("v", out var vProp);
 
-                    foreach (var element in cProp.EnumerateArray())
+                    if (hasCProp && hasVProp && cProp.ValueKind == JsonValueKind.Array)
                     {
-                        if (element.ValueKind == JsonValueKind.String)
+                        // Validate that 'c' is an array of strings that can safely be processed
+                        var hexStrings = new List<string>();
+                        var cIsValid = true;
+
+                        foreach (var element in cProp.EnumerateArray())
                         {
-                            var str = element.GetString();
-                            // Ensure each string starts with '0x' and has length > 2
-                            if (str is not null && str.StartsWith("0x") && str.Length > 2)
+                            if (element.ValueKind == JsonValueKind.String)
                             {
-                                hexStrings.Add(str);
+                                var str = element.GetString();
+                                // Ensure each string starts with '0x' and has length > 2
+                                if (str is not null && str.StartsWith("0x") && str.Length > 2)
+                                {
+                                    hexStrings.Add(str);
+                                }
+                                else
+                                {
+                                    cIsValid = false;
+                                    break;
+                                }
                             }
                             else
                             {
@@ -399,39 +407,45 @@ public class GetApiTransactionHandler : IRequestHandler<GetApiTransactionRequest
                                 break;
                             }
                         }
-                        else
+
+                        // Make sure 'v' is a valid integer and is supported by our handler
+                        if (cIsValid && vProp.ValueKind == JsonValueKind.Number && vProp.TryGetInt32(out var version))
                         {
-                            cIsValid = false;
-                            break;
-                        }
-                    }
-
-                    // Make sure 'v' is a valid integer and is supported by our handler
-                    if (cIsValid && vProp.ValueKind == JsonValueKind.Number && vProp.TryGetInt32(out var version))
-                    {
-                        if (version == 1)
-                        {
-                            // Construct JSON that matches TransactionModel
-                            var payload = new
+                            if (version == 1)
                             {
-                                c = hexStrings,
-                                v = version
-                            };
+                                // Construct JSON that matches TransactionModel
+                                var payload = new
+                                {
+                                    c = hexStrings,
+                                    v = version
+                                };
 
-                            // Serialize to JSON
-                            var transactionJson = JsonSerializer.Serialize(payload);
+                                // Serialize to JSON
+                                var transactionJson = JsonSerializer.Serialize(payload);
 
-                            var hasSametransaction = transactionMetadataWrappers.Any(p => p.txHash == transactionMetadataResponse.TxHash);
-                            if (hasSametransaction)
-                            {
-                                //TODO I might be able to remove this check later
-                                throw new Exception("Duplicate transaction hash found in metadata response");
+                                // Check for duplicate transaction hash
+                                if (transactionMetadataWrappers.Any(p => p.txHash == transactionMetadataResponse.TxHash))
+                                {
+                                    // Log this instead of throwing an exception to make processing more resilient
+                                    _logger.LogWarning($"Duplicate transaction hash found in metadata response: {transactionMetadataResponse.TxHash}");
+                                    continue;
+                                }
+
+                                transactionMetadataWrappers.Add(new TransactionMetadataWrapper(transactionMetadataResponse.TxHash, transactionJson));
                             }
-
-                            transactionMetadataWrappers.Add(new TransactionMetadataWrapper(transactionMetadataResponse.TxHash, transactionJson));
                         }
                     }
                 }
+            }
+            catch (JsonException ex)
+            {
+                // Log the error but continue processing other transactions
+                _logger.LogError(ex, $"JSON error processing transaction {transactionMetadataResponse.TxHash}: {ex.Message}");
+            }
+            catch (Exception ex)
+            {
+                // Log the error but continue processing other transactions
+                _logger.LogError(ex, $"Unexpected error processing transaction {transactionMetadataResponse.TxHash}: {ex.Message}");
             }
         }
     }
