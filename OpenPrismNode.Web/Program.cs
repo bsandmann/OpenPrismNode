@@ -128,6 +128,7 @@ builder.Services.AddScoped<INpgsqlConnectionFactory, NpgsqlConnectionFactory>();
 builder.Services.AddSingleton<BackgroundSyncService>();
 builder.Services.AddScoped<ICardanoWalletService, CardanoWalletService>();
 builder.Services.AddScoped<IIngestionService, IngestionService>();
+builder.Services.AddScoped<IMetadataCacheService, MetadataCacheService>();
 
 
 // Configure data source providers based on configuration
