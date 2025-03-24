@@ -93,6 +93,7 @@ public class GetApiTransactionHandler : IRequestHandler<GetApiTransactionRequest
                 {
                     return transactionResult.ToResult();
                 }
+
                 return Result.Ok<Transaction?>(transactionResult.Value);
             }
 
@@ -118,6 +119,7 @@ public class GetApiTransactionHandler : IRequestHandler<GetApiTransactionRequest
                 {
                     return transactionResult.ToResult();
                 }
+
                 return Result.Ok<Transaction?>(transactionResult.Value);
             }
 
@@ -135,8 +137,40 @@ public class GetApiTransactionHandler : IRequestHandler<GetApiTransactionRequest
             // but with a calculated formular to avoid overcaching
             // We assume that the maximum number of items in a block is 100
             // so the maximum number of pages we have to update is cache is the number of blocks
-            // TODO
-            return Result.Ok();
+            int blocksRolledBack = updatedOnBlockNo - request.CurrentBlockNo;
+
+            var rollbackResult = await RollbackCache(blocksRolledBack, cancellationToken);
+            if (rollbackResult.IsFailed)
+            {
+                return rollbackResult.ToResult<Transaction?>();
+            }
+
+            // After rolling back, store the new "current" block in the cache
+            _cache.Add(CacheKeys.BlockNoOfMetadataCacheUpdate, request.CurrentBlockNo);
+
+            // Try to get the transaction again from the cache
+            var cacheResult2 = _cache.TryGetValue(
+                string.Concat(CacheKeys.MetadataFromPrismTransaction, request.TxHash),
+                out TransactionMetadataWrapper transactionMetadataWrapper2
+            );
+
+            if (cacheResult2)
+            {
+                // If found, fetch from DB
+                var transactionResult = await _mediator.Send(
+                    new GetApiTransactionByHashRequest(request.TxHash),
+                    cancellationToken
+                );
+
+                if (transactionResult.IsFailed)
+                {
+                    return transactionResult.ToResult();
+                }
+
+                return Result.Ok<Transaction?>(transactionResult.Value);
+            }
+
+            return Result.Ok<Transaction?>(null);
         }
 
         return Result.Ok();
@@ -200,6 +234,7 @@ public class GetApiTransactionHandler : IRequestHandler<GetApiTransactionRequest
                     {
                         hasMoreData = false;
                     }
+
                     // Accumulate the results
                     allTransactionMetadataResponses.AddRange(currentPageData);
                     // Move to the next page
@@ -223,6 +258,10 @@ public class GetApiTransactionHandler : IRequestHandler<GetApiTransactionRequest
                     TimeSpan.MaxValue
                 );
             }
+
+            // List of all transaction hashes
+            var transactionHashes = transactionMetadataWrappers.Select(p => new TransactionBlockWrapper(p.txHash, null)).ToList();
+            _cache.Add(CacheKeys.TransactionList_with_Metadata, transactionHashes, TimeSpan.MaxValue);
 
             return Result.Ok();
         }
@@ -248,33 +287,35 @@ public class GetApiTransactionHandler : IRequestHandler<GetApiTransactionRequest
         }
     }
 
-    /// <summary>
-    /// Update the cache by fetching transaction metadata in descending order
-    /// and stopping as soon as an item is encountered that is already in the cache.
-    /// </summary>
-    /// <param name="cancellationToken"></param>
-    /// <returns></returns>
-    public async Task<Result> UpdateCache(CancellationToken cancellationToken)
+    private async Task<Result> RollbackCache(int blocksRolledBack, CancellationToken cancellationToken)
     {
         try
         {
-            _logger.LogDebug("Updating the transaction metadata cache in descending order.");
+            // Each block can have up to 100 items, and each page can have up to 100 items.
+            // We'll fetch exactly 'blocksRolledBack' pages in descending order.
+            int pagesToFetch = blocksRolledBack;
+
+            _logger.LogInformation(
+                "Rolling back the cache. Blocks rolled back: {BlocksRolledBack}, Pages to fetch: {PagesToFetch}",
+                blocksRolledBack, pagesToFetch
+            );
 
             var client = _httpClientFactory.CreateClient();
 
-            int page = 1;
-            bool keepFetching = true;
+            // Tracks every TxHash found in the rolled-back range (for possible removal).
+            var rolledBackTxHashes = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            // Tracks every TxHash we re-fetch (hence still valid).
+            var newlyFetchedTxHashes = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
-            while (keepFetching)
+            for (int page = 1; page <= pagesToFetch; page++)
             {
-                // Prepare request for descending order
                 var request = BlockfrostHelper.CreateBlockfrostRequest(
                     baseUrl: _appSettings.Blockfrost.BaseUrl,
                     apiKey: _appSettings.Blockfrost.ApiKey,
                     endpoint: $"/metadata/txs/labels/{_appSettings.MetadataKey}",
                     page: page,
                     count: 100,
-                    orderDesc: true
+                    orderDesc: true // descending
                 );
 
                 var txInfoResult = await BlockfrostHelper
@@ -285,87 +326,270 @@ public class GetApiTransactionHandler : IRequestHandler<GetApiTransactionRequest
                         cancellationToken
                     );
 
-                // If the request failed, return an error result
                 if (txInfoResult.IsFailed)
                 {
-                    // If the result is failed, bubble up the error
-                    if (txInfoResult.Errors.FirstOrDefault() is not null && txInfoResult.Errors.First().Message.Equals("Resource not found") && page != 1)
+                    // If we got "Resource not found" after the first page, just break.
+                    if (txInfoResult.Errors.FirstOrDefault() is not null
+                        && txInfoResult.Errors.First().Message.Equals("Resource not found")
+                        && page != 1)
                     {
-                        keepFetching = false;
-                        continue;
+                        break;
                     }
 
-                    return Result.Fail($"Blockfrost request failed");
+                    return Result.Fail("Blockfrost request failed during rollback");
                 }
 
                 var currentPageData = txInfoResult.Value;
-
-                // If no data was returned, we've exhausted all pages
                 if (currentPageData == null || !currentPageData.Any())
+                {
+                    // No more data
+                    break;
+                }
+
+                // Overwrite cache for each transaction found in this page
+                foreach (var txData in currentPageData)
+                {
+                    // Add to our "rolled back range" set
+                    rolledBackTxHashes.Add(txData.TxHash);
+
+                    // Parse metadata
+                    var transactionMetadataWrappers = new List<TransactionMetadataWrapper>();
+                    ReadTransactionMetadata(
+                        new List<BlockfrostTransactionMetadataResponse> { txData },
+                        transactionMetadataWrappers
+                    );
+
+                    // Overwrite in the cache
+                    string cacheKey = string.Concat(CacheKeys.MetadataFromPrismTransaction, txData.TxHash);
+                    foreach (var transactionMetadataWrapper in transactionMetadataWrappers)
+                    {
+                        _cache.Add(
+                            key: cacheKey,
+                            transactionMetadataWrapper,
+                            TimeSpan.MaxValue
+                        );
+
+                        // This TxHash is still valid.
+                        newlyFetchedTxHashes.Add(transactionMetadataWrapper.txHash);
+                    }
+
+                    cancellationToken.ThrowIfCancellationRequested();
+                }
+            }
+
+            // >>> Final Merge <<<
+            // We now remove invalidated TxHashes from the big list, then add the newly fetched ones.
+            MergeRolledBackTransactions(rolledBackTxHashes, newlyFetchedTxHashes);
+
+            return Result.Ok();
+        }
+        catch (HttpRequestException ex)
+        {
+            _logger.LogError(ex, "HTTP error occurred during rollback from Blockfrost API");
+            return Result.Fail($"HTTP error: {ex.Message}");
+        }
+        catch (JsonException ex)
+        {
+            _logger.LogError(ex, "JSON parsing error occurred during rollback from Blockfrost API");
+            return Result.Fail($"JSON parsing error: {ex.Message}");
+        }
+        catch (OperationCanceledException)
+        {
+            _logger.LogInformation("Operation canceled during rollback process.");
+            return Result.Fail("Operation canceled");
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Unexpected error occurred during rollback from Blockfrost API");
+            return Result.Fail($"Unexpected error: {ex.Message}");
+        }
+    }
+
+    /// <summary>
+    /// Merges the newly fetched transactions (still valid) into the global list
+    /// and removes transactions that appear in the rolled-back range but were not refetched.
+    /// </summary>
+    /// <param name="rolledBackTxHashes">All TxHashes in the rollback range.</param>
+    /// <param name="newlyFetchedTxHashes">Valid TxHashes in that range.</param>
+    private void MergeRolledBackTransactions(HashSet<string> rolledBackTxHashes, HashSet<string> newlyFetchedTxHashes)
+    {
+        // Get existing list of transaction hashes from the cache
+        var hasExistingList = _cache.TryGetValue<List<TransactionBlockWrapper>>(
+            CacheKeys.TransactionList_with_Metadata,
+            out var transactionHashes
+        );
+
+        if (!hasExistingList || transactionHashes is null)
+        {
+            transactionHashes = new List<TransactionBlockWrapper>();
+        }
+
+        // 1) Remove invalidated transactions in the rolled-back range
+        //    (i.e., was in that range but did NOT reappear in the new fetch)
+        transactionHashes.RemoveAll(t =>
+            rolledBackTxHashes.Contains(t.TxHash) &&
+            !newlyFetchedTxHashes.Contains(t.TxHash)
+        );
+
+        // 2) Add newly fetched transactions, skipping duplicates
+        foreach (var txHash in newlyFetchedTxHashes)
+        {
+            bool alreadyInList = transactionHashes.Any(t => t.TxHash.Equals(txHash, StringComparison.OrdinalIgnoreCase));
+            if (!alreadyInList)
+            {
+                transactionHashes.Add(new TransactionBlockWrapper(txHash, null));
+            }
+        }
+
+        // Store updated list in cache
+        _cache.Add(CacheKeys.TransactionList_with_Metadata, transactionHashes, TimeSpan.MaxValue);
+    }
+
+   public async Task<Result> UpdateCache(CancellationToken cancellationToken)
+{
+    try
+    {
+        _logger.LogDebug("Updating the transaction metadata cache in descending order.");
+
+        var client = _httpClientFactory.CreateClient();
+
+        int page = 1;
+        bool keepFetching = true;
+
+        // Accumulate newly fetched TxHashes
+        var newlyFetchedTxHashes = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+
+        while (keepFetching)
+        {
+            var request = BlockfrostHelper.CreateBlockfrostRequest(
+                baseUrl: _appSettings.Blockfrost.BaseUrl,
+                apiKey: _appSettings.Blockfrost.ApiKey,
+                endpoint: $"/metadata/txs/labels/{_appSettings.MetadataKey}",
+                page: page,
+                count: 100,
+                orderDesc: true
+            );
+
+            var txInfoResult = await BlockfrostHelper
+                .SendBlockfrostRequestAsync<List<BlockfrostTransactionMetadataResponse>>(
+                    client,
+                    request,
+                    _logger,
+                    cancellationToken
+                );
+
+            if (txInfoResult.IsFailed)
+            {
+                // If "Resource not found" after page 1, break
+                if (txInfoResult.Errors.FirstOrDefault() is not null
+                    && txInfoResult.Errors.First().Message.Equals("Resource not found")
+                    && page != 1)
+                {
+                    break;
+                }
+                return Result.Fail("Blockfrost request failed");
+            }
+
+            var currentPageData = txInfoResult.Value;
+
+            if (currentPageData == null || !currentPageData.Any())
+            {
+                // No data => done
+                break;
+            }
+
+            // Iterate through the transactions in the current page
+            foreach (var txData in currentPageData)
+            {
+                string cacheKey = string.Concat(CacheKeys.MetadataFromPrismTransaction, txData.TxHash);
+
+                // If we already have this transaction in the cache, stop here
+                if (_cache.TryGetValue<TransactionMetadataWrapper>(cacheKey, out _))
                 {
                     keepFetching = false;
                     break;
                 }
 
-                // Iterate through the transactions in the current page
-                foreach (var txData in currentPageData)
+                // Otherwise parse it
+                var transactionMetadataWrappers = new List<TransactionMetadataWrapper>();
+                ReadTransactionMetadata(
+                    new List<BlockfrostTransactionMetadataResponse> { txData },
+                    transactionMetadataWrappers
+                );
+
+                // Save to cache
+                foreach (var transactionMetadataWrapper in transactionMetadataWrappers)
                 {
-                    string cacheKey = string.Concat(CacheKeys.MetadataFromPrismTransaction, txData.TxHash);
-
-                    // If we already have this transaction in the cache, stop here
-                    if (_cache.TryGetValue<TransactionMetadataWrapper>(cacheKey, out var _))
-                    {
-                        keepFetching = false;
-                        break;
-                    }
-
-                    var transactionMetadataWrappers = new List<TransactionMetadataWrapper>();
-                    this.ReadTransactionMetadata(new List<BlockfrostTransactionMetadataResponse>() { txData }, transactionMetadataWrappers);
-                    // Otherwise, add new transaction data to cache
-                    foreach (var transactionMetadataWrapper in transactionMetadataWrappers)
-                    {
-                        _cache.Add(
-                            key: string.Concat(CacheKeys.MetadataFromPrismTransaction, txData.TxHash),
-                            transactionMetadataWrapper,
-                            TimeSpan.MaxValue
-                        );
-                    }
-
-                    // Optional: check for cancellation in the inner loop
-                    cancellationToken.ThrowIfCancellationRequested();
+                    _cache.Add(
+                        key: cacheKey,
+                        transactionMetadataWrapper,
+                        TimeSpan.MaxValue
+                    );
+                    newlyFetchedTxHashes.Add(txData.TxHash);
                 }
 
-                // If we still want to fetch the next page, increment and continue
-                if (keepFetching)
-                {
-                    page++;
-                }
+                cancellationToken.ThrowIfCancellationRequested();
             }
 
-            // If we get here, we've either found an existing record or fetched all pages
-            return Result.Ok();
+            if (keepFetching)
+            {
+                page++;
+            }
         }
-        catch (HttpRequestException ex)
+
+        // >>> Final Merge <<<
+        MergeNewTransactions(newlyFetchedTxHashes);
+
+        return Result.Ok();
+    }
+    catch (HttpRequestException ex)
+    {
+        _logger.LogError(ex, "HTTP error occurred while updating transaction data from Blockfrost API");
+        return Result.Fail($"HTTP error: {ex.Message}");
+    }
+    catch (JsonException ex)
+    {
+        _logger.LogError(ex, "JSON parsing error occurred while updating transaction data from Blockfrost API");
+        return Result.Fail($"JSON parsing error: {ex.Message}");
+    }
+    catch (OperationCanceledException)
+    {
+        _logger.LogInformation("Operation canceled while updating transaction data.");
+        return Result.Fail("Operation canceled");
+    }
+    catch (Exception ex)
+    {
+        _logger.LogError(ex, "Unexpected error occurred while updating transaction data from Blockfrost API");
+        return Result.Fail($"Unexpected error: {ex.Message}");
+    }
+}
+
+/// <summary>
+/// Adds the newly fetched transactions to the global list (if not already present).
+/// </summary>
+/// <param name="newlyFetchedTxHashes">Set of new TxHashes.</param>
+private void MergeNewTransactions(HashSet<string> newlyFetchedTxHashes)
+{
+    var hasTransactionHashes = _cache.TryGetValue<List<TransactionBlockWrapper>>(
+        CacheKeys.TransactionList_with_Metadata,
+        out var transactionHashes
+    );
+    if (!hasTransactionHashes || transactionHashes is null)
+    {
+        transactionHashes = new List<TransactionBlockWrapper>();
+    }
+
+    // Add newly fetched TxHashes, skipping duplicates
+    foreach (var txHash in newlyFetchedTxHashes)
+    {
+        if (!transactionHashes.Any(t => t.TxHash.Equals(txHash, StringComparison.OrdinalIgnoreCase)))
         {
-            _logger.LogError(ex, "HTTP error occurred while updating transaction data from Blockfrost API");
-            return Result.Fail($"HTTP error: {ex.Message}");
-        }
-        catch (JsonException ex)
-        {
-            _logger.LogError(ex, "JSON parsing error occurred while updating transaction data from Blockfrost API");
-            return Result.Fail($"JSON parsing error: {ex.Message}");
-        }
-        catch (OperationCanceledException)
-        {
-            _logger.LogInformation("Operation canceled while updating transaction data.");
-            return Result.Fail("Operation canceled");
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Unexpected error occurred while updating transaction data from Blockfrost API");
-            return Result.Fail($"Unexpected error: {ex.Message}");
+            transactionHashes.Add(new TransactionBlockWrapper(txHash, null));
         }
     }
+
+    _cache.Add(CacheKeys.TransactionList_with_Metadata, transactionHashes, TimeSpan.MaxValue);
+}
 
 
     private void ReadTransactionMetadata(List<BlockfrostTransactionMetadataResponse> txResponse, List<TransactionMetadataWrapper> transactionMetadataWrappers)
@@ -449,5 +673,4 @@ public class GetApiTransactionHandler : IRequestHandler<GetApiTransactionRequest
             }
         }
     }
-
 }
