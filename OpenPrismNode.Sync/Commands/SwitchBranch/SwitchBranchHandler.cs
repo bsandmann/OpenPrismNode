@@ -122,7 +122,7 @@ public class SwitchBranchHandler : IRequestHandler<SwitchBranchRequest, Result>
                     return Result.Fail($"Error retriving expected block {nonForkedBlock.BlockHeight} from {request.Ledger} dbsync database");
                 }
 
-                var processBlockResult = await _mediator.Send(new ProcessBlockRequest(postgresBlock.Value, null, null, request.Ledger, true));
+                var processBlockResult = await _mediator.Send(new ProcessBlockRequest(postgresBlock.Value, null, null, request.Ledger,request.NewTipBlockHeight,  true));
                 if (processBlockResult.IsFailed)
                 {
                     return Result.Fail($"Error processing block {nonForkedBlock.BlockHeight} from {request.Ledger} dbsync database for rescan after fork");

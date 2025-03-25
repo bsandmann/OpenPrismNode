@@ -45,22 +45,22 @@ public class BlockfrostTransactionProvider : ITransactionProvider
     }
 
     /// <inheritdoc />
-    public async Task<Result<Metadata>> GetMetadataFromTransaction(int txId, byte[] txHash, long key, CancellationToken cancellationToken = default)
+    public async Task<Result<Metadata>> GetMetadataFromTransaction(int txId, byte[] txHash, long key, CancellationToken cancellationToken)
     {
         return await _mediator.Send(new GetApiMetadataRequest(PrismEncoding.ByteArrayToHex(txHash)), cancellationToken);
     }
 
     /// <inheritdoc />
-    public async Task<Result<Payment>> GetPaymentDataFromTransaction(int txId, byte[] txHash, CancellationToken cancellationToken = default)
+    public async Task<Result<Payment>> GetPaymentDataFromTransaction(int txId, byte[] txHash, CancellationToken cancellationToken)
     {
         return await _mediator.Send(new GetApiPaymentDataFromTransactionRequest(PrismEncoding.ByteArrayToHex(txHash)), cancellationToken);
     }
 
     /// <inheritdoc />
-    public async Task<Result<List<Transaction>>> GetTransactionsWithPrismMetadataForBlockId(int blockId, int blockNo, CancellationToken cancellationToken = default)
+    public async Task<Result<List<Transaction>>> GetTransactionsWithPrismMetadataForBlockId(int blockId, int blockNo, int currentBlockTip, CancellationToken cancellationToken)
     {
         // Use the new API handler to get the block tip
-        var results = await _mediator.Send(new GetApiTransactionsWithPrismMetadataForBlockNoRequest(blockNo), cancellationToken);
+        var results = await _mediator.Send(new GetApiTransactionsWithPrismMetadataForBlockNoRequest(blockNo, currentBlockTip), cancellationToken);
         if (results.IsFailed)
         {
             return results.ToResult();

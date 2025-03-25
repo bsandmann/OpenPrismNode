@@ -112,7 +112,7 @@ public class SyncController : ControllerBase
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ApiVersion("1.0")]
-    public async Task<ActionResult<SyncProgressModel>> GetSyncProgress(string ledger)
+    public async Task<ActionResult<SyncProgressModel>> GetSyncProgress(string ledger, CancellationToken cancellationToken)
     {
         if (string.IsNullOrEmpty(ledger))
         {
@@ -130,7 +130,7 @@ public class SyncController : ControllerBase
         using var scope = _serviceProvider.CreateScope();
         var blockProvider = scope.ServiceProvider.GetRequiredService<IBlockProvider>();
         
-        var blockTipResult = await blockProvider.GetBlockTip();
+        var blockTipResult = await blockProvider.GetBlockTip(cancellationToken);
         if (blockTipResult.IsFailed)
         {
             var message = $"Cannot get the blockchain tip for syncing {_appSettings.PrismLedger.Name}: {blockTipResult.Errors.First().Message}";

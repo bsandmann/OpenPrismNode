@@ -28,25 +28,25 @@ public class DbSyncBlockProvider : IBlockProvider
     }
 
     /// <inheritdoc />
-    public async Task<Result<Block>> GetBlockTip(CancellationToken cancellationToken = default)
+    public async Task<Result<Block>> GetBlockTip(CancellationToken cancellationToken)
     {
         return await _mediator.Send(new GetPostgresBlockTipRequest(), cancellationToken);
     }
 
     /// <inheritdoc />
-    public async Task<Result<Block>> GetBlockByNumber(int blockNo, CancellationToken cancellationToken = default)
+    public async Task<Result<Block>> GetBlockByNumber(int blockNo, CancellationToken cancellationToken)
     {
         return await _mediator.Send(new GetPostgresBlockByBlockNoRequest(blockNo), cancellationToken);
     }
 
     /// <inheritdoc />
-    public async Task<Result<Block>> GetBlockById(int blockId, CancellationToken cancellationToken = default)
+    public async Task<Result<Block>> GetBlockById(int blockId, CancellationToken cancellationToken)
     {
         return await _mediator.Send(new GetPostgresBlockByBlockIdRequest(blockId), cancellationToken);
     }
 
     /// <inheritdoc />
-    public async Task<Result<List<Block>>> GetBlocksByNumbers(int firstBlockNo, int count, CancellationToken cancellationToken = default)
+    public async Task<Result<List<Block>>> GetBlocksByNumbers(int firstBlockNo, int count, CancellationToken cancellationToken)
     {
         var result = await _mediator.Send(new GetPostgresBlocksByBlockNosRequest(firstBlockNo, count), cancellationToken);
         if (result.IsFailed)
@@ -59,13 +59,13 @@ public class DbSyncBlockProvider : IBlockProvider
     }
 
     /// <inheritdoc />
-    public async Task<Result<Block>> GetFirstBlockOfEpoch(int epochNo, CancellationToken cancellationToken = default)
+    public async Task<Result<Block>> GetFirstBlockOfEpoch(int epochNo, CancellationToken cancellationToken)
     {
         return await _mediator.Send(new GetPostgresFirstBlockOfEpochRequest(epochNo), cancellationToken);
     }
 
     /// <inheritdoc />
-    public async Task<Result<GetNextBlockWithPrismMetadataResponse>> GetNextBlockWithPrismMetadata(int afterBlockNo, int maxBlockNo, LedgerType ledgerType, int metadataKey, CancellationToken cancellationToken = default)
+    public async Task<Result<GetNextBlockWithPrismMetadataResponse>> GetNextBlockWithPrismMetadata(int afterBlockNo, int maxBlockNo, LedgerType ledgerType, int metadataKey, int currentBlockTip, CancellationToken cancellationToken)
     {
         return await _mediator.Send(new GetNextBlockWithPrismMetadataRequest(afterBlockNo, metadataKey, maxBlockNo, ledgerType), cancellationToken);
     }

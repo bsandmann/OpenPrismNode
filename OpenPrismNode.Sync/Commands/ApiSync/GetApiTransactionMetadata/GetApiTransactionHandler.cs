@@ -64,10 +64,11 @@ public class GetApiTransactionHandler : IRequestHandler<GetApiTransactionRequest
         }
 
         var lastBlockWithUpdate = _cache.TryGetValue(CacheKeys.BlockNoOfMetadataCacheUpdate, out int updatedOnBlockNo);
+
         if (!lastBlockWithUpdate)
         {
             // We don't find the last block with update, so we need to rebuild the cache
-            var cachingResult = await _metadataCacheService.RebuildCacheAsync(cancellationToken);
+            var cachingResult = await _metadataCacheService.RebuildCacheAsync(request.CurrentApiBlockTip, cancellationToken);
             if (cachingResult.IsFailed)
             {
                 return cachingResult.ToResult<Transaction?>();
@@ -92,8 +93,15 @@ public class GetApiTransactionHandler : IRequestHandler<GetApiTransactionRequest
         }
         else if (lastBlockWithUpdate && updatedOnBlockNo < request.CurrentBlockNo)
         {
+            var currentApiBlockTipResult = _cache.TryGetValue(CacheKeys.TipOfMetadataCacheUpdate, out int currentApiBlockTip);
+            if (currentApiBlockTipResult && currentApiBlockTip >= request.CurrentBlockNo)
+            {
+                // We don't need to update the cache. And since we have found it initially we don't have to look any further
+                return Result.Ok<Transaction?>(null);
+            }
+
             // The cache is outdated, so we need to rebuild it
-            var cachingResult = await _metadataCacheService.UpdateCacheAsync(cancellationToken);
+            var cachingResult = await _metadataCacheService.UpdateCacheAsync(request.CurrentApiBlockTip, cancellationToken);
             if (cachingResult.IsFailed)
             {
                 return cachingResult.ToResult<Transaction?>();
@@ -130,7 +138,7 @@ public class GetApiTransactionHandler : IRequestHandler<GetApiTransactionRequest
             // so the maximum number of pages we have to update is cache is the number of blocks
             int blocksRolledBack = updatedOnBlockNo - request.CurrentBlockNo;
 
-            var rollbackResult = await _metadataCacheService.RollbackCacheAsync(blocksRolledBack, cancellationToken);
+            var rollbackResult = await _metadataCacheService.RollbackCacheAsync(blocksRolledBack, request.CurrentApiBlockTip, cancellationToken);
             if (rollbackResult.IsFailed)
             {
                 return rollbackResult.ToResult<Transaction?>();

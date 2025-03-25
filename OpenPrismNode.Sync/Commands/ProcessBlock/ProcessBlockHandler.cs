@@ -21,8 +21,8 @@ public class ProcessBlockHandler : IRequestHandler<ProcessBlockRequest, Result<P
     private readonly ITransactionProvider _transactionProvider;
 
     public ProcessBlockHandler(
-        IMediator mediator, 
-        IOptions<AppSettings> appSettings, 
+        IMediator mediator,
+        IOptions<AppSettings> appSettings,
         ILogger<ProcessBlockHandler> logger,
         ITransactionProvider transactionProvider)
     {
@@ -70,7 +70,7 @@ public class ProcessBlockHandler : IRequestHandler<ProcessBlockRequest, Result<P
         }
 
         // Use the transaction provider to get transactions with PRISM metadata for this block
-        var blockTransactions = await _transactionProvider.GetTransactionsWithPrismMetadataForBlockId(request.Block.id, request.Block.block_no, cancellationToken);
+        var blockTransactions = await _transactionProvider.GetTransactionsWithPrismMetadataForBlockId(request.Block.id, request.Block.block_no, request.CurrentBlockTip, cancellationToken);
         if (blockTransactions.IsFailed)
         {
             _logger.LogError($"Failed while reading transactions of block # {request.Block.block_no}: {blockTransactions.Errors.First().Message}");

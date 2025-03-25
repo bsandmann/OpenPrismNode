@@ -17,30 +17,30 @@ public interface IBlockProvider
     /// <summary>
     /// Gets the most recent block (tip) of the blockchain
     /// </summary>
-    Task<Result<Block>> GetBlockTip(CancellationToken cancellationToken = default);
+    Task<Result<Block>> GetBlockTip(CancellationToken cancellationToken);
     
     /// <summary>
     /// Gets a block by its block number (height)
     /// </summary>
-    Task<Result<Block>> GetBlockByNumber(int blockNo, CancellationToken cancellationToken = default);
+    Task<Result<Block>> GetBlockByNumber(int blockNo, CancellationToken cancellationToken);
     
     /// <summary>
     /// Gets a block by its internal ID
     /// </summary>
-    Task<Result<Block>> GetBlockById(int blockId, CancellationToken cancellationToken = default);
+    Task<Result<Block>> GetBlockById(int blockId, CancellationToken cancellationToken);
     
     /// <summary>
     /// Gets multiple blocks by their block numbers
     /// </summary>
-    Task<Result<List<Block>>> GetBlocksByNumbers(int firstBlockNo, int count, CancellationToken cancellationToken = default);
+    Task<Result<List<Block>>> GetBlocksByNumbers(int firstBlockNo, int count, CancellationToken cancellationToken);
     
     /// <summary>
     /// Gets the first block of an epoch
     /// </summary>
-    Task<Result<Block>> GetFirstBlockOfEpoch(int epochNo, CancellationToken cancellationToken = default);
+    Task<Result<Block>> GetFirstBlockOfEpoch(int epochNo, CancellationToken cancellationToken);
     
     /// <summary>
     /// Gets the next block containing PRISM metadata after a specified block height
     /// </summary>
-    Task<Result<GetNextBlockWithPrismMetadataResponse>> GetNextBlockWithPrismMetadata(int afterBlockNo, int maxBlockNo, LedgerType ledgerType, int metadataKey, CancellationToken cancellationToken = default);
+    Task<Result<GetNextBlockWithPrismMetadataResponse>> GetNextBlockWithPrismMetadata(int afterBlockNo, int maxBlockNo, LedgerType ledgerType, int metadataKey, int currentBlockTip, CancellationToken cancellationToken);
 }

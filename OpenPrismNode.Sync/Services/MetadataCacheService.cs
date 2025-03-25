@@ -40,7 +40,7 @@ namespace OpenPrismNode.Sync.Services
         /// <summary>
         /// Rebuilds the cache for API transactions
         /// </summary>
-        public async Task<Result> RebuildCacheAsync(CancellationToken cancellationToken = default)
+        public async Task<Result> RebuildCacheAsync(int currentApiBlockTip, CancellationToken cancellationToken = default)
         {
             try
             {
@@ -126,6 +126,7 @@ namespace OpenPrismNode.Sync.Services
                 // List of all transaction hashes
                 var transactionHashes = transactionMetadataWrappers.Select(p => new TransactionBlockWrapper(p.txHash, null)).ToList();
                 _cache.Add(CacheKeys.TransactionList_with_Metadata, transactionHashes, TimeSpan.MaxValue);
+                _cache.Add(CacheKeys.TipOfMetadataCacheUpdate, currentApiBlockTip, TimeSpan.MaxValue);
 
                 return Result.Ok();
             }
@@ -154,7 +155,7 @@ namespace OpenPrismNode.Sync.Services
         /// <summary>
         /// Rolls back the cache for API transactions
         /// </summary>
-        public async Task<Result> RollbackCacheAsync(int blocksRolledBack, CancellationToken cancellationToken = default)
+        public async Task<Result> RollbackCacheAsync(int blocksRolledBack, int currentApiBlockTip, CancellationToken cancellationToken = default)
         {
             try
             {
@@ -246,7 +247,7 @@ namespace OpenPrismNode.Sync.Services
 
                 // >>> Final Merge <<<
                 // We now remove invalidated TxHashes from the big list, then add the newly fetched ones.
-                MergeRolledBackTransactions(rolledBackTxHashes, newlyFetchedTxHashes);
+                MergeRolledBackTransactions(rolledBackTxHashes, newlyFetchedTxHashes, currentApiBlockTip);
 
                 return Result.Ok();
             }
@@ -275,7 +276,7 @@ namespace OpenPrismNode.Sync.Services
         /// <summary>
         /// Updates the cache for API transactions
         /// </summary>
-        public async Task<Result> UpdateCacheAsync(CancellationToken cancellationToken = default)
+        public async Task<Result> UpdateCacheAsync(int currentApiBlockTip, CancellationToken cancellationToken = default)
         {
             try
             {
@@ -368,7 +369,7 @@ namespace OpenPrismNode.Sync.Services
                 }
 
                 // >>> Final Merge <<<
-                MergeNewTransactions(newlyFetchedTxHashes);
+                MergeNewTransactions(newlyFetchedTxHashes, currentApiBlockTip);
 
                 return Result.Ok();
             }
@@ -408,7 +409,7 @@ namespace OpenPrismNode.Sync.Services
         /// </summary>
         /// <param name="rolledBackTxHashes">All TxHashes in the rollback range.</param>
         /// <param name="newlyFetchedTxHashes">Valid TxHashes in that range.</param>
-        private void MergeRolledBackTransactions(HashSet<string> rolledBackTxHashes, HashSet<string> newlyFetchedTxHashes)
+        private void MergeRolledBackTransactions(HashSet<string> rolledBackTxHashes, HashSet<string> newlyFetchedTxHashes, int currentApiBlockTip)
         {
             // Get existing list of transaction hashes from the cache
             var hasExistingList = _cache.TryGetValue<List<TransactionBlockWrapper>>(
@@ -440,13 +441,14 @@ namespace OpenPrismNode.Sync.Services
 
             // Store updated list in cache
             _cache.Add(CacheKeys.TransactionList_with_Metadata, transactionHashes, TimeSpan.MaxValue);
+            _cache.Add(CacheKeys.TipOfMetadataCacheUpdate, currentApiBlockTip, TimeSpan.MaxValue);
         }
 
         /// <summary>
         /// Adds the newly fetched transactions to the global list (if not already present).
         /// </summary>
         /// <param name="newlyFetchedTxHashes">Set of new TxHashes.</param>
-        private void MergeNewTransactions(HashSet<string> newlyFetchedTxHashes)
+        private void MergeNewTransactions(HashSet<string> newlyFetchedTxHashes, int currentApiBlockTip)
         {
             var hasTransactionHashes = _cache.TryGetValue<List<TransactionBlockWrapper>>(
                 CacheKeys.TransactionList_with_Metadata,
@@ -467,6 +469,7 @@ namespace OpenPrismNode.Sync.Services
             }
 
             _cache.Add(CacheKeys.TransactionList_with_Metadata, transactionHashes, TimeSpan.MaxValue);
+            _cache.Add(CacheKeys.TipOfMetadataCacheUpdate, currentApiBlockTip, TimeSpan.MaxValue);
         }
 
         private void ReadTransactionMetadata(List<BlockfrostTransactionMetadataResponse> txResponse, List<TransactionMetadataWrapper> transactionMetadataWrappers)

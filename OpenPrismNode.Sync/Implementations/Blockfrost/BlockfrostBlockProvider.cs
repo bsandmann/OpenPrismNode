@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Commands.ApiSync.GetApiBlocksByNumbers;
 using Commands.ApiSync.GetApiNextBlockWithPrismMetadata;
 using Commands.DbSync.GetNextBlockWithPrismMetadata;
 using Core.Models;
@@ -37,21 +38,21 @@ public class BlockfrostBlockProvider : IBlockProvider
     }
 
     /// <inheritdoc />
-    public async Task<Result<Block>> GetBlockTip(CancellationToken cancellationToken = default)
+    public async Task<Result<Block>> GetBlockTip(CancellationToken cancellationToken)
     {
         // Use the new API handler to get the block tip
         return await _mediator.Send(new GetApiBlockTipRequest(), cancellationToken);
     }
 
     /// <inheritdoc />
-    public async Task<Result<Block>> GetBlockByNumber(int blockNo, CancellationToken cancellationToken = default)
+    public async Task<Result<Block>> GetBlockByNumber(int blockNo, CancellationToken cancellationToken)
     {
         // Use the new API handler to get a block by its number
         return await _mediator.Send(new GetApiBlockByNumberRequest(blockNo), cancellationToken);
     }
 
     /// <inheritdoc />
-    public async Task<Result<Block>> GetBlockById(int blockId, CancellationToken cancellationToken = default)
+    public async Task<Result<Block>> GetBlockById(int blockId, CancellationToken cancellationToken)
     {
         // TODO: Implement GetApiBlockByIdRequest/Handler
         _logger.LogWarning("GetBlockById is not yet implemented for BlockfrostBlockProviderV2");
@@ -59,15 +60,13 @@ public class BlockfrostBlockProvider : IBlockProvider
     }
 
     /// <inheritdoc />
-    public async Task<Result<List<Block>>> GetBlocksByNumbers(int firstBlockNo, int count, CancellationToken cancellationToken = default)
+    public async Task<Result<List<Block>>> GetBlocksByNumbers(int firstBlockNo, int count, CancellationToken cancellationToken)
     {
-        // TODO: Implement GetApiBlocksByNumbersRequest/Handler
-        _logger.LogWarning("GetBlocksByNumbers is not yet implemented for BlockfrostBlockProviderV2");
-        return Result.Fail<List<Block>>("Not implemented yet");
+        return await _mediator.Send(new GetApiBlocksByNumbersRequest(firstBlockNo, count), cancellationToken);
     }
 
     /// <inheritdoc />
-    public async Task<Result<Block>> GetFirstBlockOfEpoch(int epochNo, CancellationToken cancellationToken = default)
+    public async Task<Result<Block>> GetFirstBlockOfEpoch(int epochNo, CancellationToken cancellationToken)
     {
         // TODO: Implement GetApiFirstBlockOfEpochRequest/Handler
         _logger.LogWarning("GetFirstBlockOfEpoch is not yet implemented for BlockfrostBlockProviderV2");
@@ -75,8 +74,8 @@ public class BlockfrostBlockProvider : IBlockProvider
     }
 
     /// <inheritdoc />
-    public async Task<Result<GetNextBlockWithPrismMetadataResponse>> GetNextBlockWithPrismMetadata(int afterBlockNo, int maxBlockNo, LedgerType ledgerType, int metadataKey, CancellationToken cancellationToken = default)
+    public async Task<Result<GetNextBlockWithPrismMetadataResponse>> GetNextBlockWithPrismMetadata(int afterBlockNo, int maxBlockNo, LedgerType ledgerType, int metadataKey, int currentBlockTip, CancellationToken cancellationToken)
     {
-        return await _mediator.Send(new GetApiNextBlockWithPrismMetadataRequest(afterBlockNo, metadataKey, maxBlockNo, ledgerType), cancellationToken);
+        return await _mediator.Send(new GetApiNextBlockWithPrismMetadataRequest(afterBlockNo, metadataKey, maxBlockNo, ledgerType, currentBlockTip), cancellationToken);
     }
 }

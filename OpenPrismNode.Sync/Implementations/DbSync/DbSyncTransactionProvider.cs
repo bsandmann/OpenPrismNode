@@ -32,12 +32,11 @@ public class DbSyncTransactionProvider : ITransactionProvider
     /// <inheritdoc />
     public async Task<Result<Payment>> GetPaymentDataFromTransaction(int txId, byte[] txHash, CancellationToken cancellationToken = default)
     {
-        var result = await _mediator.Send(new GetPaymentDataFromTransactionRequest(txId), cancellationToken);
-        return result.ToResult();
+       return await _mediator.Send(new GetPaymentDataFromTransactionRequest(txId), cancellationToken);
     }
 
     /// <inheritdoc />
-    public async Task<Result<List<Transaction>>> GetTransactionsWithPrismMetadataForBlockId(int blockId, int blockNo, CancellationToken cancellationToken = default)
+    public async Task<Result<List<Transaction>>> GetTransactionsWithPrismMetadataForBlockId(int blockId, int blockNo, int currentBlockTip, CancellationToken cancellationToken = default)
     {
         var result = await _mediator.Send(new GetTransactionsWithPrismMetadataForBlockIdRequest(blockId), cancellationToken);
         if (result.IsFailed)

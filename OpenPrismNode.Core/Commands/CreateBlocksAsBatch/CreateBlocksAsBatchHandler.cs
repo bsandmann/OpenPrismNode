@@ -21,6 +21,12 @@ namespace OpenPrismNode.Core.Commands.CreateBlocksAsBatch
             _context.ChangeTracker.Clear();
             _context.ChangeTracker.AutoDetectChangesEnabled = false;
 
+            var distinctBlockHashes = request.Blocks.Select(b => b.hash).Distinct().ToList();
+            if (distinctBlockHashes.Count != request.Blocks.Count)
+            {
+               throw new Exception("Duplicate block hashes found in the batch.");
+            }
+
             // Check if the highest block in the database is exactly one less than the first block we're adding
             var highestExistingNonForkBlock = await _context.BlockEntities
                 .Include(p => p.EpochEntity)

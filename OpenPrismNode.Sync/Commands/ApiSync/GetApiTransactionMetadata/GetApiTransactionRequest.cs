@@ -9,10 +9,11 @@ using OpenPrismNode.Core.DbSyncModels;
 /// </summary>
 public class GetApiTransactionRequest : IRequest<Result<Transaction?>>
 {
-    public GetApiTransactionRequest(string txHash, int currentBlockNo)
+    public GetApiTransactionRequest(string txHash, int currentBlockNo, int currentApiBlockTip)
     {
         TxHash = txHash;
         CurrentBlockNo = currentBlockNo;
+        CurrentApiBlockTip = currentApiBlockTip;
     }
 
     /// <summary>
@@ -21,4 +22,6 @@ public class GetApiTransactionRequest : IRequest<Result<Transaction?>>
     public string TxHash { get; }
 
     public int CurrentBlockNo { get; }
+
+    public int CurrentApiBlockTip { get; set; }
 }

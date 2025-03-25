@@ -25,5 +25,5 @@ public interface ITransactionProvider
     /// <summary>
     /// Gets all transactions with PRISM metadata in a specific block
     /// </summary>
-    Task<Result<List<Transaction>>> GetTransactionsWithPrismMetadataForBlockId(int blockId, int blockNo, CancellationToken cancellationToken = default);
+    Task<Result<List<Transaction>>> GetTransactionsWithPrismMetadataForBlockId(int blockId, int blockNo, int currentBlockTip, CancellationToken cancellationToken = default);
 }

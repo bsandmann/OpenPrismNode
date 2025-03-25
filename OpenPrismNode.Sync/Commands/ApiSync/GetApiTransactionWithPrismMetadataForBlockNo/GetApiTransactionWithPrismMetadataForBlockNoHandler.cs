@@ -58,7 +58,7 @@ public class GetApiTransactionWithPrismMetadataForBlockNoHandler : IRequestHandl
         var transactions = new List<Transaction>();
         foreach (var transactionid in transactionIds.Value)
         {
-            var transactionResults = await _mediator.Send(new GetApiTransactionRequest(transactionid, request.BlockNo), cancellationToken);
+            var transactionResults = await _mediator.Send(new GetApiTransactionRequest(transactionid, request.BlockNo, request.CurrentApiBlockTip), cancellationToken);
             if (transactionResults.IsFailed)
             {
                 return transactionResults.ToResult();

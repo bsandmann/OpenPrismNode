@@ -12,17 +12,17 @@ namespace OpenPrismNode.Sync.Services
         /// <summary>
         /// Rebuilds the cache for API transactions
         /// </summary>
-        Task<Result> RebuildCacheAsync(CancellationToken cancellationToken = default);
+        Task<Result> RebuildCacheAsync(int currentApiBlockTip, CancellationToken cancellationToken = default);
         
         /// <summary>
         /// Updates the cache for API transactions
         /// </summary>
-        Task<Result> UpdateCacheAsync(CancellationToken cancellationToken = default);
+        Task<Result> UpdateCacheAsync(int currentApiBlockTip, CancellationToken cancellationToken = default);
         
         /// <summary>
         /// Rolls back the cache for API transactions
         /// </summary>
-        Task<Result> RollbackCacheAsync(int blocksRolledBack, CancellationToken cancellationToken = default);
+        Task<Result> RollbackCacheAsync(int blocksRolledBack, int currentApiBlockTip, CancellationToken cancellationToken = default);
         
         /// <summary>
         /// Adds the block number of the last metadata cache update

@@ -38,12 +38,6 @@ public class GetApiNextBlockWithPrismMetadataHandler
         GetApiNextBlockWithPrismMetadataRequest request,
         CancellationToken cancellationToken)
     {
-
-        //TODO we need to have a marker to remeber the current tip of blockfrost when this cached list was created
-        hier weiter
-
-
-
         // 1. Check if the cache is loaded; if not, rebuild it
         var hasExistingList = _cache.TryGetValue<List<TransactionBlockWrapper>>(
             CacheKeys.TransactionList_with_Metadata,
@@ -51,7 +45,7 @@ public class GetApiNextBlockWithPrismMetadataHandler
         );
         if (!hasExistingList || transactionHashes == null)
         {
-            await _metadataCacheService.RebuildCacheAsync(cancellationToken);
+            await _metadataCacheService.RebuildCacheAsync(request.CurrentApiBlockTip, cancellationToken);
             var rebuildHasExistingList = _cache.TryGetValue<List<TransactionBlockWrapper>>(
                 CacheKeys.TransactionList_with_Metadata,
                 out transactionHashes
@@ -79,6 +73,7 @@ public class GetApiNextBlockWithPrismMetadataHandler
             {
                 return blockHeightResult.ToResult();
             }
+
             firstItem.BlockHeight = blockHeightResult.Value;
         }
 
@@ -98,6 +93,7 @@ public class GetApiNextBlockWithPrismMetadataHandler
                     EpochNumber = epochResult.Value
                 });
             }
+
             // Otherwise nothing found
             return Result.Ok(new GetNextBlockWithPrismMetadataResponse());
         }
@@ -112,8 +108,10 @@ public class GetApiNextBlockWithPrismMetadataHandler
             {
                 return blockHeightResult.ToResult();
             }
+
             lastItem.BlockHeight = blockHeightResult.Value;
         }
+
         if (lastItem.BlockHeight < request.StartBlockHeight)
         {
             // No transactions at or above StartBlockHeight
@@ -131,10 +129,14 @@ public class GetApiNextBlockWithPrismMetadataHandler
             if (currBlockHeight.HasValue && nextBlockHeight.HasValue)
             {
                 Debug.Assert(currBlockHeight.Value <= nextBlockHeight.Value,
-                             "Transactions should be sorted in ascending block order!");
+                    "Transactions should be sorted in ascending block order!");
             }
         }
 #endif
+        if (request.StartBlockHeight < request.CurrentApiBlockTip || request.MaxBlockHeight < request.CurrentApiBlockTip)
+        {
+            await _metadataCacheService.UpdateCacheAsync(request.CurrentApiBlockTip, cancellationToken);
+        }
 
         // 5. Now the actual search algorithm (binary search).
         //    We want to find the first transaction whose block height > StartBlockHeight.
@@ -160,6 +162,7 @@ public class GetApiNextBlockWithPrismMetadataHandler
             {
                 return blockHeightResult.ToResult();
             }
+
             candidate.BlockHeight = blockHeightResult.Value;
         }
 
@@ -246,6 +249,7 @@ public class GetApiNextBlockWithPrismMetadataHandler
                 return Result.Fail("Failed to resolve block height for transaction");
             }
         }
+
         return txItem.BlockHeight.Value;
     }
 
@@ -256,6 +260,7 @@ public class GetApiNextBlockWithPrismMetadataHandler
         {
             return result.ToResult();
         }
+
         return result.Value.BlockNo!;
     }
 
@@ -266,6 +271,7 @@ public class GetApiNextBlockWithPrismMetadataHandler
         {
             return result.ToResult();
         }
+
         return result.Value.epoch_no;
     }
 }

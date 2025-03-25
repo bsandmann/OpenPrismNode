@@ -7,12 +7,13 @@ using OpenPrismNode.Core.Models;
 
 public class GetApiNextBlockWithPrismMetadataRequest : IRequest<Result<GetNextBlockWithPrismMetadataResponse>>
 {
-    public GetApiNextBlockWithPrismMetadataRequest(int startBlockHeight, int metadataKey, int maxBlockHeight, LedgerType ledger)
+    public GetApiNextBlockWithPrismMetadataRequest(int startBlockHeight, int metadataKey, int maxBlockHeight, LedgerType ledger, int currentApiBlockTip)
     {
         StartBlockHeight = startBlockHeight;
         MetadataKey = metadataKey;
         MaxBlockHeight = maxBlockHeight;
         Ledger = ledger;
+        CurrentApiBlockTip = currentApiBlockTip;
     }
 
     /// <summary>
@@ -34,5 +35,10 @@ public class GetApiNextBlockWithPrismMetadataRequest : IRequest<Result<GetNextBl
     /// Network
     /// </summary>
     public LedgerType Ledger { get; }
+
+    /// <summary>
+    /// Tip of the chain according to Blockfrost
+    /// </summary>
+    public int CurrentApiBlockTip { get; }
 
 }

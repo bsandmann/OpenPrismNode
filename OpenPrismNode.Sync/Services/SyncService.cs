@@ -168,7 +168,7 @@ public static class SyncService
                 // We find the next block with the PRISM metadata
                 // var getNextBlockWithPrismMetadataResult = await mediator.Send(new GetNextBlockWithPrismMetadataRequest(i, appsettings.MetadataKey, postgresBlockTipResult.Value.block_no, ledgerType), cancellationToken);
 
-                var getNextBlockWithPrismMetadataResult = await blockProvider.GetNextBlockWithPrismMetadata(i, blockTipResult.Value.block_no, ledgerType, appsettings.MetadataKey, cancellationToken);
+                var getNextBlockWithPrismMetadataResult = await blockProvider.GetNextBlockWithPrismMetadata(i, blockTipResult.Value.block_no, ledgerType, appsettings.MetadataKey, blockTipResult.Value.block_no, cancellationToken);
                 if (getNextBlockWithPrismMetadataResult.IsFailed)
                 {
                     return Result.Fail(getNextBlockWithPrismMetadataResult.Errors.First().Message);
@@ -276,7 +276,7 @@ public static class SyncService
                 }
             }
 
-            var processBlockResult = await mediator.Send(new ProcessBlockRequest(getBlockByIdResult.Value, previousBlockHash, previousBlockHeight, ledgerType), cancellationToken);
+            var processBlockResult = await mediator.Send(new ProcessBlockRequest(getBlockByIdResult.Value, previousBlockHash, previousBlockHeight, ledgerType, blockTipResult.Value.block_no), cancellationToken);
             if (processBlockResult.IsFailed)
             {
                 logger.LogError(processBlockResult.Errors.First().Message);
