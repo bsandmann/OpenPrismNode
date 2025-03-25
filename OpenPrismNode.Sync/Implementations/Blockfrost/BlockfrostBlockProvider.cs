@@ -5,6 +5,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Commands.ApiSync.GetApiNextBlockWithPrismMetadata;
+using Commands.DbSync.GetNextBlockWithPrismMetadata;
 using Core.Models;
 using FluentResults;
 using MediatR;
@@ -73,10 +75,8 @@ public class BlockfrostBlockProvider : IBlockProvider
     }
 
     /// <inheritdoc />
-    public async Task<Result<Block>> GetNextBlockWithPrismMetadata(int afterBlockNo, int maxBlockNo, LedgerType ledgerType,int metadataKey, CancellationToken cancellationToken = default)
+    public async Task<Result<GetNextBlockWithPrismMetadataResponse>> GetNextBlockWithPrismMetadata(int afterBlockNo, int maxBlockNo, LedgerType ledgerType, int metadataKey, CancellationToken cancellationToken = default)
     {
-        // TODO: Implement GetApiNextBlockWithPrismMetadataRequest/Handler
-        _logger.LogWarning("GetNextBlockWithPrismMetadata is not yet implemented for BlockfrostBlockProviderV2");
-        return Result.Fail<Block>("Not implemented yet");
+        return await _mediator.Send(new GetApiNextBlockWithPrismMetadataRequest(afterBlockNo, metadataKey, maxBlockNo, ledgerType), cancellationToken);
     }
 }

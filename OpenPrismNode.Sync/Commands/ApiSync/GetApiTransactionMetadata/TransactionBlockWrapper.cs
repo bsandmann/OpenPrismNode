@@ -9,5 +9,5 @@ public class TransactionBlockWrapper
     }
 
     public string TxHash { get;  }
-    public int? BlockHeight { get;  }
+    public int? BlockHeight { get; set; }
 }

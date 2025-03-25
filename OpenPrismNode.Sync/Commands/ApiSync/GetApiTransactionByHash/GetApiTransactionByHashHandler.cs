@@ -112,7 +112,8 @@ namespace OpenPrismNode.Sync.Commands.ApiSync.GetApiTransactionByHash
                 hash = PrismEncoding.HexToByteArray(blockfrostTx.Hash),
                 block_index = blockfrostTx.Index,
                 fee = decimal.TryParse(blockfrostTx.Fees, out var fee) ? fee : 0,
-                size = blockfrostTx.Size
+                size = blockfrostTx.Size,
+                BlockNo = blockfrostTx.BlockHeight
             };
         }
     }

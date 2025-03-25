@@ -1,10 +1,11 @@
 namespace OpenPrismNode.Sync.Commands.ApiSync.GetApiNextBlockWithPrismMetadata;
 
+using DbSync.GetNextBlockWithPrismMetadata;
 using FluentResults;
 using MediatR;
 using OpenPrismNode.Core.Models;
 
-public class GetApiNextBlockWithPrismMetadataRequest : IRequest<Result<GetApiNextBlockWithPrismMetadataResponse>>
+public class GetApiNextBlockWithPrismMetadataRequest : IRequest<Result<GetNextBlockWithPrismMetadataResponse>>
 {
     public GetApiNextBlockWithPrismMetadataRequest(int startBlockHeight, int metadataKey, int maxBlockHeight, LedgerType ledger)
     {

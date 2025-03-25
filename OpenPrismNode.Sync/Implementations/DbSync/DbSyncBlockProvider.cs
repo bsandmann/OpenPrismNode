@@ -65,9 +65,8 @@ public class DbSyncBlockProvider : IBlockProvider
     }
 
     /// <inheritdoc />
-    public async Task<Result<Block>> GetNextBlockWithPrismMetadata(int afterBlockNo, int maxBlockNo, LedgerType ledgerType, int metadataKey, CancellationToken cancellationToken = default)
+    public async Task<Result<GetNextBlockWithPrismMetadataResponse>> GetNextBlockWithPrismMetadata(int afterBlockNo, int maxBlockNo, LedgerType ledgerType, int metadataKey, CancellationToken cancellationToken = default)
     {
-        var result = await _mediator.Send(new GetNextBlockWithPrismMetadataRequest(afterBlockNo, metadataKey, maxBlockNo, ledgerType), cancellationToken);
-        return result.ToResult();
+        return await _mediator.Send(new GetNextBlockWithPrismMetadataRequest(afterBlockNo, metadataKey, maxBlockNo, ledgerType), cancellationToken);
     }
 }

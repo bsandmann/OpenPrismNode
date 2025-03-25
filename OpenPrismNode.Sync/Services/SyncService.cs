@@ -176,8 +176,8 @@ public static class SyncService
 
                 // We need to modify this since the response structure of GetNextBlockWithPrismMetadata
                 // may be different when coming from the API vs DB
-                var nextBlockNo = getNextBlockWithPrismMetadataResult.Value?.block_no;
-                var nextEpochNo = getNextBlockWithPrismMetadataResult.Value?.epoch_no;
+                var nextBlockNo = getNextBlockWithPrismMetadataResult.Value?.BlockHeight;
+                var nextEpochNo = getNextBlockWithPrismMetadataResult.Value?.EpochNumber;
 
                 if (nextBlockNo == null && nextEpochNo == null)
                 {

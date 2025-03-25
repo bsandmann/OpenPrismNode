@@ -2,6 +2,7 @@ namespace OpenPrismNode.Sync.Abstractions;
 
 using System.Threading;
 using System.Threading.Tasks;
+using Commands.DbSync.GetNextBlockWithPrismMetadata;
 using Core.Models;
 using FluentResults;
 using OpenPrismNode.Core.DbSyncModels;
@@ -41,5 +42,5 @@ public interface IBlockProvider
     /// <summary>
     /// Gets the next block containing PRISM metadata after a specified block height
     /// </summary>
-    Task<Result<Block>> GetNextBlockWithPrismMetadata(int afterBlockNo, int maxBlockNo, LedgerType ledgerType, int metadataKey, CancellationToken cancellationToken = default);
+    Task<Result<GetNextBlockWithPrismMetadataResponse>> GetNextBlockWithPrismMetadata(int afterBlockNo, int maxBlockNo, LedgerType ledgerType, int metadataKey, CancellationToken cancellationToken = default);
 }

@@ -13,6 +13,7 @@ using Microsoft.Extensions.Options;
 using OpenPrismNode.Core.Common;
 using OpenPrismNode.Core.DbSyncModels;
 using OpenPrismNode.Sync.Commands.ApiSync.GetApiTransactionMetadata;
+using Services;
 
 /// <summary>
 /// Retrieves all transaction IDs contained within a specific block from the Blockfrost API.
@@ -21,9 +22,10 @@ public class GetApiTransactionWithPrismMetadataForBlockNoHandler : IRequestHandl
 {
     private readonly IMediator _mediator;
     private readonly IHttpClientFactory _httpClientFactory;
-    private readonly ILogger<GetApiTransactionHandler> _logger;
+    private readonly ILogger<GetApiTransactionWithPrismMetadataForBlockNoHandler> _logger;
     private readonly AppSettings _appSettings;
     private readonly IAppCache _cache;
+
 
     /// <summary>
     /// Initializes a new instance of the <see cref="GetApiTransactionIdsForBlockHandler"/> class.
@@ -31,9 +33,10 @@ public class GetApiTransactionWithPrismMetadataForBlockNoHandler : IRequestHandl
     public GetApiTransactionWithPrismMetadataForBlockNoHandler(
         IMediator mediator,
         IHttpClientFactory httpClientFactory,
-        ILogger<GetApiTransactionHandler> logger,
+        ILogger<GetApiTransactionWithPrismMetadataForBlockNoHandler> logger,
         IOptions<AppSettings> appSettings,
-        IAppCache cache)
+        IAppCache cache
+    )
     {
         _mediator = mediator;
         _httpClientFactory = httpClientFactory;
@@ -68,17 +71,5 @@ public class GetApiTransactionWithPrismMetadataForBlockNoHandler : IRequestHandl
         }
 
         return Result.Ok(transactions);
-
-
-        // ask the cache for the time when the list with all prism transactions was updated (that is the blockno)
-        // if it hasnt been updated, we need to completly refresh the list (or we can do it from the back and check inbetween)
-
-        // When we can be sure that the list up to date there are two scenarios:
-
-        // we find the transaction in the list
-        // that means we acutally have a Prism trasaction and can return it here
-
-        // we don't find it in the list
-        // we retunrn an empty result here
     }
 }

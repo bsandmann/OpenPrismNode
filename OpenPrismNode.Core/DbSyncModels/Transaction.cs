@@ -10,4 +10,7 @@ public class Transaction
     public int block_index { get; set; }
     public decimal fee { get; set; }
     public int size { get; set; }
+
+    public int? BlockNo { get; set; }
+
 }
