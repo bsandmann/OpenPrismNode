@@ -2,21 +2,21 @@ namespace OpenPrismNode.Core.Commands.CreateWalletTransaction;
 
 using FluentResults;
 using MediatR;
+using Microsoft.Extensions.DependencyInjection;
 using OpenPrismNode.Core.Entities;
 
 public class CreateWalletTransactionEntityHandler : IRequestHandler<CreateWalletTransactionEntityRequest, Result>
 {
-    private readonly DataContext _context;
+    private readonly IServiceScopeFactory _serviceScopeFactory;
 
     /// <summary>
     /// Constructor
     /// </summary>
     /// <param name="context"></param>
-    public CreateWalletTransactionEntityHandler(DataContext context)
+    public CreateWalletTransactionEntityHandler(IServiceScopeFactory serviceScopeFactory)
     {
-        this._context = context;
+        _serviceScopeFactory = serviceScopeFactory;
     }
-
 
     public async Task<Result> Handle(CreateWalletTransactionEntityRequest request, CancellationToken cancellationToken)
     {
@@ -35,7 +35,13 @@ public class CreateWalletTransactionEntityHandler : IRequestHandler<CreateWallet
             return Result.Fail("OperationStatusEntityId is required");
         }
 
-        await _context.WalletTransactionEntities.AddAsync(new WalletTransactionEntity()
+        using var scope = _serviceScopeFactory.CreateScope();
+        var context = scope.ServiceProvider.GetRequiredService<DataContext>();
+
+        context.ChangeTracker.Clear();
+        context.ChangeTracker.AutoDetectChangesEnabled = false;
+
+        await context.WalletTransactionEntities.AddAsync(new WalletTransactionEntity()
         {
             OperationStatusEntityId = request.OperationStatusEntityId,
             // OperationStatusId = request.OperationStatusId,
@@ -45,7 +51,7 @@ public class CreateWalletTransactionEntityHandler : IRequestHandler<CreateWallet
             Depth = 0,
             LastUpdatedUtc = DateTime.UtcNow
         }, cancellationToken);
-        await _context.SaveChangesAsync(cancellationToken);
+        await context.SaveChangesAsync(cancellationToken);
 
         return Result.Ok();
     }

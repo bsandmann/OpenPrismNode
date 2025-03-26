@@ -3,6 +3,7 @@
 using FluentResults;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 using OpenPrismNode.Core;
 
 /// <summary>
@@ -10,15 +11,15 @@ using OpenPrismNode.Core;
 /// </summary>
 public class DeleteEpochHandler : IRequestHandler<DeleteEpochRequest, Result>
 {
-    private readonly DataContext _context;
+    private readonly IServiceScopeFactory _serviceScopeFactory;
 
     /// <summary>
     /// Constructor
     /// </summary>
-    /// <param name="context"></param>
-    public DeleteEpochHandler(DataContext context)
+    /// <param name="serviceScopeFactory"></param>
+    public DeleteEpochHandler(IServiceScopeFactory serviceScopeFactory)
     {
-        this._context = context;
+        _serviceScopeFactory = serviceScopeFactory;
     }
 
     /// <inheritdoc />
@@ -26,16 +27,20 @@ public class DeleteEpochHandler : IRequestHandler<DeleteEpochRequest, Result>
     {
         try
         {
-            _context.ChangeTracker.Clear();
-            _context.ChangeTracker.AutoDetectChangesEnabled = false;
-            var emptyEpoch = await _context.EpochEntities.FirstOrDefaultAsync(p => p.EpochNumber == request.Epoch, cancellationToken);
+            using var scope = _serviceScopeFactory.CreateScope();
+            var context = scope.ServiceProvider.GetRequiredService<DataContext>();
+
+            context.ChangeTracker.Clear();
+            context.ChangeTracker.AutoDetectChangesEnabled = false;
+
+            var emptyEpoch = await context.EpochEntities.FirstOrDefaultAsync(p => p.EpochNumber == request.Epoch, cancellationToken);
             if (emptyEpoch is null)
             {
                 return Result.Fail("Epoch could not be found or is not empty");
             }
 
-            _context.EpochEntities.Remove(emptyEpoch);
-            await _context.SaveChangesAsync(cancellationToken);
+            context.EpochEntities.Remove(emptyEpoch);
+            await context.SaveChangesAsync(cancellationToken);
         }
         catch (Exception e)
         {

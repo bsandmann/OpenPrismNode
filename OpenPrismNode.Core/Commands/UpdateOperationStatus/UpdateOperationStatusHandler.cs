@@ -6,22 +6,29 @@ namespace OpenPrismNode.Core.Commands.UpdateOperationStatus
     using FluentResults;
     using MediatR;
     using Microsoft.EntityFrameworkCore;
+    using Microsoft.Extensions.DependencyInjection;
     using OpenPrismNode.Core.Entities;
 
     public class UpdateOperationStatusHandler : IRequestHandler<UpdateOperationStatusRequest, Result>
     {
-        private readonly DataContext _context;
+        private readonly IServiceScopeFactory _serviceScopeFactory;
 
-        public UpdateOperationStatusHandler(DataContext context)
+        public UpdateOperationStatusHandler(IServiceScopeFactory serviceScopeFactory)
         {
-            _context = context;
+             _serviceScopeFactory = serviceScopeFactory;
         }
 
         public async Task<Result> Handle(UpdateOperationStatusRequest request, CancellationToken cancellationToken)
         {
             try
             {
-                var operationStatus = await _context.OperationStatusEntities
+                using var scope = _serviceScopeFactory.CreateScope();
+                var context = scope.ServiceProvider.GetRequiredService<DataContext>();
+
+                context.ChangeTracker.Clear();
+                context.ChangeTracker.AutoDetectChangesEnabled = false;
+
+                var operationStatus = await context.OperationStatusEntities
                     .FirstOrDefaultAsync(os => os.OperationStatusEntityId == request.OperationStatusEntityId, cancellationToken);
 
                 if (operationStatus == null)
@@ -32,8 +39,8 @@ namespace OpenPrismNode.Core.Commands.UpdateOperationStatus
                 operationStatus.Status = request.Status;
                 operationStatus.LastUpdatedUtc = DateTime.UtcNow;
 
-                _context.OperationStatusEntities.Update(operationStatus);
-                await _context.SaveChangesAsync(cancellationToken);
+                context.OperationStatusEntities.Update(operationStatus);
+                await context.SaveChangesAsync(cancellationToken);
 
                 return Result.Ok();
             }

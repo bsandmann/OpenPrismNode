@@ -5,24 +5,29 @@ using OpenPrismNode.Core.Entities;
 
 namespace OpenPrismNode.Core.Commands.CreateOperationsStatus;
 
+using Microsoft.Extensions.DependencyInjection;
+
 public class CreateOperationStatusHandler : IRequestHandler<CreateOperationStatusRequest, Result<CreateOperationStatusResponse>>
 {
-    private readonly DataContext _context;
+    private readonly IServiceScopeFactory _serviceScopeFactory;
 
-    public CreateOperationStatusHandler(DataContext context)
+    public CreateOperationStatusHandler(IServiceScopeFactory serviceScopeFactory)
     {
-        _context = context;
+         _serviceScopeFactory = serviceScopeFactory;
     }
 
     public async Task<Result<CreateOperationStatusResponse>> Handle(CreateOperationStatusRequest request, CancellationToken cancellationToken)
     {
-        _context.ChangeTracker.Clear();
-        _context.ChangeTracker.AutoDetectChangesEnabled = false;
+        using var scope = _serviceScopeFactory.CreateScope();
+        var context = scope.ServiceProvider.GetRequiredService<DataContext>();
+
+        context.ChangeTracker.Clear();
+        context.ChangeTracker.AutoDetectChangesEnabled = false;
 
         try
         {
             // Check if OperationStatus already exists
-            var existingStatus = await _context.OperationStatusEntities
+            var existingStatus = await context.OperationStatusEntities
                 .FirstOrDefaultAsync(os => os.OperationStatusId.SequenceEqual(request.OperationStatusId), cancellationToken);
 
             if (existingStatus != null)
@@ -40,28 +45,8 @@ public class CreateOperationStatusHandler : IRequestHandler<CreateOperationStatu
                 OperationType = request.OperationType
             };
 
-            // Try to link to existing entity
-            // switch (request.OperationType)
-            // {
-            //     case OperationTypeEnum.CreateDid:
-            //         var createDid = await _context.CreateDidEntities
-            //             .FirstOrDefaultAsync(cd => cd.OperationHash.SequenceEqual(request.OperationHash), cancellationToken);
-            //         operationStatus.CreateDidEntity = createDid;
-            //         break;
-            //     case OperationTypeEnum.UpdateDid:
-            //         var updateDid = await _context.UpdateDidEntities
-            //             .FirstOrDefaultAsync(ud => ud.OperationHash.SequenceEqual(request.OperationHash), cancellationToken);
-            //         operationStatus.UpdateDidEntity = updateDid;
-            //         break;
-            //     case OperationTypeEnum.DeactivateDid:
-            //         var deactivateDid = await _context.DeactivateDidEntities
-            //             .FirstOrDefaultAsync(dd => dd.OperationHash.SequenceEqual(request.OperationHash), cancellationToken);
-            //         operationStatus.DeactivateDidEntity = deactivateDid;
-            //         break;
-            // }
-
-            await _context.OperationStatusEntities.AddAsync(operationStatus, cancellationToken);
-            await _context.SaveChangesAsync(cancellationToken);
+            await context.OperationStatusEntities.AddAsync(operationStatus, cancellationToken);
+            await context.SaveChangesAsync(cancellationToken);
 
             return Result.Ok(new CreateOperationStatusResponse()
             {

@@ -3,19 +3,26 @@ namespace OpenPrismNode.Core.Commands.GetWalletTransactions;
 using FluentResults;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 
 public class GetWalletTransactionsHandler : IRequestHandler<GetWalletTransactionsRequest, Result<List<GetWalletTransactionsReponse>>>
 {
-    private readonly DataContext _context;
+    private readonly IServiceScopeFactory _serviceScopeFactory;
 
-    public GetWalletTransactionsHandler(DataContext context)
+    public GetWalletTransactionsHandler(IServiceScopeFactory serviceScopeFactory)
     {
-        _context = context;
+         _serviceScopeFactory = serviceScopeFactory;
     }
 
     public async Task<Result<List<GetWalletTransactionsReponse>>> Handle(GetWalletTransactionsRequest request, CancellationToken cancellationToken)
     {
-        var walletTransactions = await _context.WalletTransactionEntities
+        using var scope = _serviceScopeFactory.CreateScope();
+        var context = scope.ServiceProvider.GetRequiredService<DataContext>();
+
+        context.ChangeTracker.Clear();
+        context.ChangeTracker.AutoDetectChangesEnabled = false;
+
+        var walletTransactions = await context.WalletTransactionEntities
             .Select(p => new GetWalletTransactionsReponse
             {
                 WalletEntityId = p.WalletEntityId,

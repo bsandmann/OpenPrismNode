@@ -7,6 +7,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Commands.ApiSync.GetApiBlocksByNumbers;
 using Commands.ApiSync.GetApiNextBlockWithPrismMetadata;
+using Commands.ApiSync.GetFirstBlockOfEpoch;
 using Commands.DbSync.GetNextBlockWithPrismMetadata;
 using Core.Models;
 using FluentResults;
@@ -68,9 +69,7 @@ public class BlockfrostBlockProvider : IBlockProvider
     /// <inheritdoc />
     public async Task<Result<Block>> GetFirstBlockOfEpoch(int epochNo, CancellationToken cancellationToken)
     {
-        // TODO: Implement GetApiFirstBlockOfEpochRequest/Handler
-        _logger.LogWarning("GetFirstBlockOfEpoch is not yet implemented for BlockfrostBlockProviderV2");
-        return Result.Fail<Block>("Not implemented yet");
+        return await _mediator.Send(new GetFirstBlockOfEpochRequest(epochNo), cancellationToken);
     }
 
     /// <inheritdoc />

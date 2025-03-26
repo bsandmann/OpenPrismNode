@@ -3,17 +3,18 @@ namespace OpenPrismNode.Core.Commands.GetWallet;
 using FluentResults;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 using OpenPrismNode.Core.Services;
 
 public class GetWalletHandler : IRequestHandler<GetWalletRequest, Result<GetWalletResponse>>
 {
     private ICardanoWalletService _walletService;
-    private DataContext _context;
+    private readonly IServiceScopeFactory _serviceScopeFactory;
 
-    public GetWalletHandler(ICardanoWalletService walletService, DataContext context)
+    public GetWalletHandler(ICardanoWalletService walletService, IServiceScopeFactory serviceScopeFactory)
     {
         _walletService = walletService;
-        _context = context;
+        _serviceScopeFactory = serviceScopeFactory;
     }
 
     public async Task<Result<GetWalletResponse>> Handle(GetWalletRequest request, CancellationToken cancellationToken)
@@ -23,7 +24,14 @@ public class GetWalletHandler : IRequestHandler<GetWalletRequest, Result<GetWall
             return Result.Fail("Invalid walletId");
         }
 
-        var storedWallet = await _context.WalletEntities.FirstOrDefaultAsync(p => p.WalletId == request.WalletId, cancellationToken: cancellationToken);
+        using var scope = _serviceScopeFactory.CreateScope();
+        var context = scope.ServiceProvider.GetRequiredService<DataContext>();
+
+        context.ChangeTracker.Clear();
+        context.ChangeTracker.AutoDetectChangesEnabled = false;
+
+
+        var storedWallet = await context.WalletEntities.FirstOrDefaultAsync(p => p.WalletId == request.WalletId, cancellationToken: cancellationToken);
         if (storedWallet is null)
         {
             return Result.Fail("Wallet not found or invalid walletId");
@@ -69,8 +77,8 @@ public class GetWalletHandler : IRequestHandler<GetWalletRequest, Result<GetWall
             storedWallet.FundingAddress = intialFundingAddress.Id;
         }
 
-        _context.WalletEntities.Update(storedWallet);
-        await _context.SaveChangesAsync(cancellationToken);
+        context.WalletEntities.Update(storedWallet);
+        await context.SaveChangesAsync(cancellationToken);
 
         return Result.Ok(new GetWalletResponse()
         {

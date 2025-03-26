@@ -3,20 +3,27 @@ namespace OpenPrismNode.Core.Commands.GetBlockByBlockHash;
 using FluentResults;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 using OpenPrismNode.Core.Entities;
 
 public class GetBlockByBlockHashHandler : IRequestHandler<GetBlockByBlockHashRequest, Result<BlockEntity>>
 {
-    private readonly DataContext _context;
+    private readonly IServiceScopeFactory _serviceScopeFactory;
 
-    public GetBlockByBlockHashHandler(DataContext context)
+    public GetBlockByBlockHashHandler(IServiceScopeFactory serviceScopeFactory)
     {
-        _context = context;
+         _serviceScopeFactory = serviceScopeFactory;
     }
 
     public async Task<Result<BlockEntity>> Handle(GetBlockByBlockHashRequest request, CancellationToken cancellationToken)
     {
-        var block = await _context.BlockEntities
+        using var scope = _serviceScopeFactory.CreateScope();
+        var context = scope.ServiceProvider.GetRequiredService<DataContext>();
+
+        context.ChangeTracker.Clear();
+        context.ChangeTracker.AutoDetectChangesEnabled = false;
+
+        var block = await context.BlockEntities
             .Where(b => b.BlockHeight == request.BlockHeight
                         && b.BlockHashPrefix == request.BlockHashPrefix
                         && b.EpochEntity.Ledger == request.Ledger)

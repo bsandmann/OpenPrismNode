@@ -3,20 +3,27 @@ namespace OpenPrismNode.Core.Commands.GetMostRecentBlock;
 using FluentResults;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 using OpenPrismNode.Core.Entities;
 
 public class GetMostRecentBlockHandler : IRequestHandler<GetMostRecentBlockRequest, Result<BlockEntity>>
 {
-    private readonly DataContext _context;
+    private readonly IServiceScopeFactory _serviceScopeFactory;
 
-    public GetMostRecentBlockHandler(DataContext context)
+    public GetMostRecentBlockHandler(IServiceScopeFactory serviceScopeFactory)
     {
-        _context = context;
+         _serviceScopeFactory = serviceScopeFactory;
     }
 
     public async Task<Result<BlockEntity>> Handle(GetMostRecentBlockRequest request, CancellationToken cancellationToken)
     {
-        var mostRecentBlock = await _context.BlockEntities
+        using var scope = _serviceScopeFactory.CreateScope();
+        var context = scope.ServiceProvider.GetRequiredService<DataContext>();
+
+        context.ChangeTracker.Clear();
+        context.ChangeTracker.AutoDetectChangesEnabled = false;
+
+        var mostRecentBlock = await context.BlockEntities
             .Include(p => p.EpochEntity)
             .Where(b => b.IsFork == false && b.EpochEntity.Ledger == request.Ledger)
             .OrderByDescending(b => b.BlockHeight)

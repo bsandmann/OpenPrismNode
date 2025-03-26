@@ -20,14 +20,12 @@ public class WithdrawalHandler : IRequestHandler<WithdrawalRequest, Result>
 {
     private IMediator _mediator;
     private ICardanoWalletService _walletService;
-    private DataContext _context;
     private ISha256Service _sha256Service;
     private readonly AppSettings _appSettings;
 
-    public WithdrawalHandler(ICardanoWalletService walletService, DataContext context, IMediator mediator, ISha256Service sha256Service, IOptions<AppSettings> appSettings)
+    public WithdrawalHandler(ICardanoWalletService walletService, IMediator mediator, ISha256Service sha256Service, IOptions<AppSettings> appSettings)
     {
         _walletService = walletService;
-        _context = context;
         _mediator = mediator;
         _sha256Service = sha256Service;
         _appSettings = appSettings.Value;

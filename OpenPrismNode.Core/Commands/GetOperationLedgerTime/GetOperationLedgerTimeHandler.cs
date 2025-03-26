@@ -3,15 +3,16 @@ namespace OpenPrismNode.Core.Commands.GetOperationLedgerTime;
 using FluentResults;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 using OpenPrismNode.Core.Common;
 
 public class GetOperationLedgerTimeHandler : IRequestHandler<GetOperationLedgerTimeRequest, Result<GetOperationLedgerTimeResponse>>
 {
-    private readonly DataContext _context;
+    private readonly IServiceScopeFactory _serviceScopeFactory;
 
-    public GetOperationLedgerTimeHandler(DataContext context)
+    public GetOperationLedgerTimeHandler(IServiceScopeFactory serviceScopeFactory)
     {
-        _context = context;
+         _serviceScopeFactory = serviceScopeFactory;
     }
 
     public async Task<Result<GetOperationLedgerTimeResponse>> Handle(GetOperationLedgerTimeRequest request, CancellationToken cancellationToken)
@@ -27,7 +28,13 @@ public class GetOperationLedgerTimeHandler : IRequestHandler<GetOperationLedgerT
             return Result.Fail("Invalid versionId. Expected base64 string to be converted to byte array");
         }
 
-        var createEntity = await _context.CreateDidEntities
+        using var scope = _serviceScopeFactory.CreateScope();
+        var context = scope.ServiceProvider.GetRequiredService<DataContext>();
+
+        context.ChangeTracker.Clear();
+        context.ChangeTracker.AutoDetectChangesEnabled = false;
+
+        var createEntity = await context.CreateDidEntities
             .Select(p => new
             {
                 p.BlockHeight,
@@ -47,7 +54,7 @@ public class GetOperationLedgerTimeHandler : IRequestHandler<GetOperationLedgerT
             });
         }
 
-        var updateEntity = await _context.UpdateDidEntities
+        var updateEntity = await context.UpdateDidEntities
             .Select(p => new
             {
                 p.BlockHeight,
@@ -67,7 +74,7 @@ public class GetOperationLedgerTimeHandler : IRequestHandler<GetOperationLedgerT
             });
         }
 
-        var deactivateEntity = await _context.DeactivateDidEntities
+        var deactivateEntity = await context.DeactivateDidEntities
             .Select(p => new
             {
                 p.BlockHeight,

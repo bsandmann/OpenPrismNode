@@ -3,20 +3,27 @@ namespace OpenPrismNode.Core.Commands.GetMaxBlockHeightForDateTime;
 using FluentResults;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 
 public class GetMaxBlockHeightForDateTimeHandler : IRequestHandler<GetMaxBlockHeightForDateTimeRequest, Result<int>>
 {
-    private readonly DataContext _context;
+    private readonly IServiceScopeFactory _serviceScopeFactory;
 
-    public GetMaxBlockHeightForDateTimeHandler(DataContext context)
+    public GetMaxBlockHeightForDateTimeHandler(IServiceScopeFactory serviceScopeFactory)
     {
-        _context = context;
+         _serviceScopeFactory = serviceScopeFactory;
     }
 
     public async Task<Result<int>> Handle(GetMaxBlockHeightForDateTimeRequest request, CancellationToken cancellationToken)
     {
+        using var scope = _serviceScopeFactory.CreateScope();
+        var context = scope.ServiceProvider.GetRequiredService<DataContext>();
+
+        context.ChangeTracker.Clear();
+        context.ChangeTracker.AutoDetectChangesEnabled = false;
+
         var versionTime = DateTime.SpecifyKind(request.VersionTime, DateTimeKind.Unspecified);
-        var maxBlockHeight = await _context.BlockEntities
+        var maxBlockHeight = await context.BlockEntities
             .Where(b => b.IsFork == false &&
                         b.EpochEntity.Ledger == request.Ledger &&
                         b.TimeUtc <= versionTime && b.TimeUtc > DateTime.MinValue)

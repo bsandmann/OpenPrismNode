@@ -4,6 +4,7 @@ using System.Text.Json;
 using FluentResults;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using OpenPrismNode.Core;
 using OpenPrismNode.Core.Common;
@@ -15,17 +16,15 @@ using OpenPrismNode.Core.Models;
 /// </summary>
 public class CreateTransactionUpdateDidHandler : IRequestHandler<CreateTransactionUpdateDidRequest, Result>
 {
-    private readonly DataContext _context;
-    private readonly ILogger<CreateTransactionUpdateDidHandler> _logger;
+    private readonly IServiceScopeFactory _serviceScopeFactory;
 
     /// <summary>
     /// Constructor
     /// </summary>
-    /// <param name="context"></param>
-    public CreateTransactionUpdateDidHandler(DataContext context, ILogger<CreateTransactionUpdateDidHandler> logger)
+    /// <param name="serviceScopeFactory"></param>
+    public CreateTransactionUpdateDidHandler(IServiceScopeFactory serviceScopeFactory)
     {
-        this._context = context;
-        this._logger = logger;
+        _serviceScopeFactory = serviceScopeFactory;
     }
 
     /// <inheritdoc />
@@ -33,8 +32,12 @@ public class CreateTransactionUpdateDidHandler : IRequestHandler<CreateTransacti
     {
         try
         {
-            _context.ChangeTracker.Clear();
-            _context.ChangeTracker.AutoDetectChangesEnabled = false;
+            using var scope = _serviceScopeFactory.CreateScope();
+            var context = scope.ServiceProvider.GetRequiredService<DataContext>();
+
+            context.ChangeTracker.Clear();
+            context.ChangeTracker.AutoDetectChangesEnabled = false;
+
             var operationOrderIndex = 0;
             var prismPublicKeysToAdd = new List<PrismPublicKeyEntity>();
             var prismPublicKeysToRemove = new List<PrismPublicKeyRemoveEntity>();
@@ -116,7 +119,7 @@ public class CreateTransactionUpdateDidHandler : IRequestHandler<CreateTransacti
             }
 
             var prefix = BlockEntity.CalculateBlockHashPrefix(request.BlockHash.Value);
-            var hasExistingTransaction = await _context.TransactionEntities.AnyAsync(p => p.TransactionHash == request.TransactionHash.Value, cancellationToken: cancellationToken);
+            var hasExistingTransaction = await context.TransactionEntities.AnyAsync(p => p.TransactionHash == request.TransactionHash.Value, cancellationToken: cancellationToken);
             if (!hasExistingTransaction)
             {
                 var trans = new TransactionEntity()
@@ -151,8 +154,8 @@ public class CreateTransactionUpdateDidHandler : IRequestHandler<CreateTransacti
                         }
                     }
                 };
-                await _context.TransactionEntities.AddAsync(trans, cancellationToken);
-                await _context.SaveChangesAsync(cancellationToken);
+                await context.TransactionEntities.AddAsync(trans, cancellationToken);
+                await context.SaveChangesAsync(cancellationToken);
 
                 return Result.Ok();
             }
@@ -174,8 +177,8 @@ public class CreateTransactionUpdateDidHandler : IRequestHandler<CreateTransacti
                         PrismServices = prismServices,
                         PatchedContexts = patchedContexts
                     };
-                await _context.UpdateDidEntities.AddAsync(prismUpdateDidEntity, cancellationToken);
-                await _context.SaveChangesAsync(cancellationToken);
+                await context.UpdateDidEntities.AddAsync(prismUpdateDidEntity, cancellationToken);
+                await context.SaveChangesAsync(cancellationToken);
             }
 
             return Result.Ok();

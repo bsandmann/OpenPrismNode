@@ -12,6 +12,7 @@ using GetWallet;
 using Google.Protobuf;
 using Grpc.Models;
 using MediatR;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using Models;
 using Models.CardanoWallet;
@@ -22,14 +23,14 @@ public class WriteTransactionHandler : IRequestHandler<WriteTransactionRequest, 
 {
     private IMediator _mediator;
     private ICardanoWalletService _walletService;
-    private DataContext _context;
     private ISha256Service _sha256Service;
     private readonly AppSettings _appSettings;
+    private readonly IServiceScopeFactory _serviceScopeFactory;
 
-    public WriteTransactionHandler(ICardanoWalletService walletService, DataContext context, IMediator mediator, ISha256Service sha256Service, IOptions<AppSettings> appSettings)
+    public WriteTransactionHandler(ICardanoWalletService walletService, DataContext context, IMediator mediator, ISha256Service sha256Service, IOptions<AppSettings> appSettings, IServiceScopeFactory serviceScopeFactory)
     {
         _walletService = walletService;
-        _context = context;
+         _serviceScopeFactory = serviceScopeFactory;
         _mediator = mediator;
         _sha256Service = sha256Service;
         _appSettings = appSettings.Value;
@@ -37,8 +38,12 @@ public class WriteTransactionHandler : IRequestHandler<WriteTransactionRequest, 
 
     public async Task<Result<WriteTransactionResponse>> Handle(WriteTransactionRequest request, CancellationToken cancellationToken)
     {
-        _context.ChangeTracker.Clear();
-        _context.ChangeTracker.AutoDetectChangesEnabled = false;
+        using var scope = _serviceScopeFactory.CreateScope();
+        var context = scope.ServiceProvider.GetRequiredService<DataContext>();
+
+        context.ChangeTracker.Clear();
+        context.ChangeTracker.AutoDetectChangesEnabled = false;
+
         var wallet = await _mediator.Send(new GetWalletRequest(request.WalletId), cancellationToken);
         if (wallet.IsFailed)
         {

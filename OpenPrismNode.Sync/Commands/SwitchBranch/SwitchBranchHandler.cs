@@ -8,26 +8,30 @@ using OpenPrismNode.Sync.Commands.ProcessBlock;
 namespace OpenPrismNode.Sync.Commands.SwitchBranch;
 
 using DbSync.GetPostgresBlockByBlockNo;
+using Microsoft.Extensions.DependencyInjection;
 
 public class SwitchBranchHandler : IRequestHandler<SwitchBranchRequest, Result>
 {
-    private readonly DataContext _context;
+    private readonly IServiceScopeFactory _serviceScopeFactory;
     private readonly IMediator _mediator;
 
-    public SwitchBranchHandler(DataContext context, IMediator mediator)
+    public SwitchBranchHandler(IMediator mediator, IServiceScopeFactory serviceScopeFactory)
     {
-        _context = context;
+         _serviceScopeFactory = serviceScopeFactory;
         _mediator = mediator;
     }
 
     public async Task<Result> Handle(SwitchBranchRequest request, CancellationToken cancellationToken)
     {
-        _context.ChangeTracker.Clear();
-        _context.ChangeTracker.AutoDetectChangesEnabled = false;
+        using var scope = _serviceScopeFactory.CreateScope();
+        var context = scope.ServiceProvider.GetRequiredService<DataContext>();
+
+        context.ChangeTracker.Clear();
+        context.ChangeTracker.AutoDetectChangesEnabled = false;
         try
         {
             // Find the base block
-            var baseBlock = await _context.BlockEntities
+            var baseBlock = await context.BlockEntities
                 .FirstOrDefaultAsync(b => b.BlockHeight == request.BaseBlockHeight && b.BlockHashPrefix == request.BaseBlockPrefix && b.Ledger == request.Ledger, cancellationToken);
 
             if (baseBlock == null)
@@ -36,7 +40,7 @@ public class SwitchBranchHandler : IRequestHandler<SwitchBranchRequest, Result>
             }
 
             // Find the new tip block
-            var newTipBlock = await _context.BlockEntities
+            var newTipBlock = await context.BlockEntities
                 .FirstOrDefaultAsync(b => b.BlockHeight == request.NewTipBlockHeight && b.BlockHashPrefix == request.NewTipBlockPrefix && b.Ledger == request.Ledger, cancellationToken);
 
             if (newTipBlock == null)
@@ -45,7 +49,7 @@ public class SwitchBranchHandler : IRequestHandler<SwitchBranchRequest, Result>
             }
 
             // Get all blocks after the base block
-            var blocksAfterBase = await _context.BlockEntities
+            var blocksAfterBase = await context.BlockEntities
                 .Where(b => b.BlockHeight > baseBlock.BlockHeight && b.Ledger == request.Ledger)
                 .ToListAsync(cancellationToken);
 
@@ -55,7 +59,7 @@ public class SwitchBranchHandler : IRequestHandler<SwitchBranchRequest, Result>
             while (currentBlock.BlockHeight > baseBlock.BlockHeight)
             {
                 newMainChain.Add((currentBlock.BlockHeight, currentBlock.BlockHashPrefix));
-                currentBlock = await _context.BlockEntities
+                currentBlock = await context.BlockEntities
                     .FirstOrDefaultAsync(b => b.BlockHeight == currentBlock.PreviousBlockHeight && b.BlockHashPrefix == currentBlock.PreviousBlockHashPrefix && b.Ledger == request.Ledger, cancellationToken);
 
                 if (currentBlock == null)
@@ -81,29 +85,29 @@ public class SwitchBranchHandler : IRequestHandler<SwitchBranchRequest, Result>
             // Bulk update the changed blocks
             if (blocksToUpdate.Any())
             {
-                _context.BlockEntities.AttachRange(blocksToUpdate);
+                context.BlockEntities.AttachRange(blocksToUpdate);
                 foreach (var block in blocksToUpdate)
                 {
-                    _context.Entry(block).Property(x => x.IsFork).IsModified = true;
+                    context.Entry(block).Property(x => x.IsFork).IsModified = true;
                 }
 
-                await _context.SaveChangesAsync(cancellationToken);
+                await context.SaveChangesAsync(cancellationToken);
             }
 
-            var allForkedBlocks = await _context.BlockEntities
+            var allForkedBlocks = await context.BlockEntities
                 .Where(b => b.IsFork && b.Ledger == request.Ledger && b.BlockHeight > baseBlock.BlockHeight)
                 .ToListAsync(cancellationToken);
 
             foreach (var forkedBlock in allForkedBlocks.OrderByDescending(p => p.BlockHeight))
             {
-                var deleteTransactions = await _context.TransactionEntities
+                var deleteTransactions = await context.TransactionEntities
                     .Where(t => t.BlockHeight == forkedBlock.BlockHeight && t.BlockHashPrefix == forkedBlock.BlockHashPrefix)
                     .ToListAsync(cancellationToken);
-                _context.TransactionEntities.RemoveRange(deleteTransactions);
-                await _context.SaveChangesAsync(cancellationToken);
+                context.TransactionEntities.RemoveRange(deleteTransactions);
+                await context.SaveChangesAsync(cancellationToken);
             }
 
-            var allNonForkedBlocks = await _context.BlockEntities
+            var allNonForkedBlocks = await context.BlockEntities
                 .Select(p =>
                     new
                     {

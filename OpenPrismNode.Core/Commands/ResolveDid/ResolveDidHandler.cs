@@ -5,20 +5,20 @@ using Common;
 using FluentResults;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 using Models;
 using ResultSets;
 
 public class ResolveDidHandler : IRequestHandler<ResolveDidRequest, Result<ResolveDidResponse>>
 {
-    private readonly DataContext _context;
+    private readonly IServiceScopeFactory _serviceScopeFactory;
 
     /// <summary>
     /// Constructor
     /// </summary>
-    /// <param name="context"></param>
-    public ResolveDidHandler(DataContext context)
+    public ResolveDidHandler(IServiceScopeFactory serviceScopeFactory)
     {
-        this._context = context;
+        _serviceScopeFactory = serviceScopeFactory;
     }
 
     /// <summary>
@@ -44,10 +44,16 @@ public class ResolveDidHandler : IRequestHandler<ResolveDidRequest, Result<Resol
             return Result.Fail("The didIdentifier is not valid");
         }
 
+        using var scope = _serviceScopeFactory.CreateScope();
+        var context = scope.ServiceProvider.GetRequiredService<DataContext>();
+
+        context.ChangeTracker.Clear();
+        context.ChangeTracker.AutoDetectChangesEnabled = false;
+
         CreateDidResult? createDidResult;
         if (request.BlockHeight == null)
         {
-            createDidResult = await _context.CreateDidEntities
+            createDidResult = await context.CreateDidEntities
                 .Where(p => p.TransactionEntity.BlockEntity.EpochEntity.Ledger == request.Ledger)
                 .Select(p => new CreateDidResult()
                 {
@@ -92,7 +98,7 @@ public class ResolveDidHandler : IRequestHandler<ResolveDidRequest, Result<Resol
         }
         else
         {
-            createDidResult = await _context.CreateDidEntities
+            createDidResult = await context.CreateDidEntities
                 .Where(p => p.TransactionEntity.BlockEntity.EpochEntity.Ledger == request.Ledger)
                 .Select(p => new CreateDidResult()
                 {
@@ -163,7 +169,7 @@ public class ResolveDidHandler : IRequestHandler<ResolveDidRequest, Result<Resol
         List<UpdateDidResult> updateOperations = new List<UpdateDidResult>();
         if (request.BlockHeight == null)
         {
-            updateOperations = await _context.UpdateDidEntities
+            updateOperations = await context.UpdateDidEntities
                 .Where(p => p.TransactionEntity.BlockEntity.EpochEntity.Ledger == request.Ledger)
                 .Select(p => new UpdateDidResult()
                 {
@@ -207,7 +213,7 @@ public class ResolveDidHandler : IRequestHandler<ResolveDidRequest, Result<Resol
         {
             // We don't need to restrict the query towards the lower bound, because an update DID operation always
             // requires an exisiting createDID operation, thus the update operation always comes after the createDid operation
-            updateOperations = await _context.UpdateDidEntities
+            updateOperations = await context.UpdateDidEntities
                 .Where(p => p.TransactionEntity.BlockEntity.EpochEntity.Ledger == request.Ledger)
                 .Select(p => new UpdateDidResult()
                 {
@@ -289,6 +295,7 @@ public class ResolveDidHandler : IRequestHandler<ResolveDidRequest, Result<Resol
                             {
                                 return keysXy.ToResult();
                             }
+
                             var (keyX, keyY) = keysXy.Value;
                             prismPublicKeys.Add(new PrismPublicKey(
                                 keyUsage: addKeyAction.PrismKeyUsage,
@@ -307,6 +314,7 @@ public class ResolveDidHandler : IRequestHandler<ResolveDidRequest, Result<Resol
                             // should never happen
                             return Result.Fail("Fatal error. The key which should be removed does not exist");
                         }
+
                         prismPublicKeys.Remove(keyToRemove);
                     }
                     else if (addServiceAction is not null)
@@ -354,6 +362,7 @@ public class ResolveDidHandler : IRequestHandler<ResolveDidRequest, Result<Resol
                             // should never happen
                             return Result.Fail("Fatal error. The service which should be removed does not exist");
                         }
+
                         prismServices.Remove(serviceToRemove);
                     }
                     else if (patchedContextAction is not null)

@@ -5,22 +5,29 @@ using GetWallet;
 using GetWallets;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 using OpenPrismNode.Core.Services;
 
 public class GetWalletsHandler : IRequestHandler<GetWalletsRequest, Result<List<GetWalletResponse>>>
 {
     private ICardanoWalletService _walletService;
-    private DataContext _context;
+    private readonly IServiceScopeFactory _serviceScopeFactory;
 
-    public GetWalletsHandler(ICardanoWalletService walletService, DataContext context)
+    public GetWalletsHandler(ICardanoWalletService walletService, IServiceScopeFactory serviceScopeFactory)
     {
         _walletService = walletService;
-        _context = context;
+         _serviceScopeFactory = serviceScopeFactory;
     }
 
     public async Task<Result<List<GetWalletResponse>>> Handle(GetWalletsRequest request, CancellationToken cancellationToken)
     {
-        var storedWallets = await _context.WalletEntities.ToListAsync(cancellationToken: cancellationToken);
+        using var scope = _serviceScopeFactory.CreateScope();
+        var context = scope.ServiceProvider.GetRequiredService<DataContext>();
+
+        context.ChangeTracker.Clear();
+        context.ChangeTracker.AutoDetectChangesEnabled = false;
+
+        var storedWallets = await context.WalletEntities.ToListAsync(cancellationToken: cancellationToken);
         if (!storedWallets.Any())
         {
             return Result.Fail("No wallets not found");
@@ -69,8 +76,8 @@ public class GetWalletsHandler : IRequestHandler<GetWalletsRequest, Result<List<
                 storedWallet.FundingAddress = intialFundingAddress.Id;
             }
 
-            _context.WalletEntities.Update(storedWallet);
-            await _context.SaveChangesAsync(cancellationToken);
+            context.WalletEntities.Update(storedWallet);
+            await context.SaveChangesAsync(cancellationToken);
 
             responses.Add(new GetWalletResponse()
             {

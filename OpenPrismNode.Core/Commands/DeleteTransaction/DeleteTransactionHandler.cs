@@ -3,6 +3,7 @@
 using FluentResults;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 
 /// <summary>
 /// This handler is able to delete single transactions, but only when deleted in the correct order of dependency.
@@ -11,28 +12,32 @@ using Microsoft.EntityFrameworkCore;
 /// </summary>
 public class DeleteTransactionHandler : IRequestHandler<DeleteTransactionRequest, Result>
 {
-    private readonly DataContext _context;
+    private readonly IServiceScopeFactory _serviceScopeFactory;
 
     /// <summary>
     /// Constructor
     /// </summary>
-    /// <param name="context"></param>
-    public DeleteTransactionHandler(DataContext context)
+    /// <param name="serviceScopeFactory"></param>
+    public DeleteTransactionHandler(IServiceScopeFactory serviceScopeFactory)
     {
-        this._context = context;
+        _serviceScopeFactory = serviceScopeFactory;
     }
 
     public async Task<Result> Handle(DeleteTransactionRequest request, CancellationToken cancellationToken)
     {
-        _context.ChangeTracker.Clear();
-        _context.ChangeTracker.AutoDetectChangesEnabled = false;
+        using var scope = _serviceScopeFactory.CreateScope();
+        var context = scope.ServiceProvider.GetRequiredService<DataContext>();
+
+        context.ChangeTracker.Clear();
+        context.ChangeTracker.AutoDetectChangesEnabled = false;
+
         try
         {
-            var transaction = await _context.TransactionEntities.FirstOrDefaultAsync(p => p.TransactionHash == request.TransactionHash.Value && p.BlockHeight == request.BlockHeight && p.BlockHashPrefix == request.BlockHashPrefix!.Value, cancellationToken: cancellationToken);
+            var transaction = await context.TransactionEntities.FirstOrDefaultAsync(p => p.TransactionHash == request.TransactionHash.Value && p.BlockHeight == request.BlockHeight && p.BlockHashPrefix == request.BlockHashPrefix!.Value, cancellationToken: cancellationToken);
             if (transaction is not null)
             {
-                _context.Remove(transaction); 
-                await _context.SaveChangesAsync(cancellationToken);
+                context.Remove(transaction);
+                await context.SaveChangesAsync(cancellationToken);
                 return Result.Ok();
             }
 

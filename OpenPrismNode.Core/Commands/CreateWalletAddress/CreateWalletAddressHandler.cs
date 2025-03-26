@@ -5,32 +5,34 @@ using OpenPrismNode.Core.Entities;
 
 namespace OpenPrismNode.Core.Commands.CreateWalletAddress;
 
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Services;
 
 public class CreateWalletAddressHandler : IRequestHandler<CreateWalletAddressRequest, Result>
 {
-    private readonly DataContext _context;
+    private readonly IServiceScopeFactory _serviceScopeFactory;
     private readonly IWalletAddressCache _cache;
-    private readonly ILogger<CreateWalletAddressHandler> _logger;
 
-    public CreateWalletAddressHandler(DataContext context, IWalletAddressCache cache, ILogger<CreateWalletAddressHandler> logger)
+    public CreateWalletAddressHandler(IServiceScopeFactory serviceScopeFactory, IWalletAddressCache cache)
     {
-        _context = context;
+         _serviceScopeFactory = serviceScopeFactory;
         _cache = cache;
-        _logger = logger;
     }
 
     public async Task<Result> Handle(CreateWalletAddressRequest request, CancellationToken cancellationToken)
     {
-        _context.ChangeTracker.Clear();
-        _context.ChangeTracker.AutoDetectChangesEnabled = false;
+        using var scope = _serviceScopeFactory.CreateScope();
+        var context = scope.ServiceProvider.GetRequiredService<DataContext>();
+
+        context.ChangeTracker.Clear();
+        context.ChangeTracker.AutoDetectChangesEnabled = false;
 
         await _cache.GetOrAddAsync(
             request.WalletAddress,
             async () =>
             {
-                var dbWalletAddress = await _context.WalletAddressEntities
+                var dbWalletAddress = await context.WalletAddressEntities
                     .FirstOrDefaultAsync(w => w.WalletAddress == request.WalletAddress, cancellationToken);
 
                 if (dbWalletAddress == null)
@@ -40,8 +42,8 @@ public class CreateWalletAddressHandler : IRequestHandler<CreateWalletAddressReq
                         WalletAddress = request.WalletAddress
                     };
 
-                    await _context.WalletAddressEntities.AddAsync(dbWalletAddress, cancellationToken);
-                    await _context.SaveChangesAsync(cancellationToken);
+                    await context.WalletAddressEntities.AddAsync(dbWalletAddress, cancellationToken);
+                    await context.SaveChangesAsync(cancellationToken);
                 }
 
                 return dbWalletAddress;

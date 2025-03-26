@@ -4,30 +4,36 @@ using DeleteEpoch;
 using FluentResults;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 using OpenPrismNode.Core;
 
 public class DeleteLedgerHandler : IRequestHandler<DeleteLedgerRequest, Result>
 {
-    private readonly DataContext _context;
+    private readonly IServiceScopeFactory _serviceScopeFactory;
     private readonly IMediator _mediator;
 
     /// <summary>
     /// Constructor
     /// </summary>
-    /// <param name="context"></param>
-    public DeleteLedgerHandler(DataContext context, IMediator mediator)
+    /// <param name="serviceScopeFactory"></param>
+    /// <param name="mediator"></param>
+    public DeleteLedgerHandler(IServiceScopeFactory serviceScopeFactory, IMediator mediator)
     {
-        _context = context;
+         _serviceScopeFactory = serviceScopeFactory;
         _mediator = mediator;
     }
 
     public async Task<Result> Handle(DeleteLedgerRequest request, CancellationToken cancellationToken)
     {
-        _context.ChangeTracker.Clear();
-        _context.ChangeTracker.AutoDetectChangesEnabled = false;
+        using var scope = _serviceScopeFactory.CreateScope();
+        var context = scope.ServiceProvider.GetRequiredService<DataContext>();
+
+        context.ChangeTracker.Clear();
+        context.ChangeTracker.AutoDetectChangesEnabled = false;
+
         try
         {
-            var epochs = await _context.EpochEntities.Select(p => new { p.Ledger, p.EpochNumber }).Where(p => p.Ledger == request.LedgerType).ToListAsync(cancellationToken: cancellationToken);
+            var epochs = await context.EpochEntities.Select(p => new { p.Ledger, p.EpochNumber }).Where(p => p.Ledger == request.LedgerType).ToListAsync(cancellationToken: cancellationToken);
             if (!epochs.Any())
             {
                 return Result.Fail("No epochs found for the ledger");
@@ -42,14 +48,14 @@ public class DeleteLedgerHandler : IRequestHandler<DeleteLedgerRequest, Result>
                 }
             }
 
-            var existingLedger = await _context.LedgerEntities.FirstOrDefaultAsync(p => p.Ledger == request.LedgerType, cancellationToken: cancellationToken);
+            var existingLedger = await context.LedgerEntities.FirstOrDefaultAsync(p => p.Ledger == request.LedgerType, cancellationToken: cancellationToken);
             if (existingLedger is null)
             {
                 return Result.Fail("The ledger does not exist");
             }
 
-            _context.Remove(existingLedger);
-            await _context.SaveChangesAsync(cancellationToken);
+            context.Remove(existingLedger);
+            await context.SaveChangesAsync(cancellationToken);
 
             return Result.Ok();
         }

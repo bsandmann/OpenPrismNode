@@ -3,30 +3,35 @@
 using FluentResults;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 using OpenPrismNode.Core;
 using OpenPrismNode.Core.Entities;
 
 public class CreateEpochHandler : IRequestHandler<CreateEpochRequest, Result<EpochEntity>>
 {
-    private readonly DataContext _context;
+    private readonly IServiceScopeFactory _serviceScopeFactory;
 
     /// <summary>
     /// Constructor
     /// </summary>
     /// <param name="context"></param>
-    public CreateEpochHandler(DataContext context)
+    public CreateEpochHandler(IServiceScopeFactory serviceScopeFactory)
     {
-        this._context = context;
+        _serviceScopeFactory = serviceScopeFactory;
     }
 
     public async Task<Result<EpochEntity>> Handle(CreateEpochRequest request, CancellationToken cancellationToken)
     {
-        _context.ChangeTracker.Clear();
-        _context.ChangeTracker.AutoDetectChangesEnabled = false;
-        var existingEpoch = await _context.EpochEntities.FirstOrDefaultAsync(
-            p => p.EpochNumber == request.EpochNumber && p.Ledger == request.Ledger, 
+        using var scope = _serviceScopeFactory.CreateScope();
+        var context = scope.ServiceProvider.GetRequiredService<DataContext>();
+
+        context.ChangeTracker.Clear();
+        context.ChangeTracker.AutoDetectChangesEnabled = false;
+
+        var existingEpoch = await context.EpochEntities.FirstOrDefaultAsync(
+            p => p.EpochNumber == request.EpochNumber && p.Ledger == request.Ledger,
             cancellationToken: cancellationToken);
-        
+
         if (existingEpoch is null)
         {
             var epochEntity = new EpochEntity()
@@ -35,8 +40,8 @@ public class CreateEpochHandler : IRequestHandler<CreateEpochRequest, Result<Epo
                 EpochNumber = request.EpochNumber,
             };
 
-            await _context.AddAsync(epochEntity, cancellationToken);
-            await _context.SaveChangesAsync(cancellationToken);
+            await context.AddAsync(epochEntity, cancellationToken);
+            await context.SaveChangesAsync(cancellationToken);
 
             return Result.Ok(epochEntity);
         }

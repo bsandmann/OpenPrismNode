@@ -3,18 +3,19 @@ namespace OpenPrismNode.Core.Commands.CreateCardanoWallet;
 using Entities;
 using FluentResults;
 using MediatR;
+using Microsoft.Extensions.DependencyInjection;
 using Models.CardanoWallet;
 using Services;
 
 public class CreateCardanoWalletHandler : IRequestHandler<CreateCardanoWalletRequest, Result<CreateCardanoWalletResponse>>
 {
     private ICardanoWalletService _walletService;
-    private DataContext _context;
+    private readonly IServiceScopeFactory _serviceScopeFactory;
 
-    public CreateCardanoWalletHandler(ICardanoWalletService walletService, DataContext context)
+    public CreateCardanoWalletHandler(ICardanoWalletService walletService, IServiceScopeFactory serviceScopeFactory)
     {
         _walletService = walletService;
-        _context = context;
+         _serviceScopeFactory = serviceScopeFactory;
     }
 
     public async Task<Result<CreateCardanoWalletResponse>> Handle(CreateCardanoWalletRequest request, CancellationToken cancellationToken)
@@ -38,8 +39,12 @@ public class CreateCardanoWalletHandler : IRequestHandler<CreateCardanoWalletReq
         }
 
         // Write the wallet to the database
-        _context.ChangeTracker.Clear();
-        _context.ChangeTracker.AutoDetectChangesEnabled = false;
+
+        using var scope = _serviceScopeFactory.CreateScope();
+        var context = scope.ServiceProvider.GetRequiredService<DataContext>();
+
+        context.ChangeTracker.Clear();
+        context.ChangeTracker.AutoDetectChangesEnabled = false;
         var wallet = new WalletEntity()
         {
             Passphrase = passphrase,
@@ -56,8 +61,8 @@ public class CreateCardanoWalletHandler : IRequestHandler<CreateCardanoWalletReq
             LastKnownBalance = null,
         };
 
-        await _context.WalletEntities.AddAsync(wallet, cancellationToken);
-        await _context.SaveChangesAsync(cancellationToken);
+        await context.WalletEntities.AddAsync(wallet, cancellationToken);
+        await context.SaveChangesAsync(cancellationToken);
 
         return Result.Ok(new CreateCardanoWalletResponse()
         {

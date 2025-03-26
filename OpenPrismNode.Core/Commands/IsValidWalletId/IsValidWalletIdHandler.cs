@@ -5,16 +5,18 @@ using Microsoft.EntityFrameworkCore;
 
 namespace OpenPrismNode.Core.Commands.IsValidWalletId
 {
+    using Microsoft.Extensions.DependencyInjection;
+
     /// <summary>
     /// Handler that checks if a wallet-id is valid and exists in the database.
     /// </summary>
     public class IsValidWalletIdHandler : IRequestHandler<IsValidWalletIdRequest, Result<bool>>
     {
-        private readonly DataContext _context;
+        private readonly IServiceScopeFactory _serviceScopeFactory;
 
-        public IsValidWalletIdHandler(DataContext context)
+        public IsValidWalletIdHandler(IServiceScopeFactory serviceScopeFactory)
         {
-            _context = context;
+             _serviceScopeFactory = serviceScopeFactory;
         }
 
         public async Task<Result<bool>> Handle(IsValidWalletIdRequest request, CancellationToken cancellationToken)
@@ -28,7 +30,13 @@ namespace OpenPrismNode.Core.Commands.IsValidWalletId
             try
             {
                 // 2) Check existence in DB.
-                var exists = await _context.WalletEntities
+                using var scope = _serviceScopeFactory.CreateScope();
+                var context = scope.ServiceProvider.GetRequiredService<DataContext>();
+
+                context.ChangeTracker.Clear();
+                context.ChangeTracker.AutoDetectChangesEnabled = false;
+
+                var exists = await context.WalletEntities
                     .AnyAsync(w => w.WalletId == request.WalletId, cancellationToken);
 
                 // If it exists -> true, otherwise false. 

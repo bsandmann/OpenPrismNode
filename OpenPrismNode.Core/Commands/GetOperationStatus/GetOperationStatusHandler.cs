@@ -7,6 +7,7 @@ namespace OpenPrismNode.Core.Commands.GetOperationStatus
     using FluentResults;
     using MediatR;
     using Microsoft.EntityFrameworkCore;
+    using Microsoft.Extensions.DependencyInjection;
     using Microsoft.Extensions.Options;
     using Models;
     using OpenPrismNode.Core.Entities;
@@ -17,13 +18,13 @@ namespace OpenPrismNode.Core.Commands.GetOperationStatus
     public class GetOperationStatusHandler : IRequestHandler<GetOperationStatusRequest, Result<GetOperationStatusResponse>>
     {
         private ICardanoWalletService _walletService;
-        private readonly DataContext _context;
+        private readonly IServiceScopeFactory _serviceScopeFactory;
         private readonly IMediator _mediator;
         private readonly AppSettings _appSettings;
 
-        public GetOperationStatusHandler(DataContext context, ICardanoWalletService walletService, IMediator mediator, IOptions<AppSettings> appSettings)
+        public GetOperationStatusHandler(IServiceScopeFactory serviceScopeFactory, ICardanoWalletService walletService, IMediator mediator, IOptions<AppSettings> appSettings)
         {
-            _context = context;
+             _serviceScopeFactory = serviceScopeFactory;
             _walletService = walletService;
             _mediator = mediator;
             _appSettings = appSettings.Value;
@@ -33,7 +34,13 @@ namespace OpenPrismNode.Core.Commands.GetOperationStatus
         {
             try
             {
-                var operationStatus = await _context.OperationStatusEntities
+                using var scope = _serviceScopeFactory.CreateScope();
+                var context = scope.ServiceProvider.GetRequiredService<DataContext>();
+
+                context.ChangeTracker.Clear();
+                context.ChangeTracker.AutoDetectChangesEnabled = false;
+
+                var operationStatus = await context.OperationStatusEntities
                     .Select(p => new
                     {
                         OperationStatusEntityId = p.OperationStatusEntityId,

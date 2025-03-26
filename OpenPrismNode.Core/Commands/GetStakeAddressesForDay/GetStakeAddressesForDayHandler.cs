@@ -10,15 +10,16 @@ using System.Threading;
 using System.Threading.Tasks;
 using Common;
 using LazyCache;
+using Microsoft.Extensions.DependencyInjection;
 
 public class GetStakeAddressesForDayHandler : IRequestHandler<GetStakeAddressesForDayRequest, Result<Dictionary<string, int>>>
 {
-    private readonly DataContext _context;
+    private readonly IServiceScopeFactory _serviceScopeFactory;
     private readonly IAppCache _cache;
 
-    public GetStakeAddressesForDayHandler(DataContext context, IAppCache cache)
+    public GetStakeAddressesForDayHandler(IServiceScopeFactory serviceScopeFactory, IAppCache cache)
     {
-        _context = context;
+         _serviceScopeFactory = serviceScopeFactory;
         _cache = cache;
     }
 
@@ -47,10 +48,16 @@ public class GetStakeAddressesForDayHandler : IRequestHandler<GetStakeAddressesF
     {
         try
         {
+            using var scope = _serviceScopeFactory.CreateScope();
+            var context = scope.ServiceProvider.GetRequiredService<DataContext>();
+
+            context.ChangeTracker.Clear();
+            context.ChangeTracker.AutoDetectChangesEnabled = false;
+
             var startDate = request.Date.ToDateTime(TimeOnly.MinValue);
             var endDate = request.Date.ToDateTime(TimeOnly.MaxValue);
 
-            var query = _context.BlockEntities
+            var query = context.BlockEntities
                 .Where(b => b.EpochEntity.Ledger == request.Ledger)
                 .Where(b => b.TimeUtc >= startDate && b.TimeUtc < endDate)
                 .SelectMany(b => b.PrismTransactionEntities)

@@ -4,6 +4,7 @@ using CreateCardanoWallet;
 using FluentResults;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 using Models.CardanoWallet;
 using OpenPrismNode.Core.Entities;
 using OpenPrismNode.Core.Services;
@@ -11,12 +12,12 @@ using OpenPrismNode.Core.Services;
 public class RestoreCardanoWalletHandler : IRequestHandler<RestoreCardanoWalletRequest, Result<RestoreCardanoWalletResponse>>
 {
     private ICardanoWalletService _walletService;
-    private DataContext _context;
+    private readonly IServiceScopeFactory _serviceScopeFactory;
 
-    public RestoreCardanoWalletHandler(ICardanoWalletService walletService, DataContext context)
+    public RestoreCardanoWalletHandler(ICardanoWalletService walletService, IServiceScopeFactory serviceScopeFactory)
     {
         _walletService = walletService;
-        _context = context;
+         _serviceScopeFactory = serviceScopeFactory;
     }
 
     public async Task<Result<RestoreCardanoWalletResponse>> Handle(RestoreCardanoWalletRequest request, CancellationToken cancellationToken)
@@ -47,7 +48,13 @@ public class RestoreCardanoWalletHandler : IRequestHandler<RestoreCardanoWalletR
             return walletResponse.ToResult();
         }
 
-        var existingWallet = await _context.WalletEntities
+        using var scope = _serviceScopeFactory.CreateScope();
+        var context = scope.ServiceProvider.GetRequiredService<DataContext>();
+
+        context.ChangeTracker.Clear();
+        context.ChangeTracker.AutoDetectChangesEnabled = false;
+
+        var existingWallet = await context.WalletEntities
             .FirstOrDefaultAsync(w => w.WalletId == walletResponse.Value.Id, cancellationToken);
 
         if (existingWallet != null)
@@ -59,8 +66,8 @@ public class RestoreCardanoWalletHandler : IRequestHandler<RestoreCardanoWalletR
         }
 
         // Write the wallet to the database
-        _context.ChangeTracker.Clear();
-        _context.ChangeTracker.AutoDetectChangesEnabled = false;
+        context.ChangeTracker.Clear();
+        context.ChangeTracker.AutoDetectChangesEnabled = false;
         var wallet = new WalletEntity()
         {
             Passphrase = passphrase,
@@ -77,8 +84,8 @@ public class RestoreCardanoWalletHandler : IRequestHandler<RestoreCardanoWalletR
             LastKnownBalance = null,
         };
 
-        await _context.WalletEntities.AddAsync(wallet, cancellationToken);
-        await _context.SaveChangesAsync(cancellationToken);
+        await context.WalletEntities.AddAsync(wallet, cancellationToken);
+        await context.SaveChangesAsync(cancellationToken);
 
         return Result.Ok(new RestoreCardanoWalletResponse()
         {

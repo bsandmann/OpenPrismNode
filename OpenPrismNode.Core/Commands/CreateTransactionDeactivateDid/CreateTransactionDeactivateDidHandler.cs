@@ -4,6 +4,7 @@ using Entities;
 using FluentResults;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using OpenPrismNode.Core;
 using OpenPrismNode.Core.Common;
@@ -13,17 +14,15 @@ using OpenPrismNode.Core.Common;
 /// </summary>
 public class CreateTransactionDeactivateDidHandler : IRequestHandler<CreateTransactionDeactivateDidRequest, Result>
 {
-    private readonly DataContext _context;
-    private readonly ILogger<CreateTransactionDeactivateDidHandler> _logger;
+    private readonly IServiceScopeFactory _serviceScopeFactory;
 
     /// <summary>
     /// Constructor
     /// </summary>
-    /// <param name="context"></param>
-    public CreateTransactionDeactivateDidHandler(DataContext context, ILogger<CreateTransactionDeactivateDidHandler> logger)
+    /// <param name="serviceScopeFactory"></param>
+    public CreateTransactionDeactivateDidHandler(IServiceScopeFactory serviceScopeFactory)
     {
-        this._context = context;
-        this._logger = logger;
+        _serviceScopeFactory = serviceScopeFactory;
     }
 
     /// <inheritdoc />
@@ -31,9 +30,13 @@ public class CreateTransactionDeactivateDidHandler : IRequestHandler<CreateTrans
     {
         try
         {
-            _context.ChangeTracker.Clear();
-            _context.ChangeTracker.AutoDetectChangesEnabled = false;
-            var hasExistingTransaction = await _context.TransactionEntities.AnyAsync(p => p.TransactionHash == request.TransactionHash.Value, cancellationToken: cancellationToken);
+            using var scope = _serviceScopeFactory.CreateScope();
+            var context = scope.ServiceProvider.GetRequiredService<DataContext>();
+
+            context.ChangeTracker.Clear();
+            context.ChangeTracker.AutoDetectChangesEnabled = false;
+
+            var hasExistingTransaction = await context.TransactionEntities.AnyAsync(p => p.TransactionHash == request.TransactionHash.Value, cancellationToken: cancellationToken);
             var prefix = BlockEntity.CalculateBlockHashPrefix(request.BlockHash.Value);
             if (!hasExistingTransaction)
             {
@@ -65,8 +68,8 @@ public class CreateTransactionDeactivateDidHandler : IRequestHandler<CreateTrans
                         }
                     },
                 };
-                await _context.TransactionEntities.AddAsync(trans, cancellationToken);
-                await _context.SaveChangesAsync(cancellationToken);
+                await context.TransactionEntities.AddAsync(trans, cancellationToken);
+                await context.SaveChangesAsync(cancellationToken);
             }
             else
             {
@@ -83,8 +86,8 @@ public class CreateTransactionDeactivateDidHandler : IRequestHandler<CreateTrans
                         SigningKeyId = request.SigningKeyId,
                     };
 
-                await _context.DeactivateDidEntities.AddAsync(prismDeactivateDidEntity, cancellationToken);
-                await _context.SaveChangesAsync(cancellationToken);
+                await context.DeactivateDidEntities.AddAsync(prismDeactivateDidEntity, cancellationToken);
+                await context.SaveChangesAsync(cancellationToken);
             }
 
             return Result.Ok();

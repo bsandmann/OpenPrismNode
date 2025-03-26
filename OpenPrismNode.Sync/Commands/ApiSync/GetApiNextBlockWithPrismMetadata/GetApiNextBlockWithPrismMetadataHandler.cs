@@ -133,7 +133,7 @@ public class GetApiNextBlockWithPrismMetadataHandler
             }
         }
 #endif
-        if (request.StartBlockHeight < request.CurrentApiBlockTip || request.MaxBlockHeight < request.CurrentApiBlockTip)
+        if (request.StartBlockHeight > request.CurrentApiBlockTip || request.MaxBlockHeight < request.CurrentApiBlockTip)
         {
             await _metadataCacheService.UpdateCacheAsync(request.CurrentApiBlockTip, cancellationToken);
         }

@@ -5,21 +5,25 @@ using OpenPrismNode.Core.Entities;
 namespace OpenPrismNode.Core.Commands.CreateBlocksAsBatch
 {
     using FluentResults;
+    using Microsoft.Extensions.DependencyInjection;
     using Models;
 
     public class CreateBlocksAsBatchHandler : IRequestHandler<CreateBlocksAsBatchRequest, Result<Hash>>
     {
-        private readonly DataContext _context;
+        private readonly IServiceScopeFactory _serviceScopeFactory;
 
-        public CreateBlocksAsBatchHandler(DataContext context)
+        public CreateBlocksAsBatchHandler(IServiceScopeFactory serviceScopeFactory)
         {
-            _context = context;
+            _serviceScopeFactory = serviceScopeFactory;
         }
 
         public async Task<Result<Hash>> Handle(CreateBlocksAsBatchRequest request, CancellationToken cancellationToken)
         {
-            _context.ChangeTracker.Clear();
-            _context.ChangeTracker.AutoDetectChangesEnabled = false;
+            using var scope = _serviceScopeFactory.CreateScope();
+            var context = scope.ServiceProvider.GetRequiredService<DataContext>();
+
+            context.ChangeTracker.Clear();
+            context.ChangeTracker.AutoDetectChangesEnabled = false;
 
             var distinctBlockHashes = request.Blocks.Select(b => b.hash).Distinct().ToList();
             if (distinctBlockHashes.Count != request.Blocks.Count)
@@ -28,13 +32,13 @@ namespace OpenPrismNode.Core.Commands.CreateBlocksAsBatch
             }
 
             // Check if the highest block in the database is exactly one less than the first block we're adding
-            var highestExistingNonForkBlock = await _context.BlockEntities
+            var highestExistingNonForkBlock = await context.BlockEntities
                 .Include(p => p.EpochEntity)
                 .Where(b => b.IsFork == false && b.EpochEntity.Ledger == request.ledger)
                 .OrderByDescending(b => b.BlockHeight)
                 .FirstOrDefaultAsync(cancellationToken);
 
-            var highestExistingForkBlock = await _context.BlockEntities
+            var highestExistingForkBlock = await context.BlockEntities
                 .Include(p => p.EpochEntity)
                 .Where(b => b.IsFork == true && b.EpochEntity.Ledger == request.ledger)
                 .OrderByDescending(b => b.BlockHeight)
@@ -49,12 +53,31 @@ namespace OpenPrismNode.Core.Commands.CreateBlocksAsBatch
             {
                 // Special case, in which we restarted the sync process on a fork    
                 // We remove all the blocks that are part of the fork to avoid conflicts
-                var forkedBlocks = await _context.BlockEntities
+                var forkedBlocks = await context.BlockEntities
                     .Where(b => b.BlockHeight >= highestExistingForkBlock.BlockHeight && b.EpochEntity.Ledger == request.ledger && b.IsFork)
                     .ToListAsync(cancellationToken: cancellationToken);
-                _context.RemoveRange(forkedBlocks);
-                await _context.SaveChangesAsync(cancellationToken);
+                context.RemoveRange(forkedBlocks);
+                await context.SaveChangesAsync(cancellationToken);
             }
+
+            // context.ChangeTracker.Clear();
+            // context.ChangeTracker.AutoDetectChangesEnabled = false;
+
+            var distinctBlockHashes2 = request.Blocks.Select(b => b.block_no).Distinct().ToList();
+            if (distinctBlockHashes2.Count != request.Blocks.Count)
+            {
+                // duplicate
+            }
+
+            var fff = request.Blocks.Where(p => BlockEntity.CalculateBlockHashPrefix(p.hash) == null).ToList();
+
+            var distinctBlockHashes3 = request.Blocks.Select(b =>BlockEntity.CalculateBlockHashPrefix(b.hash)).Distinct().ToList();
+            if (distinctBlockHashes3.Count != request.Blocks.Count)
+            {
+                // duplicate
+            }
+
+
 
             var dateTimeNow = DateTime.SpecifyKind(DateTime.UtcNow, DateTimeKind.Unspecified);
             var newBlocks = new List<BlockEntity>();
@@ -82,14 +105,14 @@ namespace OpenPrismNode.Core.Commands.CreateBlocksAsBatch
                 newBlocks.Add(blockEntity);
             }
 
-            await _context.BlockEntities.AddRangeAsync(newBlocks, cancellationToken);
+            await context.BlockEntities.AddRangeAsync(newBlocks, cancellationToken);
 
             // Update ledger LastSynced time
-            await _context.LedgerEntities
+            await context.LedgerEntities
                 .Where(n => n.Ledger == request.ledger)
                 .ExecuteUpdateAsync(s => s.SetProperty(n => n.LastSynced, dateTimeNow), cancellationToken);
 
-            await _context.SaveChangesAsync(cancellationToken);
+            await context.SaveChangesAsync(cancellationToken);
             return Result.Ok(Hash.CreateFrom(request.Blocks.Last().hash));
         }
     }

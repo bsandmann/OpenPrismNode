@@ -3,6 +3,7 @@
 using FluentResults;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 using OpenPrismNode.Core;
 using OpenPrismNode.Core.Entities;
 
@@ -11,15 +12,15 @@ using OpenPrismNode.Core.Entities;
 /// </summary>
 public class CreateBlockHandler : IRequestHandler<CreateBlockRequest, Result<BlockEntity>>
 {
-    private readonly DataContext _context;
+    private readonly IServiceScopeFactory _serviceScopeFactory;
 
     /// <summary>
     /// Constructor
     /// </summary>
     /// <param name="context"></param>
-    public CreateBlockHandler(DataContext context)
+    public CreateBlockHandler(IServiceScopeFactory serviceScopeFactory)
     {
-        this._context = context;
+        _serviceScopeFactory = serviceScopeFactory;
     }
 
     /// <summary>
@@ -30,10 +31,13 @@ public class CreateBlockHandler : IRequestHandler<CreateBlockRequest, Result<Blo
     /// <returns></returns>
     public async Task<Result<BlockEntity>> Handle(CreateBlockRequest request, CancellationToken cancellationToken)
     {
-        _context.ChangeTracker.Clear();
-        _context.ChangeTracker.AutoDetectChangesEnabled = false;
+        using var scope = _serviceScopeFactory.CreateScope();
+        var context = scope.ServiceProvider.GetRequiredService<DataContext>();
 
-        var existingBlock = await _context.BlockEntities.AnyAsync(
+        context.ChangeTracker.Clear();
+        context.ChangeTracker.AutoDetectChangesEnabled = false;
+
+        var existingBlock = await context.BlockEntities.AnyAsync(
             p => p.BlockHeight == request.BlockHeight && p.EpochEntity.Ledger == request.ledger,
             cancellationToken: cancellationToken);
         var dateTimeNow = DateTime.SpecifyKind(DateTime.UtcNow, DateTimeKind.Unspecified);
@@ -56,14 +60,14 @@ public class CreateBlockHandler : IRequestHandler<CreateBlockRequest, Result<Blo
                 Ledger = request.ledger
             };
 
-            await _context.AddAsync(blockEntity, cancellationToken);
+            await context.AddAsync(blockEntity, cancellationToken);
 
             // Update ledger LastSynced time
-            await _context.LedgerEntities
+            await context.LedgerEntities
                 .Where(n => n.Ledger == request.ledger)
                 .ExecuteUpdateAsync(s => s.SetProperty(n => n.LastSynced, dateTimeNow), cancellationToken);
 
-            await _context.SaveChangesAsync(cancellationToken);
+            await context.SaveChangesAsync(cancellationToken);
 
             blockEntity.TimeUtc = DateTime.SpecifyKind(blockEntity.TimeUtc, DateTimeKind.Utc);
             blockEntity.LastParsedOnUtc = blockEntity.LastParsedOnUtc is not null ? DateTime.SpecifyKind(blockEntity.LastParsedOnUtc.Value, DateTimeKind.Utc) : null;
@@ -90,14 +94,14 @@ public class CreateBlockHandler : IRequestHandler<CreateBlockRequest, Result<Blo
                     Ledger = request.ledger
                 };
 
-                await _context.AddAsync(blockEntity, cancellationToken);
+                await context.AddAsync(blockEntity, cancellationToken);
 
                 // Update ledger LastSynced time
-                await _context.LedgerEntities
+                await context.LedgerEntities
                     .Where(n => n.Ledger == request.ledger)
                     .ExecuteUpdateAsync(s => s.SetProperty(n => n.LastSynced, dateTimeNow), cancellationToken);
 
-                await _context.SaveChangesAsync(cancellationToken);
+                await context.SaveChangesAsync(cancellationToken);
 
                 blockEntity.TimeUtc = DateTime.SpecifyKind(blockEntity.TimeUtc, DateTimeKind.Utc);
                 blockEntity.LastParsedOnUtc = blockEntity.LastParsedOnUtc is not null ? DateTime.SpecifyKind(blockEntity.LastParsedOnUtc.Value, DateTimeKind.Utc) : null;

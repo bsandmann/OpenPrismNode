@@ -6,22 +6,24 @@ using FluentResults;
 using LazyCache;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 
 /// <summary>
 /// Handler just to verify if a epoch already exists in the db
 /// </summary>
 public class GetEpochHandler : IRequestHandler<GetEpochRequest, Result<EpochEntity>>
 {
-    private readonly DataContext _context;
+    private readonly IServiceScopeFactory _serviceScopeFactory;
     private readonly IAppCache _cache;
 
     /// <summary>
     /// Constructor
     /// </summary>
-    /// <param name="context"></param>
-    public GetEpochHandler(DataContext context, IAppCache cache)
+    /// <param name="serviceScopeFactory"></param>
+    /// <param name="cache"></param>
+    public GetEpochHandler(IServiceScopeFactory serviceScopeFactory, IAppCache cache)
     {
-        _context = context;
+        _serviceScopeFactory = serviceScopeFactory;
         _cache = cache;
     }
 
@@ -35,8 +37,14 @@ public class GetEpochHandler : IRequestHandler<GetEpochRequest, Result<EpochEnti
             return Result.Ok(cachedEpochEntity);
         }
 
-        var epochEntity = await _context.EpochEntities.FirstOrDefaultAsync(
-            p => p.EpochNumber == request.EpochNumber && p.Ledger == request.Ledger, 
+        using var scope = _serviceScopeFactory.CreateScope();
+        var context = scope.ServiceProvider.GetRequiredService<DataContext>();
+
+        context.ChangeTracker.Clear();
+        context.ChangeTracker.AutoDetectChangesEnabled = false;
+
+        var epochEntity = await context.EpochEntities.FirstOrDefaultAsync(
+            p => p.EpochNumber == request.EpochNumber && p.Ledger == request.Ledger,
             cancellationToken);
 
         if (epochEntity is null)

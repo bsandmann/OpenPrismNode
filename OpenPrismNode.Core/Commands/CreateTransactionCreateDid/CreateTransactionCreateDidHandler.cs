@@ -4,6 +4,7 @@ using System.Text.Json;
 using FluentResults;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using OpenPrismNode.Core;
 using OpenPrismNode.Core.Common;
@@ -14,7 +15,7 @@ using OpenPrismNode.Core.Entities;
 /// </summary>
 public class CreateTransactionCreateDidHandler : IRequestHandler<CreateTransactionCreateDidRequest, Result>
 {
-    private readonly DataContext _context;
+    private readonly IServiceScopeFactory _serviceScopeFactory;
     private readonly ILogger<CreateTransactionCreateDidHandler> _logger;
 
     /// <summary>
@@ -22,9 +23,9 @@ public class CreateTransactionCreateDidHandler : IRequestHandler<CreateTransacti
     /// </summary>
     /// <param name="context"></param>
     /// <param name="logger"></param>
-    public CreateTransactionCreateDidHandler(DataContext context, ILogger<CreateTransactionCreateDidHandler> logger)
+    public CreateTransactionCreateDidHandler(IServiceScopeFactory serviceScopeFactory, ILogger<CreateTransactionCreateDidHandler> logger)
     {
-        this._context = context;
+        _serviceScopeFactory = serviceScopeFactory;
         this._logger = logger;
     }
 
@@ -33,13 +34,17 @@ public class CreateTransactionCreateDidHandler : IRequestHandler<CreateTransacti
     {
         try
         {
-            _context.ChangeTracker.Clear();
-            _context.ChangeTracker.AutoDetectChangesEnabled = false;
-            var hasExistingTransaction = await _context.TransactionEntities
+            using var scope = _serviceScopeFactory.CreateScope();
+            var context = scope.ServiceProvider.GetRequiredService<DataContext>();
+
+            context.ChangeTracker.Clear();
+            context.ChangeTracker.AutoDetectChangesEnabled = false;
+
+            var hasExistingTransaction = await context.TransactionEntities
                 .AnyAsync(t => t.TransactionHash == request.TransactionHash.Value, cancellationToken);
             if (!hasExistingTransaction)
             {
-                var existingDid = await _context.CreateDidEntities
+                var existingDid = await context.CreateDidEntities
                     .AnyAsync(p => p.OperationHash == PrismEncoding.HexToByteArray(request.Did), cancellationToken: cancellationToken);
                 if (existingDid)
                 {
@@ -98,8 +103,8 @@ public class CreateTransactionCreateDidHandler : IRequestHandler<CreateTransacti
                         }
                     }
                 };
-                await _context.TransactionEntities.AddAsync(trans, cancellationToken);
-                await _context.SaveChangesAsync(cancellationToken);
+                await context.TransactionEntities.AddAsync(trans, cancellationToken);
+                await context.SaveChangesAsync(cancellationToken);
             }
             else
             {
@@ -136,8 +141,8 @@ public class CreateTransactionCreateDidHandler : IRequestHandler<CreateTransacti
                             : null
                     };
 
-                await _context.CreateDidEntities.AddAsync(createDidEntity, cancellationToken);
-                await _context.SaveChangesAsync(cancellationToken);
+                await context.CreateDidEntities.AddAsync(createDidEntity, cancellationToken);
+                await context.SaveChangesAsync(cancellationToken);
             }
 
             return Result.Ok();

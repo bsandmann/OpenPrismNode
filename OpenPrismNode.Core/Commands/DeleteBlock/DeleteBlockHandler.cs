@@ -5,6 +5,7 @@ using Entities;
 using FluentResults;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 using Models;
 
 /// <summary>
@@ -13,17 +14,17 @@ using Models;
 /// </summary>
 public class DeleteBlockHandler : IRequestHandler<DeleteBlockRequest, Result<DeleteBlockResponse>>
 {
-    private readonly DataContext _context;
+    private readonly IServiceScopeFactory _serviceScopeFactory;
     private readonly IMediator _mediator;
 
     /// <summary>
     /// Constructor
     /// </summary>
-    /// <param name="context"></param>
+    /// <param name="serviceScopeFactory"></param>
     /// <param name="mediator"></param>
-    public DeleteBlockHandler(DataContext context, IMediator mediator)
+    public DeleteBlockHandler(IServiceScopeFactory serviceScopeFactory, IMediator mediator)
     {
-        this._context = context;
+        _serviceScopeFactory = serviceScopeFactory;
         this._mediator = mediator;
     }
 
@@ -31,9 +32,13 @@ public class DeleteBlockHandler : IRequestHandler<DeleteBlockRequest, Result<Del
     {
         try
         {
-            _context.ChangeTracker.Clear();
-            _context.ChangeTracker.AutoDetectChangesEnabled = false;
-            var block = await _context.BlockEntities
+            using var scope = _serviceScopeFactory.CreateScope();
+            var context = scope.ServiceProvider.GetRequiredService<DataContext>();
+
+            context.ChangeTracker.Clear();
+            context.ChangeTracker.AutoDetectChangesEnabled = false;
+
+            var block = await context.BlockEntities
                 .Select(p =>
                     new
                     {
@@ -63,13 +68,13 @@ public class DeleteBlockHandler : IRequestHandler<DeleteBlockRequest, Result<Del
                             await _mediator.Send(new DeleteTransactionRequest(Hash.CreateFrom(transaction.transactionhash), block.blockHeight, block.blockHashPrefix), cancellationToken);
                         }
 
-                        var reloadedBlock = await _context.BlockEntities.FirstOrDefaultAsync(p => p.BlockHeight == request.BlockHeight && p.BlockHashPrefix == request.BlockHashPrefix, cancellationToken: cancellationToken);
+                        var reloadedBlock = await context.BlockEntities.FirstOrDefaultAsync(p => p.BlockHeight == request.BlockHeight && p.BlockHashPrefix == request.BlockHashPrefix, cancellationToken: cancellationToken);
                         if (reloadedBlock is null)
                         {
                             return Result.Fail($"Block {request.BlockHeight} not found");
                         }
 
-                        _context.Remove(reloadedBlock);
+                        context.Remove(reloadedBlock);
                     }
                     else
                     {
@@ -81,10 +86,10 @@ public class DeleteBlockHandler : IRequestHandler<DeleteBlockRequest, Result<Del
                             TimeUtc = DateTime.MinValue,
                             TxCount = 0,
                         };
-                        _context.Remove(reconstructedBlock);
+                        context.Remove(reconstructedBlock);
                     }
 
-                    await _context.SaveChangesAsync(cancellationToken);
+                    await context.SaveChangesAsync(cancellationToken);
                     if (previousBlockHeight is null && previousBlockHashPrefix is null)
                     {
                         // We reached the genesis block

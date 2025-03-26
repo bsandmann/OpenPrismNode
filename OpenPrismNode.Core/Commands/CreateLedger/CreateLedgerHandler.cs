@@ -3,27 +3,32 @@
 using FluentResults;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 using OpenPrismNode.Core;
 using OpenPrismNode.Core.Entities;
 
 public class CreateLedgerHandler : IRequestHandler<CreateLedgerRequest, Result>
 {
-    private readonly DataContext _context;
+    private readonly IServiceScopeFactory _serviceScopeFactory;
 
     /// <summary>
     /// Constructor
     /// </summary>
     /// <param name="context"></param>
-    public CreateLedgerHandler(DataContext context)
+    public CreateLedgerHandler(IServiceScopeFactory serviceScopeFactory)
     {
-        _context = context;
+         _serviceScopeFactory = serviceScopeFactory;
     }
 
     public async Task<Result> Handle(CreateLedgerRequest request, CancellationToken cancellationToken)
     {
-        _context.ChangeTracker.Clear();
-        _context.ChangeTracker.AutoDetectChangesEnabled = false;
-        var existingLedger = await _context.LedgerEntities.FirstOrDefaultAsync(p => p.Ledger == request.LedgerType, cancellationToken: cancellationToken);
+        using var scope = _serviceScopeFactory.CreateScope();
+        var context = scope.ServiceProvider.GetRequiredService<DataContext>();
+
+        context.ChangeTracker.Clear();
+        context.ChangeTracker.AutoDetectChangesEnabled = false;
+
+        var existingLedger = await context.LedgerEntities.FirstOrDefaultAsync(p => p.Ledger == request.LedgerType, cancellationToken: cancellationToken);
         var dateTimeNow = DateTime.SpecifyKind(DateTime.UtcNow,DateTimeKind.Unspecified);
         if (existingLedger is null)
         {
@@ -33,8 +38,8 @@ public class CreateLedgerHandler : IRequestHandler<CreateLedgerRequest, Result>
                 LastSynced = dateTimeNow
             };
 
-            await _context.AddAsync(ledger, cancellationToken);
-            await _context.SaveChangesAsync(cancellationToken);
+            await context.AddAsync(ledger, cancellationToken);
+            await context.SaveChangesAsync(cancellationToken);
         }
 
         return Result.Ok();

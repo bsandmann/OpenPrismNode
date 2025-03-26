@@ -3,18 +3,19 @@ namespace OpenPrismNode.Core.Commands.DeletedOrphanedAddresses;
 using FluentResults;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 
 public class DeleteOrphanedAddressesHandler : IRequestHandler<DeleteOrphanedAddressesRequest, Result>
 {
-    private readonly DataContext _context;
+    private readonly IServiceScopeFactory _serviceScopeFactory;
 
     /// <summary>
     /// Constructor
     /// </summary>
-    /// <param name="context"></param>
-    public DeleteOrphanedAddressesHandler(DataContext context)
+    /// <param name="serviceScopeFactory"></param>
+    public DeleteOrphanedAddressesHandler(IServiceScopeFactory serviceScopeFactory)
     {
-        this._context = context;
+        _serviceScopeFactory = serviceScopeFactory;
     }
 
     /// <inheritdoc />
@@ -22,15 +23,19 @@ public class DeleteOrphanedAddressesHandler : IRequestHandler<DeleteOrphanedAddr
     {
         try
         {
-            _context.ChangeTracker.Clear();
-            _context.ChangeTracker.AutoDetectChangesEnabled = false;
-            var orphanedWalletAddresses = await _context.WalletAddressEntities.Where(p => p.Utxos.Count == 0).ToListAsync(cancellationToken: cancellationToken);
-            _context.WalletAddressEntities.RemoveRange(orphanedWalletAddresses);
+            using var scope = _serviceScopeFactory.CreateScope();
+            var context = scope.ServiceProvider.GetRequiredService<DataContext>();
 
-            var orphanedStakeAddresses = await _context.StakeAddressEntities.Where(p => p.Utxos.Count == 0).ToListAsync(cancellationToken: cancellationToken);
-            _context.StakeAddressEntities.RemoveRange(orphanedStakeAddresses);
+            context.ChangeTracker.Clear();
+            context.ChangeTracker.AutoDetectChangesEnabled = false;
 
-            await _context.SaveChangesAsync(cancellationToken);
+            var orphanedWalletAddresses = await context.WalletAddressEntities.Where(p => p.Utxos.Count == 0).ToListAsync(cancellationToken: cancellationToken);
+            context.WalletAddressEntities.RemoveRange(orphanedWalletAddresses);
+
+            var orphanedStakeAddresses = await context.StakeAddressEntities.Where(p => p.Utxos.Count == 0).ToListAsync(cancellationToken: cancellationToken);
+            context.StakeAddressEntities.RemoveRange(orphanedStakeAddresses);
+
+            await context.SaveChangesAsync(cancellationToken);
         }
         catch (Exception e)
         {
