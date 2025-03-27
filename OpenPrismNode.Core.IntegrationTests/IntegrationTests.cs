@@ -1,5 +1,6 @@
 ﻿using LazyCache;
 using MediatR;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Moq;
@@ -25,6 +26,7 @@ using OpenPrismNode.Core.Common;
 using OpenPrismNode.Core.Crypto;
 using OpenPrismNode.Core.IntegrationTests;
 using OpenPrismNode.Core.Services;
+using OpenPrismNode.Sync.Abstractions;
 using OpenPrismNode.Sync.Commands.DecodeTransaction;
 using OpenPrismNode.Sync.Commands.ParseTransaction;
 using OpenPrismNode.Sync.Commands.ProcessBlock;
@@ -38,9 +40,14 @@ public partial class IntegrationTests : IDisposable
     private TransactionalTestDatabaseFixture Fixture { get; }
     readonly IAppCache _mockedCache;
     readonly IOptions<AppSettings> _appSettingsOptions;
+    readonly Mock<IIngestionService> _mockIngestionService;
     readonly IIngestionService _ingestionService;
     private readonly DataContext _context;
     private readonly Mock<IMediator> _mediatorMock;
+    private readonly Mock<IServiceScopeFactory> _serviceScopeFactoryMock;
+    private readonly Mock<IServiceScope> _serviceScopeMock;
+    private readonly IServiceProvider _serviceProviderMock;
+    private readonly Mock<ITransactionProvider> _mockTransactionProvider;
     private readonly CreateLedgerHandler _createLedgerHandler;
     private readonly CreateEpochHandler _createEpochHandler;
     private readonly CreateBlockHandler _createBlockHandler;
@@ -71,7 +78,6 @@ public partial class IntegrationTests : IDisposable
         _walletAddressCache = new WalletAddressCache(100);
         _stakeAddressCache = new StakeAddressCache(100);
 
-
         this.Fixture = fixture;
         this._context = this.Fixture.CreateContext();
         this._appSettingsOptions = Options.Create(new AppSettings()
@@ -81,28 +87,66 @@ public partial class IntegrationTests : IDisposable
                 Name = "preprod"
             }
         });
+        
+        // Set up mocks
         this._mediatorMock = new Mock<IMediator>();
-        this._ingestionService = null;
+        this._mockIngestionService = new Mock<IIngestionService>();
+        this._ingestionService = _mockIngestionService.Object;
         this._mockedCache = LazyCache.Testing.Moq.Create.MockedCachingService();
-        this._createLedgerHandler = new CreateLedgerHandler(_context);
-        this._createEpochHandler = new CreateEpochHandler(_context);
-        this._deleteLedgerHandler = new DeleteLedgerHandler(_context, _mediatorMock.Object);
-        this._createBlockHandler = new CreateBlockHandler(_context);
-        this._getBlockByBlockHeightHandler = new GetBlockByBlockHeightHandler(_context);
-        this._getBlockByBlockHashHandler = new GetBlockByBlockHashHandler(_context);
-        this._getMostRecentBlockHandler = new GetMostRecentBlockHandler(_context);
-        this._getEpochHandler = new GetEpochHandler(_context, _mockedCache);
-        this._deleteEpochHandler = new DeleteEpochHandler(_context);
-        this._createTransactionCreateDidHandler = new CreateTransactionCreateDidHandler(_context, Mock.Of<ILogger<CreateTransactionCreateDidHandler>>());
-        this._createTransactionUpdateDidHandler = new CreateTransactionUpdateDidHandler(_context, Mock.Of<ILogger<CreateTransactionUpdateDidHandler>>());
-        this._createTransactionDeactivateDidHandler = new CreateTransactionDeactivateDidHandler(_context, Mock.Of<ILogger<CreateTransactionDeactivateDidHandler>>());
-        this._createWalletAddressHandler = new CreateWalletAddressHandler(_context, _walletAddressCache, Mock.Of<ILogger<CreateWalletAddressHandler>>());
-        this._createStakeAddressHandler = new CreateStakeAddressHandler(_context, _stakeAddressCache, Mock.Of<ILogger<CreateStakeAddressHandler>>());
-        this._resolveDidHandler = new ResolveDidHandler(_context);
-        this._processBlockHandler = new ProcessBlockHandler(_mediatorMock.Object, _appSettingsOptions, Mock.Of<ILogger<ProcessBlockHandler>>());
-        this._processTransactionHandler = new ProcessTransactionHandler(_mediatorMock.Object, Mock.Of<ILogger<ProcessTransactionHandler>>(), _appSettingsOptions, null);
+        this._mockTransactionProvider = new Mock<ITransactionProvider>();
+        
+        // Create a mock service provider that returns the test context
+        _serviceProviderMock = Mock.Of<IServiceProvider>(sp => 
+            sp.GetService(typeof(DataContext)) == _context);
+            
+        // Create a mock service scope that returns our mocked service provider
+        _serviceScopeMock = new Mock<IServiceScope>();
+        _serviceScopeMock.Setup(s => s.ServiceProvider).Returns(_serviceProviderMock);
+        
+        // Create a mock service scope factory that returns our mocked service scope
+        _serviceScopeFactoryMock = new Mock<IServiceScopeFactory>();
+        _serviceScopeFactoryMock
+            .Setup(f => f.CreateScope())
+            .Returns(_serviceScopeMock.Object);
+        
+        // Initialize handlers with the mocked service scope factory
+        this._createLedgerHandler = new CreateLedgerHandler(_serviceScopeFactoryMock.Object);
+        this._createEpochHandler = new CreateEpochHandler(_serviceScopeFactoryMock.Object);
+        this._deleteLedgerHandler = new DeleteLedgerHandler(_serviceScopeFactoryMock.Object, _mediatorMock.Object);
+        this._createBlockHandler = new CreateBlockHandler(_serviceScopeFactoryMock.Object);
+        this._getBlockByBlockHeightHandler = new GetBlockByBlockHeightHandler(_serviceScopeFactoryMock.Object);
+        this._getBlockByBlockHashHandler = new GetBlockByBlockHashHandler(_serviceScopeFactoryMock.Object);
+        this._getMostRecentBlockHandler = new GetMostRecentBlockHandler(_serviceScopeFactoryMock.Object);
+        this._getEpochHandler = new GetEpochHandler(_serviceScopeFactoryMock.Object, _mockedCache);
+        this._deleteEpochHandler = new DeleteEpochHandler(_serviceScopeFactoryMock.Object);
+        this._createTransactionCreateDidHandler = new CreateTransactionCreateDidHandler(
+            _serviceScopeFactoryMock.Object, 
+            Mock.Of<ILogger<CreateTransactionCreateDidHandler>>());
+        this._createTransactionUpdateDidHandler = new CreateTransactionUpdateDidHandler(
+            _serviceScopeFactoryMock.Object);
+        this._createTransactionDeactivateDidHandler = new CreateTransactionDeactivateDidHandler(
+            _serviceScopeFactoryMock.Object);
+        this._createWalletAddressHandler = new CreateWalletAddressHandler(
+            _serviceScopeFactoryMock.Object, 
+            _walletAddressCache);
+        this._createStakeAddressHandler = new CreateStakeAddressHandler(
+            _serviceScopeFactoryMock.Object, 
+            _stakeAddressCache,
+            Mock.Of<ILogger<CreateStakeAddressHandler>>());
+        this._resolveDidHandler = new ResolveDidHandler(_serviceScopeFactoryMock.Object);
+        this._processBlockHandler = new ProcessBlockHandler(
+            _mediatorMock.Object, 
+            _appSettingsOptions, 
+            Mock.Of<ILogger<ProcessBlockHandler>>(),
+            _mockTransactionProvider.Object);
+        this._processTransactionHandler = new ProcessTransactionHandler(
+            _mediatorMock.Object, 
+            Mock.Of<ILogger<ProcessTransactionHandler>>(), 
+            _appSettingsOptions, 
+            _ingestionService,
+            _mockTransactionProvider.Object);
         this._decodeTransactionHandler = new DecodeTransactionHandler();
-        this._switchBranchHandler = new SwitchBranchHandler(_context, _mediatorMock.Object);
+        this._switchBranchHandler = new SwitchBranchHandler(_mediatorMock.Object, _serviceScopeFactoryMock.Object);
         this._createAddressesHandler = new CreateAddressesHandler(_mediatorMock.Object);
         this._parseTransactionHandler = new ParseTransactionHandler(_mediatorMock.Object, new Sha256ServiceBouncyCastle(), new EcServiceBouncyCastle(), Mock.Of<ILogger<ParseTransactionHandler>>());
         this._createTransactionHandler = new CreateTransactionHandler(_mediatorMock.Object, new Sha256ServiceBouncyCastle());
