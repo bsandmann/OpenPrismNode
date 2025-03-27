@@ -22,19 +22,6 @@ using Microsoft.Extensions.Logging;
 
 public static class SyncService
 {
-    // Keep backward compatibility with existing tests
-    public static async Task<Result> RunSync(IMediator mediator, AppSettings appsettings, ILogger logger, string ledger, CancellationToken cancellationToken, int startAtEpochNumber = 0, bool isInitialStartup = false)
-    {
-        // This implementation is only for backward compatibility with tests
-        // In production code, always use the version with BlockProvider and TransactionProvider parameters
-
-        logger.LogWarning("Using deprecated RunSync method without BlockProvider and TransactionProvider. This should only be used in tests.");
-
-        // Use direct requests in the backward compatibility version
-        // This ensures tests continue to work
-        return Result.Fail("This legacy method should only be used in tests. Please update your code to use the version with BlockProvider and TransactionProvider parameters.");
-    }
-
     // This is the actual implementation that should be used in production code
     public static async Task<Result> RunSync(
         IMediator mediator,

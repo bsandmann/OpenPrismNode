@@ -4,6 +4,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Moq;
+using FluentResults;
 using OpenPrismNode.Core;
 using OpenPrismNode.Core.Commands.CreateAddresses;
 using OpenPrismNode.Core.Commands.CreateBlock;
@@ -32,6 +33,7 @@ using OpenPrismNode.Sync.Commands.ParseTransaction;
 using OpenPrismNode.Sync.Commands.ProcessBlock;
 using OpenPrismNode.Sync.Commands.ProcessTransaction;
 using OpenPrismNode.Sync.Commands.SwitchBranch;
+using OpenPrismNode.Sync.Implementations.DbSync;
 using OpenPrismNode.Sync.Services;
 
 [Collection("TransactionalTests")]
@@ -48,6 +50,8 @@ public partial class IntegrationTests : IDisposable
     private readonly Mock<IServiceScope> _serviceScopeMock;
     private readonly IServiceProvider _serviceProviderMock;
     private readonly Mock<ITransactionProvider> _mockTransactionProvider;
+    private readonly IBlockProvider _blockProvider;
+    private readonly ITransactionProvider _transactionProvider;
     private readonly CreateLedgerHandler _createLedgerHandler;
     private readonly CreateEpochHandler _createEpochHandler;
     private readonly CreateBlockHandler _createBlockHandler;
@@ -94,6 +98,13 @@ public partial class IntegrationTests : IDisposable
         this._ingestionService = _mockIngestionService.Object;
         this._mockedCache = LazyCache.Testing.Moq.Create.MockedCachingService();
         this._mockTransactionProvider = new Mock<ITransactionProvider>();
+        
+        // Set up default behaviors for transaction providers
+        SetupTransactionProvidersForBlock();
+        
+        // Initialize proper BlockProvider and TransactionProvider for use with SyncService
+        this._blockProvider = new DbSyncBlockProvider(_mediatorMock.Object);
+        this._transactionProvider = new DbSyncTransactionProvider(_mediatorMock.Object);
         
         // Create a mock service provider that returns the test context
         _serviceProviderMock = Mock.Of<IServiceProvider>(sp => 
@@ -154,4 +165,23 @@ public partial class IntegrationTests : IDisposable
 
     public void Dispose()
         => this.Fixture.Cleanup();
+        
+    /// <summary>
+    /// Helper method to set up both the mediator mock and the transaction provider mock used by ProcessBlockHandler
+    /// to ensure they both return the same PRISM transactions.
+    /// </summary>
+    /// <param name="transactions">Optional list of transactions to return. If null, returns an empty list.</param>
+    protected void SetupTransactionProvidersForBlock(List<OpenPrismNode.Core.DbSyncModels.Transaction>? transactions = null)
+    {
+        var txList = transactions ?? new List<OpenPrismNode.Core.DbSyncModels.Transaction>();
+        
+        // Set up the mediator mock for GetTransactionsWithPrismMetadataForBlockIdRequest
+        _mediatorMock.Setup(p => p.Send(It.IsAny<OpenPrismNode.Sync.Commands.DbSync.GetTransactionsWithPrismMetadataForBlockId.GetTransactionsWithPrismMetadataForBlockIdRequest>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(Result.Ok(txList));
+            
+        // Set up the transaction provider that's used directly by ProcessBlockHandler
+        _mockTransactionProvider.Setup(p => p.GetTransactionsWithPrismMetadataForBlockId(
+            It.IsAny<int>(), It.IsAny<int>(), It.IsAny<int>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(Result.Ok(txList));
+    }
 }
