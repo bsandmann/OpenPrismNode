@@ -86,7 +86,7 @@ namespace OpenPrismNode.Sync.Commands.ApiSync.GetApiBlocksByNumbers
                     var nextBlocksList = nextBlocksResult.Value;
 
                     // Add them to our dictionary
-                    foreach (var bfBlock in nextBlocksList)
+                    foreach (var bfBlock in nextBlocksList.Where(p=>p.Height != 0))
                     {
                         var mappedBlock = BlockfrostBlockMapper.MapToBlock(bfBlock);
                         // Insert only if not already present

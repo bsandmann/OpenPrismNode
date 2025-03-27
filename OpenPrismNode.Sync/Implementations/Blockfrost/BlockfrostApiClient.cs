@@ -41,35 +41,35 @@ public static class BlockfrostHelper
     /// <param name="orderDesc">Optional flag to order results in descending order</param>
     /// <returns>A configured HttpRequestMessage</returns>
     public static HttpRequestMessage CreateBlockfrostRequest(
-        string baseUrl, 
-        string apiKey, 
-        string endpoint, 
+        string baseUrl,
+        string apiKey,
+        string endpoint,
         int? page = null,
         int? count = null,
         bool orderDesc = false)
     {
         // Build the query string for pagination and ordering
         var queryParams = new List<string>();
-        
+
         if (page.HasValue && page.Value > 1)
         {
             queryParams.Add($"page={page.Value}");
         }
-        
+
         if (count.HasValue && count.Value > 0 && count.Value != 100) // 100 is default
         {
             queryParams.Add($"count={count.Value}");
         }
-        
+
         if (orderDesc)
         {
             queryParams.Add("order=desc");
         }
-        
-        string queryString = queryParams.Count > 0 
-            ? "?" + string.Join("&", queryParams) 
+
+        string queryString = queryParams.Count > 0
+            ? "?" + string.Join("&", queryParams)
             : string.Empty;
-        
+
         var request = new HttpRequestMessage
         {
             Method = HttpMethod.Get,
@@ -79,13 +79,13 @@ public static class BlockfrostHelper
                 { "project_id", apiKey }, // Using lowercase "project_id" as per documentation
             },
         };
-        
+
         // Add Accept header for JSON
         request.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
-        
+
         return request;
     }
-    
+
     /// <summary>
     /// Sends a request to the Blockfrost API and deserializes the response
     /// </summary>
@@ -96,76 +96,75 @@ public static class BlockfrostHelper
     /// <param name="cancellationToken">Cancellation token</param>
     /// <returns>A result containing the deserialized response or an error</returns>
     public static async Task<Result<T>> SendBlockfrostRequestAsync<T>(
-        HttpClient client, 
-        HttpRequestMessage request, 
+        HttpClient client,
+        HttpRequestMessage request,
         ILogger logger = null,
         CancellationToken cancellationToken = default)
     {
         try
         {
             logger?.LogDebug("Sending request to Blockfrost API: {Url}", request.RequestUri);
-            
+
             // Send the request
             var response = await client.SendAsync(request, cancellationToken);
-            
+
             // Check specific Blockfrost error cases
             if (!response.IsSuccessStatusCode)
             {
                 string errorContent = await response.Content.ReadAsStringAsync(cancellationToken);
-                
+
                 BlockfrostError blockfrostError = null;
                 try
                 {
                     blockfrostError = JsonSerializer.Deserialize<BlockfrostError>(
-                        errorContent, 
+                        errorContent,
                         new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
                 }
                 catch
                 {
                     // Could not parse as Blockfrost error format
                 }
-                
+
                 string errorMessage = blockfrostError != null
                     ? $"{blockfrostError.Error}: {blockfrostError.Message}"
                     : errorContent;
-                
-                logger?.LogError("Blockfrost API request failed with status {StatusCode}: {ErrorContent}", 
+
+                logger?.LogError("Blockfrost API request failed with status {StatusCode}: {ErrorContent}",
                     response.StatusCode, errorMessage);
-                
+
                 // Handle specific Blockfrost error cases
                 switch (response.StatusCode)
                 {
                     case HttpStatusCode.BadRequest:
                         return Result.Fail<T>($"Invalid request: {errorMessage}");
-                        
+
                     case HttpStatusCode.PaymentRequired:
                         return Result.Fail<T>("Daily request limit exceeded");
-                        
+
                     case HttpStatusCode.Forbidden:
                         return Result.Fail<T>("Authentication failed, invalid project_id");
-                        
+
                     case HttpStatusCode.NotFound:
                         return Result.Fail<T>("Resource not found");
-                    
+
                     case (HttpStatusCode)418: // I'm a teapot - used for auto-ban
                         return Result.Fail<T>("Request rate too high, auto-banned");
-                        
+
                     case (HttpStatusCode)425: // Too Early
                         return Result.Fail<T>("Mempool is full");
-                        
+
                     case HttpStatusCode.TooManyRequests:
                         return Result.Fail<T>("Rate limited, too many requests");
-                        
+
                     case HttpStatusCode.InternalServerError:
                         return Result.Fail<T>("Blockfrost server error");
-                        
+
                     default:
                         return Result.Fail<T>($"API call failed with status {response.StatusCode}: {errorMessage}");
                 }
             }
 
-            var ff = await response.Content.ReadAsStringAsync();
-            
+
             // Deserialize the response
             var result = await response.Content.ReadFromJsonAsync<T>(
                 new JsonSerializerOptions { PropertyNameCaseInsensitive = true }, 
@@ -195,19 +194,16 @@ public static class BlockfrostHelper
             return Result.Fail<T>($"Unexpected error calling Blockfrost API: {ex.Message}");
         }
     }
-    
+
     /// <summary>
     /// Represents the error format returned by Blockfrost API
     /// </summary>
     private class BlockfrostError
     {
-        [JsonPropertyName("status_code")]
-        public int StatusCode { get; set; }
-        
-        [JsonPropertyName("error")]
-        public string Error { get; set; } = string.Empty;
-        
-        [JsonPropertyName("message")]
-        public string Message { get; set; } = string.Empty;
+        [JsonPropertyName("status_code")] public int StatusCode { get; set; }
+
+        [JsonPropertyName("error")] public string Error { get; set; } = string.Empty;
+
+        [JsonPropertyName("message")] public string Message { get; set; } = string.Empty;
     }
 }

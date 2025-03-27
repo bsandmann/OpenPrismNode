@@ -1,6 +1,9 @@
+using System.Text.Json;
+using System.Text.Json.Serialization;
+
 namespace OpenPrismNode.Sync.Commands.ApiSync;
 
-using System.Text.Json.Serialization;
+
 
 /// <summary>
 /// Response model for the Blockfrost latest block API endpoint.
@@ -15,8 +18,10 @@ public class BlockfrostBlockResponse
 
     /// <summary>
     /// Block number
+    /// (Keep as int and do NOT convert null to 0 here—let it throw if null)
     /// </summary>
     [JsonPropertyName("height")]
+    [JsonConverter(typeof(ZeroIfNullConverter))]
     public int Height { get; set; }
 
     /// <summary>
@@ -26,21 +31,24 @@ public class BlockfrostBlockResponse
     public string Hash { get; set; } = string.Empty;
 
     /// <summary>
-    /// Slot number
+    /// Slot number (allow null -> 0)
     /// </summary>
     [JsonPropertyName("slot")]
+    [JsonConverter(typeof(ZeroIfNullConverter))]
     public int Slot { get; set; }
 
     /// <summary>
-    /// Epoch number
+    /// Epoch number (allow null -> 0)
     /// </summary>
     [JsonPropertyName("epoch")]
+    [JsonConverter(typeof(ZeroIfNullConverter))]
     public int Epoch { get; set; }
 
     /// <summary>
-    /// Slot within the epoch
+    /// Slot within the epoch (allow null -> 0)
     /// </summary>
     [JsonPropertyName("epoch_slot")]
+    [JsonConverter(typeof(ZeroIfNullConverter))]
     public int EpochSlot { get; set; }
 
     /// <summary>
@@ -50,15 +58,17 @@ public class BlockfrostBlockResponse
     public string SlotLeader { get; set; } = string.Empty;
 
     /// <summary>
-    /// Block size in bytes
+    /// Block size in bytes (allow null -> 0)
     /// </summary>
     [JsonPropertyName("size")]
+    [JsonConverter(typeof(ZeroIfNullConverter))]
     public int Size { get; set; }
 
     /// <summary>
-    /// Transaction count
+    /// Transaction count (allow null -> 0)
     /// </summary>
     [JsonPropertyName("tx_count")]
+    [JsonConverter(typeof(ZeroIfNullConverter))]
     public int TxCount { get; set; }
 
     /// <summary>
@@ -104,8 +114,34 @@ public class BlockfrostBlockResponse
     public string? NextBlock { get; set; } = string.Empty;
 
     /// <summary>
-    /// Number of confirmations
+    /// Number of confirmations (allow null -> 0)
     /// </summary>
     [JsonPropertyName("confirmations")]
+    [JsonConverter(typeof(ZeroIfNullConverter))]
     public int Confirmations { get; set; }
+}
+
+
+/// <summary>
+/// Converter that treats null JSON values as 0 when deserializing an int.
+/// </summary>
+public class ZeroIfNullConverter : JsonConverter<int>
+{
+    public override int Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
+    {
+        if (reader.TokenType == JsonTokenType.Null)
+        {
+            // Return 0 if the JSON value is explicitly null
+            return 0;
+        }
+
+        // Otherwise parse as a normal int
+        return reader.GetInt32();
+    }
+
+    public override void Write(Utf8JsonWriter writer, int value, JsonSerializerOptions options)
+    {
+        // Normal write behavior
+        writer.WriteNumberValue(value);
+    }
 }
