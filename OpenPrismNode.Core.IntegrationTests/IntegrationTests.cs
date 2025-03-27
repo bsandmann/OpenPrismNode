@@ -28,6 +28,7 @@ using OpenPrismNode.Core.Crypto;
 using OpenPrismNode.Core.IntegrationTests;
 using OpenPrismNode.Core.Services;
 using OpenPrismNode.Sync.Abstractions;
+using OpenPrismNode.Sync.Commands.DbSync.GetTransactionsWithPrismMetadataForBlockId;
 using OpenPrismNode.Sync.Commands.DecodeTransaction;
 using OpenPrismNode.Sync.Commands.ParseTransaction;
 using OpenPrismNode.Sync.Commands.ProcessBlock;
@@ -183,5 +184,26 @@ public partial class IntegrationTests : IDisposable
         _mockTransactionProvider.Setup(p => p.GetTransactionsWithPrismMetadataForBlockId(
             It.IsAny<int>(), It.IsAny<int>(), It.IsAny<int>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(Result.Ok(txList));
+            
+        // Set up the transaction provider for GetMetadataFromTransaction, used by ProcessTransactionHandler
+        _mockTransactionProvider.Setup(p => p.GetMetadataFromTransaction(
+            It.IsAny<int>(), It.IsAny<byte[]>(), It.IsAny<long>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(Result.Ok(new OpenPrismNode.Core.DbSyncModels.Metadata
+            {
+                id = 1,
+                bytes = new byte[] { 1, 2, 3, 4 },
+                json = "{\"v\":1,\"c\":[\"sample\"]}", // Empty valid PRISM metadata JSON
+                key = 1,
+                tx_id = 1
+            }));
+            
+        // Set up the transaction provider for GetPaymentDataFromTransaction, used by ProcessTransactionHandler
+        _mockTransactionProvider.Setup(p => p.GetPaymentDataFromTransaction(
+            It.IsAny<int>(), It.IsAny<byte[]>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(Result.Ok(new OpenPrismNode.Core.DbSyncModels.Payment
+            {
+                Incoming = new List<OpenPrismNode.Core.DbSyncModels.Utxo>(),
+                Outgoing = new List<OpenPrismNode.Core.DbSyncModels.Utxo>()
+            }));
     }
 }
