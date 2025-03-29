@@ -130,6 +130,11 @@ public class BackgroundSyncService : BackgroundService
                 return;
             }
 
+            if (_appSettings.DisableSync)
+            {
+                return;
+            }
+
             if (isLocked)
             {
                 _logger.LogWarning("The automatic sync service is locked due to an ongoing operations. Wait or restart the node");

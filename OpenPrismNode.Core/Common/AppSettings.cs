@@ -6,6 +6,11 @@
 /// </summary>
 public class AppSettings
 {
+    /// <summary>
+    /// Disable the sync-process. This is useful for testing purposes
+    /// </summary>
+    public bool DisableSync { get; set; } = false;
+
     // /// <summary>
     // /// Time between the Postgres-DB is checked for new entries
     // /// </summary>

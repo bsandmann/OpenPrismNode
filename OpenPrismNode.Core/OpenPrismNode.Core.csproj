@@ -17,9 +17,20 @@
       <Reference Include="Microsoft.Extensions.Http">
         <HintPath>..\..\..\..\..\usr\lib64\dotnet\shared\Microsoft.AspNetCore.App\8.0.8\Microsoft.Extensions.Http.dll</HintPath>
       </Reference>
-<!--      <Reference Include="OpenPrismNode.Sync">-->
-<!--        <HintPath>..\OpenPrismNode.Sync.Tests\bin\Debug\net8.0\OpenPrismNode.Sync.dll</HintPath>-->
-<!--      </Reference>-->
+    </ItemGroup>
+
+    <ItemGroup>
+        <Reference Include="NBitcoin" PrivateAssets="All">
+            <HintPath>NBitcoin.dll</HintPath>
+        </Reference>
+    </ItemGroup>
+
+    <ItemGroup>
+        <_PackageFiles Include="NBitcoin.dll">
+            <BuildAction>None</BuildAction>
+            <PackagePath>lib\net7.0</PackagePath>
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </_PackageFiles>
     </ItemGroup>
 
     <ItemGroup>

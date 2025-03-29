@@ -20,8 +20,7 @@ Content-Type: application/json
         "id": "key-1",
         "type": "JsonWebKey2020",
         "purpose": [
-          "authentication",
-          "assertionMethod"
+          "authentication"
         ],
         "curve": "secp256k1"
       },
@@ -29,11 +28,7 @@ Content-Type: application/json
         "id": "key-2",
         "type": "JsonWebKey2020",
         "purpose": [
-          "authentication",
-          "assertionMethod",
-          "keyAgreement",
-          "capabilityInvocation",
-          "capabilityDelegation"
+          "authentication"
         ],
         "curve": "Ed25519"
       },

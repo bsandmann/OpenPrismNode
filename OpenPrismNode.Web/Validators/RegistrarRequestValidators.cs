@@ -73,6 +73,16 @@ public static class RegistrarRequestValidators
                 }
             }
 
+            if (method.Purpose.Count != 1)
+            {
+               return "A verification method must have exactly one purpose for the current implementation";
+            }
+
+            if (method.Id.StartsWith("master"))
+            {
+               return "The key-Id is not allowed to start with 'master' to avoid confusion with the master key";
+            }
+
             // Curve validation
             if (string.IsNullOrEmpty(method.Curve))
             {
@@ -96,6 +106,12 @@ public static class RegistrarRequestValidators
                 {
                     return $"Invalid property '{key}' in DID document. Only '@context' and 'service' are allowed";
                 }
+            }
+            
+            // Check if @context is provided (now required)
+            if (!request.DidDocument.ContainsKey("@context"))
+            {
+                return "DID document must have an '@context' property";
             }
 
             // Check @context if provided
@@ -179,97 +195,44 @@ public static class RegistrarRequestValidators
                 }
             }
 
-            // Check services if provided
-            if (request.DidDocument.TryGetValue("service", out var serviceObj) && serviceObj != null)
+            // Check services using the new RegistrarService class
+            if (request.DidDocument.TryGetValue("service", out _))
             {
-                // Handle System.Text.Json.JsonElement
-                if (serviceObj is JsonElement jsonElement)
+                // Use the strongly-typed Services property (can use either Service or Services property)
+                var services = request.DidDocument.Services;
+                
+                // Ensure 'service' is an array
+                if (services == null && request.DidDocument.ContainsKey("service"))
                 {
-                    if (jsonElement.ValueKind != JsonValueKind.Array)
+                    return "DID document 'service' must be a valid array of service objects";
+                }
+                
+                if (services != null && services.Count > 0)
+                {
+                    // Check for duplicate service IDs
+                    var serviceIds = new HashSet<string>();
+                    foreach (var service in services)
                     {
-                        return "DID document 'service' must be an array";
-                    }
-
-                    if (jsonElement.GetArrayLength() > 0)
-                    {
-                        var serviceIds = new HashSet<string>();
-                        foreach (var svcElement in jsonElement.EnumerateArray())
+                        if (string.IsNullOrEmpty(service.Id))
                         {
-                            if (svcElement.ValueKind != JsonValueKind.Object)
-                            {
-                                return "Each service must be an object";
-                            }
-
-                            // Check required properties
-                            if (!svcElement.TryGetProperty("id", out var idElement) || 
-                                idElement.ValueKind != JsonValueKind.String || 
-                                string.IsNullOrEmpty(idElement.GetString()))
-                            {
-                                return "Each service must have a non-empty 'id' property";
-                            }
-
-                            string serviceId = idElement.GetString()!;
-                            if (!serviceIds.Add(serviceId))
-                            {
-                                return $"Duplicate service id found: {serviceId}";
-                            }
-
-                            if (!svcElement.TryGetProperty("type", out var typeElement) || 
-                                typeElement.ValueKind != JsonValueKind.String || 
-                                string.IsNullOrEmpty(typeElement.GetString()))
-                            {
-                                return $"Service '{serviceId}' must have a non-empty 'type' property";
-                            }
-
-                            if (!svcElement.TryGetProperty("serviceEndpoint", out var endpointElement) || 
-                                endpointElement.ValueKind != JsonValueKind.String || 
-                                string.IsNullOrEmpty(endpointElement.GetString()))
-                            {
-                                return $"Service '{serviceId}' must have a non-empty 'serviceEndpoint' property";
-                            }
+                            return "Each service must have a non-empty 'id' property";
+                        }
+                        
+                        if (!serviceIds.Add(service.Id))
+                        {
+                            return $"Duplicate service id found: {service.Id}";
+                        }
+                        
+                        if (string.IsNullOrEmpty(service.Type))
+                        {
+                            return $"Service '{service.Id}' must have a non-empty 'type' property";
+                        }
+                        
+                        if (string.IsNullOrEmpty(service.ServiceEndpoint))
+                        {
+                            return $"Service '{service.Id}' must have a non-empty 'serviceEndpoint' property";
                         }
                     }
-                }
-                else if (serviceObj is List<object> services)
-                {
-                    if (services.Count > 0)
-                    {
-                        var serviceIds = new HashSet<string>();
-                        foreach (var svc in services)
-                        {
-                            // Service must be an object
-                            if (svc is not Dictionary<string, object> service)
-                            {
-                                return "Each service must be an object";
-                            }
-
-                            // Check required properties
-                            if (!service.TryGetValue("id", out var idObj) || string.IsNullOrEmpty(idObj?.ToString()))
-                            {
-                                return "Each service must have a non-empty 'id' property";
-                            }
-
-                            string serviceId = idObj.ToString()!;
-                            if (!serviceIds.Add(serviceId))
-                            {
-                                return $"Duplicate service id found: {serviceId}";
-                            }
-
-                            if (!service.TryGetValue("type", out var typeObj) || string.IsNullOrEmpty(typeObj?.ToString()))
-                            {
-                                return $"Service '{serviceId}' must have a non-empty 'type' property";
-                            }
-
-                            if (!service.TryGetValue("serviceEndpoint", out var endpointObj) || string.IsNullOrEmpty(endpointObj?.ToString()))
-                            {
-                                return $"Service '{serviceId}' must have a non-empty 'serviceEndpoint' property";
-                            }
-                        }
-                    }
-                }
-                else
-                {
-                    return "DID document 'service' must be an array";
                 }
             }
         }

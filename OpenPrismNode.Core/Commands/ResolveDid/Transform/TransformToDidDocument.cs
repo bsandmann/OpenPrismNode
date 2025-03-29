@@ -65,6 +65,18 @@ public static class TransformToDidDocument
             keyAgreement.Add($"{did}#{prismPublicKey.KeyId}");
         }
 
+        // var capabilityInvocation = new List<string>();
+        // foreach (var prismPublicKey in internalDidDocument.PublicKeys.Where(p => p.KeyUsage == PrismKeyUsage.CapabilityInvocationKey))
+        // {
+        //     capabilityInvocation.Add($"{did}#{prismPublicKey.KeyId}");
+        // }
+        //
+        // var capabilityDelegation = new List<string>();
+        // foreach (var prismPublicKey in internalDidDocument.PublicKeys.Where(p => p.KeyUsage == PrismKeyUsage.CapabilityDelegationKey))
+        // {
+        //     capabilityDelegation.Add($"{did}#{prismPublicKey.KeyId}");
+        // }
+
         var services = new List<DidDocumentService>();
         foreach (var prismService in internalDidDocument.PrismServices)
         {

@@ -47,7 +47,7 @@ public class CreateDidTransactions
         );
 
         // Act
-        _parseTransactionHandler = new ParseTransactionHandler(_mediatorMock.Object, _sha256Service, mockedEcService.Object, _logger);
+        _parseTransactionHandler = new ParseTransactionHandler(_mediatorMock.Object, _sha256Service, _ecService, _logger);
         var result = await _parseTransactionHandler.Handle(parseTransactionRequest, CancellationToken.None);
 
         // Assert
@@ -99,7 +99,7 @@ public class CreateDidTransactions
         );
 
         // Act
-        _parseTransactionHandler = new ParseTransactionHandler(_mediatorMock.Object, _sha256Service, mockedEcService.Object, _logger);
+        _parseTransactionHandler = new ParseTransactionHandler(_mediatorMock.Object, _sha256Service, _ecService, _logger);
         var result = await _parseTransactionHandler.Handle(parseTransactionRequest, CancellationToken.None);
 
         // Assert
@@ -159,7 +159,7 @@ public class CreateDidTransactions
         );
 
         // Act
-        _parseTransactionHandler = new ParseTransactionHandler(_mediatorMock.Object, _sha256Service, mockedEcService.Object, _logger);
+        _parseTransactionHandler = new ParseTransactionHandler(_mediatorMock.Object, _sha256Service, _ecService, _logger);
         var result = await _parseTransactionHandler.Handle(parseTransactionRequest, CancellationToken.None);
 
         // Assert
@@ -187,7 +187,7 @@ public class CreateDidTransactions
         );
 
         // Act
-        _parseTransactionHandler = new ParseTransactionHandler(_mediatorMock.Object, _sha256Service, mockedEcService.Object, _logger);
+        _parseTransactionHandler = new ParseTransactionHandler(_mediatorMock.Object, _sha256Service, _ecService, _logger);
         var result = await _parseTransactionHandler.Handle(parseTransactionRequest, CancellationToken.None);
 
         // Assert

@@ -16,6 +16,7 @@ using OpenPrismNode.Core.Common;
 using OpenPrismNode.Core.Crypto;
 using OpenPrismNode.Core.Models.DidDocument;
 using OpenPrismNode.Core.Services;
+using OpenPrismNode.Core.Services.Did;
 using OpenPrismNode.Sync.Services;
 using OpenPrismNode.Web;
 using OpenPrismNode.Web.Components;
@@ -123,6 +124,9 @@ builder.WebHost.ConfigureKestrel(options =>
 builder.Services.AddGrpc(options => { options.EnableDetailedErrors = true; });
 builder.Services.AddSingleton<IEcService, EcServiceBouncyCastle>();
 builder.Services.AddSingleton<ISha256Service, Sha256ServiceBouncyCastle>();
+builder.Services.AddSingleton<IHdKeyService, HdKeyServiceNBitcoin>();
+builder.Services.AddSingleton<IKeyGenerationService, KeyGenerationService>();
+
 builder.Services.AddScoped<INpgsqlConnectionFactory, NpgsqlConnectionFactory>();
 // Background service must be a singleton
 builder.Services.AddSingleton<BackgroundSyncService>();
