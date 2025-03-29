@@ -22,10 +22,10 @@ namespace OpenPrismNode.Core.Commands.Registrar
         public string Type { get; set; } = null!;
 
         /// <summary>
-        /// The DID controller. Required.
+        /// The DID controller. Should actuallby be required, but doesn not align with the way PRISM DIDs are created.
         /// </summary>
         [JsonPropertyName("controller")]
-        public string Controller { get; set; } = null!;
+        public string? Controller { get; set; } = null!;
 
         /// <summary>
         /// Verification relationships (e.g., "authentication", "assertionMethod"). Optional.
@@ -40,7 +40,7 @@ namespace OpenPrismNode.Core.Commands.Registrar
         public Dictionary<string, object>? PrivateKeyJwk { get; set; }
 
         /// <summary>
-        /// Private key in Multibase format.
+        /// Private key in Multibase format. Not supported in this implementation.
         /// </summary>
         [JsonPropertyName("privateKeyMultibase")]
         public string? PrivateKeyMultibase { get; set; }

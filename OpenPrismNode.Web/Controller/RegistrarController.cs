@@ -12,6 +12,8 @@ namespace OpenPrismNode.Web.Controller
     using Core.Commands.Registrar.RegistrarCreateDid;
     using Core.Commands.Registrar.RegistrarDeactivateDid;
     using Core.Commands.Registrar.RegistrarUpdateDid;
+    using Core.Common;
+    using Microsoft.Extensions.Options;
     using Models;
 
     [ApiController]
@@ -22,12 +24,13 @@ namespace OpenPrismNode.Web.Controller
     {
         private readonly IMediator _mediator;
         private readonly ILogger<RegistrarController> _logger;
+        private readonly IOptions<AppSettings> _appSettings;
 
-        // Consider adding IOptions<AppSettings> if needed for configuration later
-        public RegistrarController(IMediator mediator, ILogger<RegistrarController> logger)
+        public RegistrarController(IMediator mediator, ILogger<RegistrarController> logger, IOptions<AppSettings> appSettings)
         {
             _mediator = mediator;
             _logger = logger;
+            _appSettings = appSettings;
         }
 
         /// <summary>
@@ -60,12 +63,30 @@ namespace OpenPrismNode.Web.Controller
                     return BadRequest(new ProblemDetails { Title = "Unsupported Operation", Detail = "Client-managed secret mode is not supported." });
                 }
 
+                if (!request.Method.Equals("prism", StringComparison.InvariantCultureIgnoreCase))
+                {
+                    return BadRequest("Invalid method. Only 'prism' is supported.");
+                }
+
+                if (!string.IsNullOrEmpty(request.Did))
+                {
+                    return BadRequest("DID should not be provided for creation for did:prism operations. It will be generated.");
+                }
+
+                if (string.IsNullOrEmpty(request.Options?.WalletId))
+                {
+                    return BadRequest("WalletId must be provided for creation.");
+                }
+
+                if (request.Options?.Network is not null && !request.Options.Network.Equals(_appSettings.Value.PrismLedger.Name, StringComparison.InvariantCultureIgnoreCase))
+                {
+                    return BadRequest($"Invalid network. The specified network does not match the settings of OPN ({_appSettings.Value.PrismLedger.Name})");
+                }
+
                 var registrarCreateDidRequest = new RegistrarCreateDidRequest(
-                    request.Method,
                     options,
                     request.Secret,
-                    request.DidDocument,
-                    request.Did // Pass optional DID
+                    request.DidDocument
                 );
 
                 Result<RegistrarResponseDto> result = await _mediator.Send(registrarCreateDidRequest);

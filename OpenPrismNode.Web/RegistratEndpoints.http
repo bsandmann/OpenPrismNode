@@ -1,0 +1,71 @@
+@OpenPrismNode_HostAddress = https://localhost:5001
+
+###
+# Registrar create endpoint
+POST {{OpenPrismNode_HostAddress}}/api/v1/registrar/create
+Accept: application/json
+Content-Type: application/json
+
+{
+  "method": "prism",
+  "options": {
+    "storeSecretes": true,
+    "returnSecrets": true,
+    "walletId": "abcdefg",
+    "network": "preprod"
+  },
+  "secret": {
+    "verificationMethod": [
+      {
+        "id": "key-1",
+        "type": "JsonWebKey2020",
+        "purpose": [
+          "authentication",
+          "assertionMethod"
+        ],
+        "curve": "secp256k1"
+      },
+      {
+        "id": "key-2",
+        "type": "JsonWebKey2020",
+        "purpose": [
+          "authentication",
+          "assertionMethod",
+          "keyAgreement",
+          "capabilityInvocation",
+          "capabilityDelegation"
+        ],
+        "curve": "Ed25519"
+      },
+      {
+        "id": "key-3",
+        "type": "JsonWebKey2020",
+        "purpose": [
+          "keyAgreement"
+        ],
+        "curve": "X25519"
+      }
+
+    ]
+  },
+  "didDocument": {
+    "@context": [
+      "https://www.w3.org/ns/did/v1",
+      "https://w3id.org/security/suites/jws-2020/v1",
+      "https://identity.foundation/.well-known/did-configuration/v1",
+      "https://didcomm.org/messaging/contexts/v2"
+    ],
+    "service": [
+      {
+        "id": "service-1",
+        "type": "LinkedDomains",
+        "serviceEndpoint": "https://opn.blocktrust.dev/"
+      },
+      {
+        "id": "service-2",
+        "type": "DIDCommMessaging",
+        "serviceEndpoint": "https://opn.blocktrust.dev/"
+      }
+    ]
+  }
+}

@@ -9,15 +9,6 @@ namespace OpenPrismNode.Core.Commands.Registrar
     public class RegistrarOptions
     {
         /// <summary>
-        /// DID method-specific options (e.g., "network": "mainnet").
-        /// Using a dictionary for flexibility.
-        /// </summary>
-        [JsonExtensionData] // Catches any other properties
-        public Dictionary<string, object>? MethodSpecificOptions { get; set; }
-
-        // --- Internal Secret Mode Options ---
-
-        /// <summary>
         /// If true, the registrar stores generated/provided secrets internally. Defaults to true.
         /// </summary>
         [JsonPropertyName("storeSecrets")]
@@ -36,13 +27,20 @@ namespace OpenPrismNode.Core.Commands.Registrar
         [JsonPropertyName("clientSecretMode")]
         public bool? ClientSecretMode { get; set; }
 
-        // --- Extensions ---
         /// <summary>
-        /// Optional: Request additional verification methods to be generated/added.
+        /// The wallet ID for publishing the DID on chain. The wallet must be funded.
+        /// This is required
         /// </summary>
-        [JsonPropertyName("requestVerificationMethod")]
-        public List<RegistrarVerificationMethodTemplate>? RequestVerificationMethod { get; set; }
+        [JsonPropertyName("walletId")]
+        public string WalletId { get; set; }
 
-        // Add other universal options from the spec if needed
+        /// <summary>
+        /// The optional network identitifier (e.g. mainnet or preprod)
+        /// If the network is specified but not matching the settings of the OPN this will return an error
+        /// </summary>
+        public string? Network { get; set; }
+
+
+
     }
 }
