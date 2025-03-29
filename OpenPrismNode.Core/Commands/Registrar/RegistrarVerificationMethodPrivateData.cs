@@ -45,8 +45,15 @@ namespace OpenPrismNode.Core.Commands.Registrar
         [JsonPropertyName("privateKeyMultibase")]
         public string? PrivateKeyMultibase { get; set; }
 
+        /// <summary>
+        /// Additional property which is not in the spec but needed for PRISM
+        /// </summary>
+        [JsonPropertyName("curve")]
+        public string? Curve { get; set; } = null!;
+
         // Allow other properties if needed
         [JsonExtensionData]
         public Dictionary<string, object>? AdditionalProperties { get; set; }
+
     }
 }

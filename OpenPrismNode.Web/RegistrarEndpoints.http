@@ -1,4 +1,4 @@
-@OpenPrismNode_HostAddress = https://localhost:5001
+@OpenPrismNode_HostAddress = http://localhost:5001
 
 ###
 # Registrar create endpoint
@@ -12,7 +12,7 @@ Content-Type: application/json
     "storeSecretes": true,
     "returnSecrets": true,
     "walletId": "abcdefg",
-    "network": "preprod"
+    "network": "mainnet"
   },
   "secret": {
     "verificationMethod": [
