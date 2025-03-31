@@ -34,7 +34,7 @@
     </ItemGroup>
 
     <ItemGroup>
-      <PackageReference Include="BouncyCastle.NetCore" Version="2.2.1" />
+      <PackageReference Include="BouncyCastle.Cryptography" Version="2.5.1" />
       <PackageReference Include="CardanoSharp.Wallet" Version="5.1.0" />
       <PackageReference Include="Ensure.That" Version="10.1.0" />
       <PackageReference Include="FluentResults" Version="3.16.0" />

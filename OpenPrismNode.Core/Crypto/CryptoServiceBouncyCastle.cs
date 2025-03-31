@@ -13,6 +13,7 @@ using Org.BouncyCastle.Math;
 using Org.BouncyCastle.Math.EC;
 using Org.BouncyCastle.Security;
 using System;
+using System.Diagnostics;
 using System.IO; // For IsValidDerSignature IOException
 using System.Linq;
 
@@ -151,29 +152,52 @@ public sealed class CryptoServiceBouncyCastle : ICryptoService
 
     // --- Ed25519 Methods ---
 
-    public byte[] SignDataEd25519(byte[] dataToSign, byte[] privateKey)
+   public byte[] SignDataEd25519(byte[] dataToSign, byte[] privateKey)
     {
+        Debug.WriteLine($"[SignDataEd25519] START");
+        Debug.WriteLine($"[SignDataEd25519] Private Key (k_c) Hex: {Convert.ToHexString(privateKey)}");
+        Debug.WriteLine($"[SignDataEd25519] Data Hex: {Convert.ToHexString(dataToSign)}");
+        Ensure.That(privateKey, nameof(privateKey)).SizeIs(Ed25519KeyLength);
         var keyParameters = new Ed25519PrivateKeyParameters(privateKey, 0);
         var signer = new Ed25519Signer();
+        signer.Reset();
         signer.Init(true, keyParameters);
         signer.BlockUpdate(dataToSign, 0, dataToSign.Length);
-        return signer.GenerateSignature();
+        byte[] signature = signer.GenerateSignature();
+        Debug.WriteLine($"[SignDataEd25519] Generated Signature Hex: {Convert.ToHexString(signature)}");
+        Debug.WriteLine($"[SignDataEd25519] END");
+        return signature;
     }
 
     public bool VerifyDataEd25519(byte[] dataToVerify, byte[] signature, byte[] publicKey)
     {
+        Debug.WriteLine($"[VerifyDataEd25519] START");
+        Debug.WriteLine($"[VerifyDataEd25519] Public Key (A_c) Hex: {Convert.ToHexString(publicKey)}");
+        Debug.WriteLine($"[VerifyDataEd25519] Signature Hex: {Convert.ToHexString(signature)}");
+        Debug.WriteLine($"[VerifyDataEd25519] Data Hex: {Convert.ToHexString(dataToVerify)}");
+        Ensure.That(publicKey, nameof(publicKey)).SizeIs(Ed25519KeyLength);
         var keyParameters = new Ed25519PublicKeyParameters(publicKey, 0);
         var verifier = new Ed25519Signer();
+        verifier.Reset();
         verifier.Init(false, keyParameters);
         verifier.BlockUpdate(dataToVerify, 0, dataToVerify.Length);
-        return verifier.VerifySignature(signature);
+        bool isValid = verifier.VerifySignature(signature);
+        Debug.WriteLine($"[VerifyDataEd25519] Verification Result: {isValid}");
+        Debug.WriteLine($"[VerifyDataEd25519] END");
+        return isValid;
     }
 
     public byte[] GetEd25519PublicKeyFromPrivateKey(byte[] ed25519PrivateKey)
     {
+        Debug.WriteLine($"[GetEd25519PublicKeyFromPrivateKey] START");
+        Debug.WriteLine($"[GetEd25519PublicKeyFromPrivateKey] Private Key (k_c) Hex: {Convert.ToHexString(ed25519PrivateKey)}");
+        Ensure.That(ed25519PrivateKey, nameof(ed25519PrivateKey)).SizeIs(Ed25519KeyLength);
         var keyParameters = new Ed25519PrivateKeyParameters(ed25519PrivateKey, 0);
         var publicKeyParameters = keyParameters.GeneratePublicKey();
-        return publicKeyParameters.GetEncoded(); // Returns the 32-byte public key
+        byte[] pkBytes = publicKeyParameters.GetEncoded();
+        Debug.WriteLine($"[GetEd25519PublicKeyFromPrivateKey] Derived Public Key (A_c) Hex: {Convert.ToHexString(pkBytes)}");
+        Debug.WriteLine($"[GetEd25519PublicKeyFromPrivateKey] END");
+        return pkBytes;
     }
 
     // --- X25519 Methods ---

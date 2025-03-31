@@ -1,4 +1,5 @@
 // --- Tests/Ed25519Tests.cs ---
+
 using Xunit;
 using OpenPrismNode.Core.Services.Did;
 using OpenPrismNode.Core.Crypto;
@@ -51,7 +52,7 @@ public class Ed25519Tests
         var keyPair = _keyGenerationService.DeriveKeyFromSeed(seedHex, didIndex, keyType, keyIndex, keyId, curve);
 
         // 2. Sign the data using the derived private key
-        byte[] signature = _cryptoService.SignDataEd25519(keyPair.PrivateKey.PrivateKey, dataToSign);
+        byte[] signature = _cryptoService.SignDataEd25519(dataToSign, keyPair.PrivateKey.PrivateKey);
 
         // 3. Verify the signature using the derived public key
         bool isValid = _cryptoService.VerifyDataEd25519(dataToSign, signature, keyPair.PublicKey.RawBytes!);
@@ -78,6 +79,72 @@ public class Ed25519Tests
         bool isInvalid = _cryptoService.VerifyDataEd25519(incorrectData, signature, keyPair.PublicKey.RawBytes!);
         isInvalid.Should().BeFalse("Verification should fail with incorrect data.");
     }
+
+    [Fact]
+    public void DeriveEd25519_SignAndVerify_ShouldSucceed_Simplified()
+    {
+        // Arrange
+        // Use a fixed known mnemonic/seed if possible, otherwise generate one
+        var mnemonic = _keyGenerationService.GenerateRandomMnemonic();
+        (_, string seedHex) = _keyGenerationService.GenerateMasterKeyFromMnemonic(mnemonic);
+
+        int didIndex = 0;
+        PrismKeyUsage keyType = PrismKeyUsage.AuthenticationKey; // Index 3
+        int keyIndex = 1; // Example key index
+        string keyId = "auth-key-1";
+        string curve = PrismParameters.Ed25519CurveName;
+
+        byte[] dataToSign = Encoding.UTF8.GetBytes("Test Message should be longer bla bla"); // Simple, fixed message
+
+        // Act
+        // 1. Derive the Ed25519 key pair
+        var keyPair = _keyGenerationService.DeriveKeyFromSeed(seedHex, didIndex, keyType, keyIndex, keyId, curve);
+
+        // --- Debugging Assertions ---
+        keyPair.Should().NotBeNull();
+        keyPair.PrivateKey.PrivateKey.Should().HaveCount(32, "Derived private key seed should be 32 bytes");
+        keyPair.PublicKey.RawBytes.Should().NotBeNull().And.HaveCount(32, "Derived public key should be 32 bytes");
+
+        // Explicitly check internal consistency again right here
+        bool internalCheck = _cryptoService.CheckKeys(keyPair.PrivateKey.PrivateKey, keyPair.PublicKey.RawBytes!, curve);
+        internalCheck.Should().BeTrue("Internal CheckKeys validation must pass before signing");
+        // --- End Debugging Assertions ---
+
+        // 2. Sign the data
+        byte[] signature = null;
+        Exception? signException = null;
+        try
+        {
+            signature = _cryptoService.SignDataEd25519(dataToSign, keyPair.PrivateKey.PrivateKey);
+        }
+        catch (Exception ex)
+        {
+            signException = ex;
+        }
+
+        signException.Should().BeNull("Signing should not throw an exception");
+        signature.Should().NotBeNullOrEmpty().And.HaveCount(64, "Ed25519 signature should be 64 bytes");
+
+        // 3. Verify the signature
+        bool isValid = false;
+        Exception? verifyException = null;
+        try
+        {
+            // Use the exact same byte arrays that were checked and used for signing
+            isValid = _cryptoService.VerifyDataEd25519(dataToSign, signature, keyPair.PublicKey.RawBytes!);
+        }
+        catch (Exception ex)
+        {
+            verifyException = ex;
+        }
+
+        // Assert
+        verifyException.Should().BeNull("Verification should not throw an exception");
+
+        // --- THE FAILING ASSERTION ---
+        isValid.Should().BeTrue("The signature should be valid for the given data and public key.");
+    }
+
 
     // Helper to get index consistent with KeyGenerationService
     private int GetKeyTypeIndex(PrismKeyUsage keyType) => keyType switch

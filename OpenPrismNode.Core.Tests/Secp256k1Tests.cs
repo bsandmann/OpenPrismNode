@@ -50,7 +50,7 @@ public class Secp256k1Tests
         var keyPair = _keyGenerationService.DeriveKeyFromSeed(seedHex, didIndex, keyType, keyIndex, keyId, curve);
 
         // 2. Sign the data using the derived private key (DER format)
-        byte[] derSignature = _cryptoService.SignDataSecp256k1(keyPair.PrivateKey.PrivateKey, dataToSign);
+        byte[] derSignature = _cryptoService.SignDataSecp256k1(dataToSign, keyPair.PrivateKey.PrivateKey);
 
         // 3. Verify the signature using the derived public key (DER format)
         // GetBytes() should return the 65-byte uncompressed key
@@ -101,7 +101,7 @@ public class Secp256k1Tests
         var keyPair = _keyGenerationService.DeriveKeyFromSeed(seedHex, didIndex, keyType, keyIndex, keyId, curve);
 
         // 2. Sign the data using the derived private key (Plain R||S format)
-        byte[] plainSignature = _cryptoService.SignDataSecp256k1WithoutDER(keyPair.PrivateKey.PrivateKey, dataToSign);
+        byte[] plainSignature = _cryptoService.SignDataSecp256k1WithoutDER(dataToSign, keyPair.PrivateKey.PrivateKey);
 
         // 3. Verify the signature using the derived public key (Plain R||S format)
         bool isValid = _cryptoService.VerifyDataSecp256k1WithoutDER(dataToSign, plainSignature, keyPair.PublicKey.GetBytes());
