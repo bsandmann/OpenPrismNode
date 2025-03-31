@@ -16,7 +16,7 @@ public class ProtocolUpdateTransaction
 {
     private ParseTransactionHandler _parseTransactionHandler;
     private readonly ISha256Service _sha256Service;
-    private readonly IEcService _ecService;
+    private readonly ICryptoService _cryptoService;
     private readonly Mock<IMediator> _mediatorMock;
     private readonly ILogger<ParseTransactionHandler> _logger;
 
@@ -24,7 +24,7 @@ public class ProtocolUpdateTransaction
     {
         _mediatorMock = new Mock<IMediator>();
         _sha256Service = new Sha256ServiceBouncyCastle();
-        _ecService = new EcServiceBouncyCastle();
+        _cryptoService = new CryptoServiceBouncyCastle();
         _logger = new Mock<ILogger<ParseTransactionHandler>>().Object;
     }
 
@@ -32,8 +32,8 @@ public class ProtocolUpdateTransaction
     public async Task ProtocolVersionUpdate_TransactionHandler_succeeds_for_well_constructed_request()
     {
         // Arrange
-        var mockedEcService = new Mock<IEcService>();
-        mockedEcService.Setup(p => p.VerifyData(It.IsAny<byte[]>(), It.IsAny<byte[]>(), It.IsAny<byte[]>())).Returns(true);
+        var mockedEcService = new Mock<ICryptoService>();
+        mockedEcService.Setup(p => p.VerifyDataSecp256k1(It.IsAny<byte[]>(), It.IsAny<byte[]>(), It.IsAny<byte[]>())).Returns(true);
 
         var parseTransactionRequest = new ParseTransactionRequest(
             new SignedAtalaOperation
@@ -80,8 +80,8 @@ public class ProtocolUpdateTransaction
     public async Task ProtocolVersionUpdate_TransactionHandler_fails_if_effectiveSince_is_missing()
     {
         // Arrange
-        var mockedEcService = new Mock<IEcService>();
-        mockedEcService.Setup(p => p.VerifyData(It.IsAny<byte[]>(), It.IsAny<byte[]>(), It.IsAny<byte[]>())).Returns(true);
+        var mockedEcService = new Mock<ICryptoService>();
+        mockedEcService.Setup(p => p.VerifyDataSecp256k1(It.IsAny<byte[]>(), It.IsAny<byte[]>(), It.IsAny<byte[]>())).Returns(true);
 
         var parseTransactionRequest = new ParseTransactionRequest(
             new SignedAtalaOperation

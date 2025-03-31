@@ -122,10 +122,11 @@ builder.WebHost.ConfigureKestrel(options =>
 });
 
 builder.Services.AddGrpc(options => { options.EnableDetailedErrors = true; });
-builder.Services.AddSingleton<IEcService, EcServiceBouncyCastle>();
+builder.Services.AddSingleton<ICryptoService, CryptoServiceBouncyCastle>();
 builder.Services.AddSingleton<ISha256Service, Sha256ServiceBouncyCastle>();
 builder.Services.AddSingleton<IHdKeyService, HdKeyServiceNBitcoin>();
 builder.Services.AddSingleton<IKeyGenerationService, KeyGenerationService>();
+builder.Services.AddSingleton<ISlip0010DerivationService, Slip0010DerivationServiceCustom>();
 
 builder.Services.AddScoped<INpgsqlConnectionFactory, NpgsqlConnectionFactory>();
 // Background service must be a singleton

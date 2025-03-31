@@ -160,7 +160,7 @@ public partial class IntegrationTests : IDisposable
         this._decodeTransactionHandler = new DecodeTransactionHandler();
         this._switchBranchHandler = new SwitchBranchHandler(_mediatorMock.Object, _serviceScopeFactoryMock.Object);
         this._createAddressesHandler = new CreateAddressesHandler(_mediatorMock.Object);
-        this._parseTransactionHandler = new ParseTransactionHandler(_mediatorMock.Object, new Sha256ServiceBouncyCastle(), new EcServiceBouncyCastle(), Mock.Of<ILogger<ParseTransactionHandler>>());
+        this._parseTransactionHandler = new ParseTransactionHandler(_mediatorMock.Object, new Sha256ServiceBouncyCastle(), new CryptoServiceBouncyCastle(), Mock.Of<ILogger<ParseTransactionHandler>>());
         this._createTransactionHandler = new CreateTransactionHandler(_mediatorMock.Object, new Sha256ServiceBouncyCastle());
     }
 

@@ -1,10 +1,10 @@
-﻿namespace OpenPrismNode.Core.Services.Did;
+﻿using OpenPrismNode.Core.Models;
 
-using Models;
+namespace OpenPrismNode.Core.Services.Did;
 
 public interface IKeyGenerationService
 {
-    public List<string> GenerateRandomMnemonic();
-    public (PrismKeyPair prismKeyPair, string seedHex) GenerateMasterKeyFromMnemonic(List<string> mnemonic);
-    public PrismKeyPair DeriveKeyFromSeed(string seed, int didIndex, PrismKeyUsage keyType, int keyIndex, string keyId);
+    List<string> GenerateRandomMnemonic();
+    (PrismKeyPair prismKeyPair, string seedHex) GenerateMasterKeyFromMnemonic(List<string> mnemonic);
+    PrismKeyPair DeriveKeyFromSeed(string seedHex, int didIndex, PrismKeyUsage keyType, int keyIndex, string keyId, string curve);
 }

@@ -17,7 +17,7 @@ public class DeactivateDidTransactions
 {
     private ParseTransactionHandler _parseTransactionHandler;
     private readonly ISha256Service _sha256Service;
-    private readonly IEcService _ecService;
+    private readonly ICryptoService _cryptoService;
     private readonly Mock<IMediator> _mediatorMock;
     private readonly ILogger<ParseTransactionHandler> _logger;
 
@@ -25,7 +25,7 @@ public class DeactivateDidTransactions
     {
         _mediatorMock = new Mock<IMediator>();
         _sha256Service = new Sha256ServiceBouncyCastle();
-        _ecService = new EcServiceBouncyCastle();
+        _cryptoService = new CryptoServiceBouncyCastle();
         _logger = new Mock<ILogger<ParseTransactionHandler>>().Object;
     }
 
@@ -39,8 +39,8 @@ public class DeactivateDidTransactions
 
         // Act
         var decodedResult = await handler.Handle(decodeTransactionRequest, new CancellationToken());
-        var mockedEcService = new Mock<IEcService>();
-        mockedEcService.Setup(p => p.VerifyData(It.IsAny<byte[]>(), It.IsAny<byte[]>(), It.IsAny<byte[]>())).Returns(true);
+        var mockedEcService = new Mock<ICryptoService>();
+        mockedEcService.Setup(p => p.VerifyDataSecp256k1(It.IsAny<byte[]>(), It.IsAny<byte[]>(), It.IsAny<byte[]>())).Returns(true);
 
         var parseTransactionRequest = new ParseTransactionRequest(
             decodedResult.Value.Single(),

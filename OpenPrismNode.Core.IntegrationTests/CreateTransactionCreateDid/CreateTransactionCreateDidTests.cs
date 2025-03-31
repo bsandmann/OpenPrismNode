@@ -49,7 +49,7 @@ public partial class IntegrationTests
         var signingKeyId = "key1";
         var publicKeys = new List<PrismPublicKey>
         {
-            new PrismPublicKey(PrismKeyUsage.MasterKey, "key1", "secp256k1", new byte[] { 1, 2, 1 }, new byte[] { 4, 1, 6 })
+            new PrismPublicKey(PrismKeyUsage.MasterKey, "key1", "secp256k1", new byte[] { 1, 2, 1, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 4, 4 }, new byte[] { 1, 2, 1, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 4, 4 })
         };
         var services = new List<PrismService>
         {

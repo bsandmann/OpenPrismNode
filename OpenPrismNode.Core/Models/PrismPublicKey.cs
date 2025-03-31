@@ -1,100 +1,109 @@
 ﻿namespace OpenPrismNode.Core.Models;
 
-using System.Text.Json.Serialization;
+using System;
+using System.Linq;
 using Common;
 using FluentResults;
 using Org.BouncyCastle.Asn1.Sec;
 
-public sealed class PrismPublicKey
-{
-    [JsonConstructor]
-    public PrismPublicKey(PrismKeyUsage keyUsage, string keyId, string curve, byte[]? keyX, byte[]? keyY)
-    {
-        if ((curve == PrismParameters.Secp256k1CurveName && (keyX is null || keyY is null)) ||
-            (curve == PrismParameters.Ed25519CurveName || curve == PrismParameters.X25519CurveName) && (keyX is null || keyY is not null))
-        {
-            throw new ArgumentException("Either the compressed or the compressed EcKeyData has to be provided");
-        }
+// For PrismKeyUsage
+// For PrismParameters
 
-        var hex = PrismEncoding.PublicKeyPairByteArraysToHex(keyX!, keyY);
-        
+public class PrismPublicKey
+{
+    public PrismKeyUsage KeyUsage { get; }
+    public string KeyId { get; }
+    public string Curve { get; } // e.g., "secp256k1", "Ed25519", "X25519"
+    public byte[]? X { get; } // For secp256k1 (32 bytes)
+    public byte[]? Y { get; } // For secp256k1 (32 bytes)
+    public byte[]? RawBytes { get; } // For Ed25519 (32 bytes), X25519 (32 bytes)
+
+    // Constructor for secp256k1
+    public PrismPublicKey(PrismKeyUsage keyUsage, string keyId, string curve, byte[] x, byte[] y)
+    {
+        if (!curve.Equals(PrismParameters.Secp256k1CurveName, StringComparison.OrdinalIgnoreCase))
+            throw new ArgumentException($"This constructor is for {PrismParameters.Secp256k1CurveName} only. Curve provided: {curve}", nameof(curve));
+        if (x == null || x.Length != 32) throw new ArgumentException("X coordinate must be 32 bytes.", nameof(x));
+        if (y == null || y.Length != 32) throw new ArgumentException("Y coordinate must be 32 bytes.", nameof(y));
+
+        var hex = PrismEncoding.PublicKeyPairByteArraysToHex(x!, y);
+
         KeyUsage = keyUsage;
-        KeyId = keyId;
-        KeyX = keyX!;
-        KeyY = keyY;
-        Curve = curve;
+        KeyId = keyId ?? throw new ArgumentNullException(nameof(keyId));
+        Curve = PrismParameters.Secp256k1CurveName; // Normalize
+        X = x;
+        Y = y;
         Hex = hex;
         LongByteArray = PrismEncoding.HexToByteArray(hex);
+        RawBytes = null;
     }
 
-    public static Result<(byte[], byte[]?)> Decompress(byte[] keyData, string curve)
+    // Constructor for Ed25519/X25519 (using RawBytes)
+    public PrismPublicKey(PrismKeyUsage keyUsage, string keyId, string curve, byte[] rawBytes)
     {
-        if (curve.Equals(PrismParameters.Secp256k1CurveName, StringComparison.Ordinal))
-        {
-            if (keyData.Length != 33)
-            {
-                return Result.Fail("Compressed secp256k1 key data must be 33 bytes long");
-            }
+        var lowerCurve = curve;
+        if (lowerCurve != PrismParameters.Ed25519CurveName && lowerCurve != PrismParameters.X25519CurveName)
+            throw new ArgumentException($"This constructor is for {PrismParameters.Ed25519CurveName} or {PrismParameters.X25519CurveName} only. Curve provided: {curve}", nameof(curve));
+        if (rawBytes == null || rawBytes.Length != 32)
+            throw new ArgumentException($"Raw public key bytes must be 32 bytes long for {curve}.", nameof(rawBytes));
 
+        KeyUsage = keyUsage;
+        KeyId = keyId ?? throw new ArgumentNullException(nameof(keyId));
+        Curve = curve.Equals(PrismParameters.Ed25519CurveName, StringComparison.OrdinalIgnoreCase) ? PrismParameters.Ed25519CurveName : PrismParameters.X25519CurveName; // Normalize
+        RawBytes = rawBytes;
+        X = null;
+        Y = null;
+    }
+
+    public static Result<(byte[], byte[])> Decompress(byte[] compressedEcKeyData, string curve)
+    {
+        if (curve != "secp256k1")
+        {
+            Result.Fail("Only secp256k1 is supported");
+        }
+
+        try
+        {
             var crv = SecNamedCurves.GetByName(curve);
-            var point = crv.Curve.DecodePoint(keyData);
+            var point = crv.Curve.DecodePoint(compressedEcKeyData);
             var x = point.XCoord.GetEncoded();
             var y = point.YCoord.GetEncoded();
-
-            if (x.Length == 32 && y.Length == 32)
-            {
-                return Result.Ok<(byte[],byte[]?)>((x, y));
-            }
-            else
-            {
-                return Result.Fail("Decompressed secp256k1 key data must be 32 bytes for each coordinate");
-            }
+            return (x, y);
         }
-        else if (curve.Equals(PrismParameters.Ed25519CurveName, StringComparison.Ordinal) || curve.Equals(PrismParameters.X25519CurveName, StringComparison.Ordinal))
+        catch (Exception ex)
         {
-            if (keyData.Length != 32)
-            {
-                return Result.Fail("ED25519/X25519 key data must be 32 bytes long");
-            }
-        
-            // For ED25519, we return the key as-is for the x-coordinate, and null for the y-coordinate
-            return Result.Ok<(byte[],byte[]?)>((keyData, null));
-        }
-        else
-        {
-            return Result.Fail($"Unsupported curve: {curve}");
+            return Result.Fail("Failed to decompress public key: " + ex.Message);
         }
     }
 
-    public string KeyId { get; }
-    public PrismKeyUsage KeyUsage { get; }
-
-    public byte[] KeyX { get; }
-
     /// <summary>
-    /// Is null for ED25519 and X25519.
-    /// Not null for SECP256K1.
+    /// Gets the public key bytes in the standard format for the curve.
+    /// Secp256k1: 65 bytes uncompressed (0x04 + X + Y)
+    /// Ed25519: 32 bytes raw
+    /// X25519: 32 bytes raw
     /// </summary>
-    public byte[]? KeyY { get; }
-
-    public string Hex { get; }
-
-    public byte[] LongByteArray { get; }
-
-    public string Curve { get; }
-
-    public string KeyXAsHex()
+    public byte[] GetBytes()
     {
-        return PrismEncoding.ByteArrayToHex(this.KeyX);
+        return Curve switch
+        {
+            PrismParameters.Secp256k1CurveName => new byte[] { 0x04 }.Concat(X!).Concat(Y!).ToArray(),
+            PrismParameters.Ed25519CurveName => RawBytes!,
+            PrismParameters.X25519CurveName => RawBytes!,
+            _ => throw new InvalidOperationException($"Unknown curve type: {Curve}")
+        };
     }
 
     public string KeyYAsHex()
     {
-        return PrismEncoding.ByteArrayToHex(this.KeyY);
+        return PrismEncoding.ByteArrayToHex(this.Y);
     }
 
     public string LongByteArrayAsHex()
     {
         return PrismEncoding.ByteArrayToHex(this.LongByteArray);
     }
+
+    public string Hex { get; }
+
+    public byte[] LongByteArray { get; }
 }

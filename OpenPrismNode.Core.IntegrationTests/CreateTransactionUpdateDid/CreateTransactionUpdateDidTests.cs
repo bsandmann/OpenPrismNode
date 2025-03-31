@@ -17,7 +17,7 @@ public partial class IntegrationTests
 
         var publicKeys = new List<PrismPublicKey>
         {
-            new PrismPublicKey(PrismKeyUsage.MasterKey, signingKeyId, "secp256k1", new byte[] { 1, 2, 3 }, new byte[] { 4, 5, 6 })
+            new PrismPublicKey(PrismKeyUsage.MasterKey, signingKeyId, "secp256k1", new byte[] { 1, 2, 1, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 4, 5 }, new byte[] { 1, 2, 1, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 6, 4, 4 })
         };
         var services = new List<PrismService>
         {
@@ -81,7 +81,7 @@ public partial class IntegrationTests
 
         var updateActions = new List<UpdateDidActionResult>
         {
-            new UpdateDidActionResult(new PrismPublicKey(PrismKeyUsage.IssuingKey, "newKey", "secp256k1", new byte[] { 5, 7, 7 }, new byte[] { 8, 7, 10 })),
+            new UpdateDidActionResult(new PrismPublicKey(PrismKeyUsage.IssuingKey, "newKey", "secp256k1", new byte[] { 1, 2, 1, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 2, 3, 3, 3, 3, 3, 3, 3, 3, 3, 4, 4 }, new byte[] { 1, 2, 1, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 5, 4 })),
             new UpdateDidActionResult("existingService", true), // Remove existing service
             new UpdateDidActionResult(new List<string>() { "https://mycontext.com" })
         };

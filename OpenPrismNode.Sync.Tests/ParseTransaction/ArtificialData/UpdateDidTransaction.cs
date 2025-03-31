@@ -17,7 +17,7 @@ public class UpdateDidTransaction
 {
     private ParseTransactionHandler _parseTransactionHandler;
     private readonly ISha256Service _sha256Service;
-    private readonly IEcService _ecService;
+    private readonly ICryptoService _cryptoService;
     private readonly Mock<IMediator> _mediatorMock;
     private readonly ILogger<ParseTransactionHandler> _logger;
 
@@ -25,7 +25,7 @@ public class UpdateDidTransaction
     {
         _mediatorMock = new Mock<IMediator>();
         _sha256Service = new Sha256ServiceBouncyCastle();
-        _ecService = new EcServiceBouncyCastle();
+        _cryptoService = new CryptoServiceBouncyCastle();
         _logger = new Mock<ILogger<ParseTransactionHandler>>().Object;
     }
 
@@ -34,8 +34,8 @@ public class UpdateDidTransaction
     {
         // Arrange
         var publicKeyTestData = DeconstructExisitingDidForPublicKeys(TestDocuments.TransactionSampleData.PrismV2_LongForm_Did_with_Services_and_multipleKeys, KeyUsage.MasterKey);
-        var mockedEcService = new Mock<IEcService>();
-        mockedEcService.Setup(p => p.VerifyData(It.IsAny<byte[]>(), It.IsAny<byte[]>(), It.IsAny<byte[]>())).Returns(true);
+        var mockedEcService = new Mock<ICryptoService>();
+        mockedEcService.Setup(p => p.VerifyDataSecp256k1(It.IsAny<byte[]>(), It.IsAny<byte[]>(), It.IsAny<byte[]>())).Returns(true);
         var previousOperationHash = PrismEncoding.Utf8StringToByteString("previousOperationHash");
 
         var parseTransactionRequest = new ParseTransactionRequest(
@@ -95,8 +95,8 @@ public class UpdateDidTransaction
     public async Task UpdateDid_TransactionHandler_fails_with_AddKeyAction_on_emtpy_key()
     {
         // Arrange
-        var mockedEcService = new Mock<IEcService>();
-        mockedEcService.Setup(p => p.VerifyData(It.IsAny<byte[]>(), It.IsAny<byte[]>(), It.IsAny<byte[]>())).Returns(true);
+        var mockedEcService = new Mock<ICryptoService>();
+        mockedEcService.Setup(p => p.VerifyDataSecp256k1(It.IsAny<byte[]>(), It.IsAny<byte[]>(), It.IsAny<byte[]>())).Returns(true);
         var previousOperationHash = PrismEncoding.Utf8StringToByteString("previousOperationHash");
 
         var parseTransactionRequest = new ParseTransactionRequest(
@@ -144,8 +144,8 @@ public class UpdateDidTransaction
     public async Task UpdateDid_TransactionHandler_succeeds_with_RemoveKeyAction_and_well_constructed_request()
     {
         // Arrange
-        var mockedEcService = new Mock<IEcService>();
-        mockedEcService.Setup(p => p.VerifyData(It.IsAny<byte[]>(), It.IsAny<byte[]>(), It.IsAny<byte[]>())).Returns(true);
+        var mockedEcService = new Mock<ICryptoService>();
+        mockedEcService.Setup(p => p.VerifyDataSecp256k1(It.IsAny<byte[]>(), It.IsAny<byte[]>(), It.IsAny<byte[]>())).Returns(true);
         var previousOperationHash = PrismEncoding.Utf8StringToByteString("previousOperationHash");
 
         var parseTransactionRequest = new ParseTransactionRequest(
@@ -197,8 +197,8 @@ public class UpdateDidTransaction
     public async Task UpdateDid_TransactionHandler_succeeds_with_AddServiceAction_and_well_constructed_service()
     {
         // Arrange
-        var mockedEcService = new Mock<IEcService>();
-        mockedEcService.Setup(p => p.VerifyData(It.IsAny<byte[]>(), It.IsAny<byte[]>(), It.IsAny<byte[]>())).Returns(true);
+        var mockedEcService = new Mock<ICryptoService>();
+        mockedEcService.Setup(p => p.VerifyDataSecp256k1(It.IsAny<byte[]>(), It.IsAny<byte[]>(), It.IsAny<byte[]>())).Returns(true);
         var previousOperationHash = PrismEncoding.Utf8StringToByteString("previousOperationHash");
 
         var parseTransactionRequest = new ParseTransactionRequest(
@@ -254,8 +254,8 @@ public class UpdateDidTransaction
     public async Task UpdateDid_TransactionHandler_succeeds_with_RemoveServiceAction_and_well_constructed_service()
     {
         // Arrange
-        var mockedEcService = new Mock<IEcService>();
-        mockedEcService.Setup(p => p.VerifyData(It.IsAny<byte[]>(), It.IsAny<byte[]>(), It.IsAny<byte[]>())).Returns(true);
+        var mockedEcService = new Mock<ICryptoService>();
+        mockedEcService.Setup(p => p.VerifyDataSecp256k1(It.IsAny<byte[]>(), It.IsAny<byte[]>(), It.IsAny<byte[]>())).Returns(true);
         var previousOperationHash = PrismEncoding.Utf8StringToByteString("previousOperationHash");
 
         var parseTransactionRequest = new ParseTransactionRequest(
@@ -309,8 +309,8 @@ public class UpdateDidTransaction
     public async Task UpdateDid_TransactionHandler_succeeds_with_UpdateServiceAction_and_well_constructed_service()
     {
         // Arrange
-        var mockedEcService = new Mock<IEcService>();
-        mockedEcService.Setup(p => p.VerifyData(It.IsAny<byte[]>(), It.IsAny<byte[]>(), It.IsAny<byte[]>())).Returns(true);
+        var mockedEcService = new Mock<ICryptoService>();
+        mockedEcService.Setup(p => p.VerifyDataSecp256k1(It.IsAny<byte[]>(), It.IsAny<byte[]>(), It.IsAny<byte[]>())).Returns(true);
         var previousOperationHash = PrismEncoding.Utf8StringToByteString("previousOperationHash");
 
         var parseTransactionRequest = new ParseTransactionRequest(
@@ -365,8 +365,8 @@ public class UpdateDidTransaction
     public async Task UpdateDid_TransactionHandler_succeeds_with_PatchContextAction_and_well_constructed_contexts()
     {
         // Arrange
-        var mockedEcService = new Mock<IEcService>();
-        mockedEcService.Setup(p => p.VerifyData(It.IsAny<byte[]>(), It.IsAny<byte[]>(), It.IsAny<byte[]>())).Returns(true);
+        var mockedEcService = new Mock<ICryptoService>();
+        mockedEcService.Setup(p => p.VerifyDataSecp256k1(It.IsAny<byte[]>(), It.IsAny<byte[]>(), It.IsAny<byte[]>())).Returns(true);
         var previousOperationHash = PrismEncoding.Utf8StringToByteString("previousOperationHash");
 
         var patchedContextAction = new PatchContextAction();
@@ -413,8 +413,8 @@ public class UpdateDidTransaction
     public async Task UpdateDid_TransactionHandler_fails_with_PatchContextAction_and_missing_previous_operationHash()
     {
         // Arrange
-        var mockedEcService = new Mock<IEcService>();
-        mockedEcService.Setup(p => p.VerifyData(It.IsAny<byte[]>(), It.IsAny<byte[]>(), It.IsAny<byte[]>())).Returns(true);
+        var mockedEcService = new Mock<ICryptoService>();
+        mockedEcService.Setup(p => p.VerifyDataSecp256k1(It.IsAny<byte[]>(), It.IsAny<byte[]>(), It.IsAny<byte[]>())).Returns(true);
         var previousOperationHash = PrismEncoding.Utf8StringToByteString("previousOperationHash");
         var patchedContextAction = new PatchContextAction();
         patchedContextAction.Context.Add("someContext");

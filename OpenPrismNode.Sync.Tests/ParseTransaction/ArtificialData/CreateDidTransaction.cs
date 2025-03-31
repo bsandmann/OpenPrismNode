@@ -15,7 +15,7 @@ public class CreateDidTransaction
 {
     private ParseTransactionHandler _parseTransactionHandler;
     private readonly ISha256Service _sha256Service;
-    private readonly IEcService _ecService;
+    private readonly ICryptoService _cryptoService;
     private readonly Mock<IMediator> _mediatorMock;
     private readonly ILogger<ParseTransactionHandler> _logger;
 
@@ -23,7 +23,7 @@ public class CreateDidTransaction
     {
         _mediatorMock = new Mock<IMediator>();
         _sha256Service = new Sha256ServiceBouncyCastle();
-        _ecService = new EcServiceBouncyCastle();
+        _cryptoService = new CryptoServiceBouncyCastle();
         _logger = new Mock<ILogger<ParseTransactionHandler>>().Object;
     }
 
@@ -32,8 +32,8 @@ public class CreateDidTransaction
     {
         // Arrange
         var publicKeyTestData = DeconstructExisitingDidForPublicKeys(TestDocuments.TransactionSampleData.PrismV2_LongForm_Did_with_Services_and_multipleKeys, KeyUsage.MasterKey);
-        var mockedEcService = new Mock<IEcService>();
-        mockedEcService.Setup(p => p.VerifyData(It.IsAny<byte[]>(), It.IsAny<byte[]>(), It.IsAny<byte[]>())).Returns(true);
+        var mockedEcService = new Mock<ICryptoService>();
+        mockedEcService.Setup(p => p.VerifyDataSecp256k1(It.IsAny<byte[]>(), It.IsAny<byte[]>(), It.IsAny<byte[]>())).Returns(true);
 
         var parseTransactionRequest = new ParseTransactionRequest(
             new SignedAtalaOperation
@@ -82,8 +82,8 @@ public class CreateDidTransaction
     {
         // Arrange
         var publicKeyTestData = DeconstructExisitingDidForPublicKeys(TestDocuments.TransactionSampleData.PrismV2_LongForm_Did_with_Services_and_multipleKeys, KeyUsage.MasterKey);
-        var mockedEcService = new Mock<IEcService>();
-        mockedEcService.Setup(p => p.VerifyData(It.IsAny<byte[]>(), It.IsAny<byte[]>(), It.IsAny<byte[]>())).Returns(true);
+        var mockedEcService = new Mock<ICryptoService>();
+        mockedEcService.Setup(p => p.VerifyDataSecp256k1(It.IsAny<byte[]>(), It.IsAny<byte[]>(), It.IsAny<byte[]>())).Returns(true);
 
         // Creating services list with exceeding number of services
         var servicesList = new List<Service>();
@@ -139,8 +139,8 @@ public class CreateDidTransaction
     {
         // Arrange
         var publicKeyTestData = DeconstructExisitingDidForPublicKeys(TestDocuments.TransactionSampleData.PrismV2_LongForm_Did_with_Services_and_multipleKeys, KeyUsage.MasterKey);
-        var mockedEcService = new Mock<IEcService>();
-        mockedEcService.Setup(p => p.VerifyData(It.IsAny<byte[]>(), It.IsAny<byte[]>(), It.IsAny<byte[]>())).Returns(true);
+        var mockedEcService = new Mock<ICryptoService>();
+        mockedEcService.Setup(p => p.VerifyDataSecp256k1(It.IsAny<byte[]>(), It.IsAny<byte[]>(), It.IsAny<byte[]>())).Returns(true);
 
         // Creating a service with type starting and ending with a whitespace
         var service = new Service() { Id = "service0", Type = " myService ", ServiceEndpoint = "http://myServiceEndpoint" };
@@ -192,8 +192,8 @@ public class CreateDidTransaction
     {
         // Arrange
         var publicKeyTestData = DeconstructExisitingDidForPublicKeys(TestDocuments.TransactionSampleData.PrismV2_LongForm_Did_with_Services_and_multipleKeys, KeyUsage.MasterKey);
-        var mockedEcService = new Mock<IEcService>();
-        mockedEcService.Setup(p => p.VerifyData(It.IsAny<byte[]>(), It.IsAny<byte[]>(), It.IsAny<byte[]>())).Returns(true);
+        var mockedEcService = new Mock<ICryptoService>();
+        mockedEcService.Setup(p => p.VerifyDataSecp256k1(It.IsAny<byte[]>(), It.IsAny<byte[]>(), It.IsAny<byte[]>())).Returns(true);
 
         // Creating a service with type starting and ending with a whitespace
         var service = new Service() { Id = "service0", Type = "myServiceDescriptionOfTheTypeWhichIsWayToLongToBeConsiderValidmyServiceDescriptionOfTheTypeWhichIsWayToLongToBeConsiderValid", ServiceEndpoint = "http://myServiceEndpoint" };
@@ -245,8 +245,8 @@ public class CreateDidTransaction
     {
         // Arrange
         var publicKeyTestData = DeconstructExisitingDidForPublicKeys(TestDocuments.TransactionSampleData.PrismV2_LongForm_Did_with_Services_and_multipleKeys, KeyUsage.MasterKey);
-        var mockedEcService = new Mock<IEcService>();
-        mockedEcService.Setup(p => p.VerifyData(It.IsAny<byte[]>(), It.IsAny<byte[]>(), It.IsAny<byte[]>())).Returns(true);
+        var mockedEcService = new Mock<ICryptoService>();
+        mockedEcService.Setup(p => p.VerifyDataSecp256k1(It.IsAny<byte[]>(), It.IsAny<byte[]>(), It.IsAny<byte[]>())).Returns(true);
 
         // Creating a service with type starting and ending with a whitespace
         var service = new Service() { Id = "service0", Type = "myServiceType", ServiceEndpoint = "notAnUri" };
@@ -298,8 +298,8 @@ public class CreateDidTransaction
     {
         // Arrange
         var publicKeyTestData = DeconstructExisitingDidForPublicKeys(TestDocuments.TransactionSampleData.PrismV2_LongForm_Did_with_Services_and_multipleKeys, KeyUsage.MasterKey);
-        var mockedEcService = new Mock<IEcService>();
-        mockedEcService.Setup(p => p.VerifyData(It.IsAny<byte[]>(), It.IsAny<byte[]>(), It.IsAny<byte[]>())).Returns(true);
+        var mockedEcService = new Mock<ICryptoService>();
+        mockedEcService.Setup(p => p.VerifyDataSecp256k1(It.IsAny<byte[]>(), It.IsAny<byte[]>(), It.IsAny<byte[]>())).Returns(true);
 
         // Creating a service with type starting and ending with a whitespace
         var service = new Service() { Id = "service0", Type = "myServiceType", ServiceEndpoint = """["https://someServiceEndpoint1.com", "https://someServiceEndpoint2.com"]""" };
@@ -351,8 +351,8 @@ public class CreateDidTransaction
     {
         // Arrange
         var publicKeyTestData = DeconstructExisitingDidForPublicKeys(TestDocuments.TransactionSampleData.PrismV2_LongForm_Did_with_Services_and_multipleKeys, KeyUsage.MasterKey);
-        var mockedEcService = new Mock<IEcService>();
-        mockedEcService.Setup(p => p.VerifyData(It.IsAny<byte[]>(), It.IsAny<byte[]>(), It.IsAny<byte[]>())).Returns(true);
+        var mockedEcService = new Mock<ICryptoService>();
+        mockedEcService.Setup(p => p.VerifyDataSecp256k1(It.IsAny<byte[]>(), It.IsAny<byte[]>(), It.IsAny<byte[]>())).Returns(true);
 
         // Creating a service with type starting and ending with a whitespace
         var service = new Service() { Id = "service0", Type = "myServiceType", ServiceEndpoint = """["notAnUri", "notAnUri"]""" };
@@ -404,8 +404,8 @@ public class CreateDidTransaction
     {
         // Arrange
         var publicKeyTestData = DeconstructExisitingDidForPublicKeys(TestDocuments.TransactionSampleData.PrismV2_LongForm_Did_with_Services_and_multipleKeys, KeyUsage.MasterKey);
-        var mockedEcService = new Mock<IEcService>();
-        mockedEcService.Setup(p => p.VerifyData(It.IsAny<byte[]>(), It.IsAny<byte[]>(), It.IsAny<byte[]>())).Returns(true);
+        var mockedEcService = new Mock<ICryptoService>();
+        mockedEcService.Setup(p => p.VerifyDataSecp256k1(It.IsAny<byte[]>(), It.IsAny<byte[]>(), It.IsAny<byte[]>())).Returns(true);
 
         // Creating a service with type starting and ending with a whitespace
         var service = new Service() { Id = "service0", Type = "myServiceType", ServiceEndpoint = """{invalid}""" };
@@ -457,8 +457,8 @@ public class CreateDidTransaction
     {
         // Arrange
         var publicKeyTestData = DeconstructExisitingDidForPublicKeys(TestDocuments.TransactionSampleData.PrismV2_LongForm_Did_with_Services_and_multipleKeys, KeyUsage.MasterKey);
-        var mockedEcService = new Mock<IEcService>();
-        mockedEcService.Setup(p => p.VerifyData(It.IsAny<byte[]>(), It.IsAny<byte[]>(), It.IsAny<byte[]>())).Returns(true);
+        var mockedEcService = new Mock<ICryptoService>();
+        mockedEcService.Setup(p => p.VerifyDataSecp256k1(It.IsAny<byte[]>(), It.IsAny<byte[]>(), It.IsAny<byte[]>())).Returns(true);
 
         // Creating a service with type starting and ending with a whitespace
         var service = new Service()
@@ -515,8 +515,8 @@ public class CreateDidTransaction
     {
         // Arrange
         var publicKeyTestData = DeconstructExisitingDidForPublicKeys(TestDocuments.TransactionSampleData.PrismV2_LongForm_Did_with_Services_and_multipleKeys, KeyUsage.MasterKey);
-        var mockedEcService = new Mock<IEcService>();
-        mockedEcService.Setup(p => p.VerifyData(It.IsAny<byte[]>(), It.IsAny<byte[]>(), It.IsAny<byte[]>())).Returns(true);
+        var mockedEcService = new Mock<ICryptoService>();
+        mockedEcService.Setup(p => p.VerifyDataSecp256k1(It.IsAny<byte[]>(), It.IsAny<byte[]>(), It.IsAny<byte[]>())).Returns(true);
 
         var parseTransactionRequest = new ParseTransactionRequest(
             new SignedAtalaOperation
@@ -565,8 +565,8 @@ public class CreateDidTransaction
     {
         // Arrange
         var publicKeyTestData = DeconstructExisitingDidForPublicKeys(TestDocuments.TransactionSampleData.PrismV2_LongForm_Did_with_Services_and_multipleKeys, KeyUsage.MasterKey);
-        var mockedEcService = new Mock<IEcService>();
-        mockedEcService.Setup(p => p.VerifyData(It.IsAny<byte[]>(), It.IsAny<byte[]>(), It.IsAny<byte[]>())).Returns(true);
+        var mockedEcService = new Mock<ICryptoService>();
+        mockedEcService.Setup(p => p.VerifyDataSecp256k1(It.IsAny<byte[]>(), It.IsAny<byte[]>(), It.IsAny<byte[]>())).Returns(true);
 
         var parseTransactionRequest = new ParseTransactionRequest(
             new SignedAtalaOperation
@@ -625,8 +625,8 @@ public class CreateDidTransaction
     {
         // Arrange
         var publicKeyTestData = DeconstructExisitingDidForPublicKeys(TestDocuments.TransactionSampleData.PrismV2_LongForm_Did_with_Services_and_multipleKeys, KeyUsage.MasterKey);
-        var mockedEcService = new Mock<IEcService>();
-        mockedEcService.Setup(p => p.VerifyData(It.IsAny<byte[]>(), It.IsAny<byte[]>(), It.IsAny<byte[]>())).Returns(true);
+        var mockedEcService = new Mock<ICryptoService>();
+        mockedEcService.Setup(p => p.VerifyDataSecp256k1(It.IsAny<byte[]>(), It.IsAny<byte[]>(), It.IsAny<byte[]>())).Returns(true);
 
         var parseTransactionRequest = new ParseTransactionRequest(
             new SignedAtalaOperation
@@ -695,8 +695,8 @@ public class CreateDidTransaction
     {
         // Arrange
         var publicKeyTestData = DeconstructExisitingDidForPublicKeys(TestDocuments.TransactionSampleData.PrismV2_LongForm_Did_with_Services_and_multipleKeys, KeyUsage.MasterKey);
-        var mockedEcService = new Mock<IEcService>();
-        mockedEcService.Setup(p => p.VerifyData(It.IsAny<byte[]>(), It.IsAny<byte[]>(), It.IsAny<byte[]>())).Returns(true);
+        var mockedEcService = new Mock<ICryptoService>();
+        mockedEcService.Setup(p => p.VerifyDataSecp256k1(It.IsAny<byte[]>(), It.IsAny<byte[]>(), It.IsAny<byte[]>())).Returns(true);
 
         var parseTransactionRequest = new ParseTransactionRequest(
             new SignedAtalaOperation

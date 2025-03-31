@@ -16,7 +16,7 @@ public class UpdateDidTransactionEdgeCases
 {
     private ParseTransactionHandler _parseTransactionHandler;
     private readonly ISha256Service _sha256Service;
-    private readonly IEcService _ecService;
+    private readonly ICryptoService _cryptoService;
     private readonly Mock<IMediator> _mediatorMock;
     private readonly ILogger<ParseTransactionHandler> _logger;
 
@@ -24,7 +24,7 @@ public class UpdateDidTransactionEdgeCases
     {
         _mediatorMock = new Mock<IMediator>();
         _sha256Service = new Sha256ServiceBouncyCastle();
-        _ecService = new EcServiceBouncyCastle();
+        _cryptoService = new CryptoServiceBouncyCastle();
         _logger = new Mock<ILogger<ParseTransactionHandler>>().Object;
     }
 
@@ -33,8 +33,8 @@ public class UpdateDidTransactionEdgeCases
     {
         // Arrange
         var publicKeyTestData = DeconstructExisitingDidForPublicKeys(TestDocuments.TransactionSampleData.PrismV2_LongForm_Did_with_Services_and_multipleKeys, KeyUsage.MasterKey);
-        var mockedEcService = new Mock<IEcService>();
-        mockedEcService.Setup(p => p.VerifyData(It.IsAny<byte[]>(), It.IsAny<byte[]>(), It.IsAny<byte[]>())).Returns(true);
+        var mockedEcService = new Mock<ICryptoService>();
+        mockedEcService.Setup(p => p.VerifyDataSecp256k1(It.IsAny<byte[]>(), It.IsAny<byte[]>(), It.IsAny<byte[]>())).Returns(true);
         var previousOperationHash = PrismEncoding.Utf8StringToByteString("previousOperationHash");
 
         var parseTransactionRequest = new ParseTransactionRequest(
@@ -111,8 +111,8 @@ public class UpdateDidTransactionEdgeCases
     {
         // Arrange
         var publicKeyTestData = DeconstructExisitingDidForPublicKeys(TestDocuments.TransactionSampleData.PrismV2_LongForm_Did_with_Services_and_multipleKeys, KeyUsage.MasterKey);
-        var mockedEcService = new Mock<IEcService>();
-        mockedEcService.Setup(p => p.VerifyData(It.IsAny<byte[]>(), It.IsAny<byte[]>(), It.IsAny<byte[]>())).Returns(true);
+        var mockedEcService = new Mock<ICryptoService>();
+        mockedEcService.Setup(p => p.VerifyDataSecp256k1(It.IsAny<byte[]>(), It.IsAny<byte[]>(), It.IsAny<byte[]>())).Returns(true);
         var previousOperationHash = PrismEncoding.Utf8StringToByteString("previousOperationHash");
 
         var parseTransactionRequest = new ParseTransactionRequest(
@@ -189,8 +189,8 @@ public class UpdateDidTransactionEdgeCases
     {
         // Arrange
         var publicKeyTestData = DeconstructExisitingDidForPublicKeys(TestDocuments.TransactionSampleData.PrismV2_LongForm_Did_with_Services_and_multipleKeys, KeyUsage.MasterKey);
-        var mockedEcService = new Mock<IEcService>();
-        mockedEcService.Setup(p => p.VerifyData(It.IsAny<byte[]>(), It.IsAny<byte[]>(), It.IsAny<byte[]>())).Returns(true);
+        var mockedEcService = new Mock<ICryptoService>();
+        mockedEcService.Setup(p => p.VerifyDataSecp256k1(It.IsAny<byte[]>(), It.IsAny<byte[]>(), It.IsAny<byte[]>())).Returns(true);
         var previousOperationHash = PrismEncoding.Utf8StringToByteString("previousOperationHash");
 
         var parseTransactionRequest = new ParseTransactionRequest(
@@ -258,8 +258,8 @@ public class UpdateDidTransactionEdgeCases
     {
         // Arrange
         var publicKeyTestData = DeconstructExisitingDidForPublicKeys(TestDocuments.TransactionSampleData.PrismV2_LongForm_Did_with_Services_and_multipleKeys, KeyUsage.MasterKey);
-        var mockedEcService = new Mock<IEcService>();
-        mockedEcService.Setup(p => p.VerifyData(It.IsAny<byte[]>(), It.IsAny<byte[]>(), It.IsAny<byte[]>())).Returns(true);
+        var mockedEcService = new Mock<ICryptoService>();
+        mockedEcService.Setup(p => p.VerifyDataSecp256k1(It.IsAny<byte[]>(), It.IsAny<byte[]>(), It.IsAny<byte[]>())).Returns(true);
         var previousOperationHash = PrismEncoding.Utf8StringToByteString("previousOperationHash");
 
         var parseTransactionRequest = new ParseTransactionRequest(
@@ -326,8 +326,8 @@ public class UpdateDidTransactionEdgeCases
     public async Task UpdateDid_TransactionHandler_succeeds_for_multiple_remove_key_operations_for_different_keys()
     {
         // Arrange
-        var mockedEcService = new Mock<IEcService>();
-        mockedEcService.Setup(p => p.VerifyData(It.IsAny<byte[]>(), It.IsAny<byte[]>(), It.IsAny<byte[]>())).Returns(true);
+        var mockedEcService = new Mock<ICryptoService>();
+        mockedEcService.Setup(p => p.VerifyDataSecp256k1(It.IsAny<byte[]>(), It.IsAny<byte[]>(), It.IsAny<byte[]>())).Returns(true);
         var previousOperationHash = PrismEncoding.Utf8StringToByteString("previousOperationHash");
 
         var parseTransactionRequest = new ParseTransactionRequest(
@@ -388,8 +388,8 @@ public class UpdateDidTransactionEdgeCases
     public async Task UpdateDid_TransactionHandler_fails_for_multiple_remove_key_operations_for_the_same_key()
     {
         // Arrange
-        var mockedEcService = new Mock<IEcService>();
-        mockedEcService.Setup(p => p.VerifyData(It.IsAny<byte[]>(), It.IsAny<byte[]>(), It.IsAny<byte[]>())).Returns(true);
+        var mockedEcService = new Mock<ICryptoService>();
+        mockedEcService.Setup(p => p.VerifyDataSecp256k1(It.IsAny<byte[]>(), It.IsAny<byte[]>(), It.IsAny<byte[]>())).Returns(true);
         var previousOperationHash = PrismEncoding.Utf8StringToByteString("previousOperationHash");
 
         var parseTransactionRequest = new ParseTransactionRequest(
@@ -450,8 +450,8 @@ public class UpdateDidTransactionEdgeCases
     {
         // Arrange
         var publicKeyTestData = DeconstructExisitingDidForPublicKeys(TestDocuments.TransactionSampleData.PrismV2_LongForm_Did_with_Services_and_multipleKeys, KeyUsage.MasterKey);
-        var mockedEcService = new Mock<IEcService>();
-        mockedEcService.Setup(p => p.VerifyData(It.IsAny<byte[]>(), It.IsAny<byte[]>(), It.IsAny<byte[]>())).Returns(true);
+        var mockedEcService = new Mock<ICryptoService>();
+        mockedEcService.Setup(p => p.VerifyDataSecp256k1(It.IsAny<byte[]>(), It.IsAny<byte[]>(), It.IsAny<byte[]>())).Returns(true);
         var previousOperationHash = PrismEncoding.Utf8StringToByteString("previousOperationHash");
 
         var parseTransactionRequest = new ParseTransactionRequest(
@@ -528,8 +528,8 @@ public class UpdateDidTransactionEdgeCases
     {
         // Arrange
         var publicKeyTestData = DeconstructExisitingDidForPublicKeys(TestDocuments.TransactionSampleData.PrismV2_LongForm_Did_with_Services_and_multipleKeys, KeyUsage.MasterKey);
-        var mockedEcService = new Mock<IEcService>();
-        mockedEcService.Setup(p => p.VerifyData(It.IsAny<byte[]>(), It.IsAny<byte[]>(), It.IsAny<byte[]>())).Returns(true);
+        var mockedEcService = new Mock<ICryptoService>();
+        mockedEcService.Setup(p => p.VerifyDataSecp256k1(It.IsAny<byte[]>(), It.IsAny<byte[]>(), It.IsAny<byte[]>())).Returns(true);
         var previousOperationHash = PrismEncoding.Utf8StringToByteString("previousOperationHash");
 
         var parseTransactionRequest = new ParseTransactionRequest(
@@ -614,8 +614,8 @@ public class UpdateDidTransactionEdgeCases
     {
         // Arrange
         var publicKeyTestData = DeconstructExisitingDidForPublicKeys(TestDocuments.TransactionSampleData.PrismV2_LongForm_Did_with_Services_and_multipleKeys, KeyUsage.MasterKey);
-        var mockedEcService = new Mock<IEcService>();
-        mockedEcService.Setup(p => p.VerifyData(It.IsAny<byte[]>(), It.IsAny<byte[]>(), It.IsAny<byte[]>())).Returns(true);
+        var mockedEcService = new Mock<ICryptoService>();
+        mockedEcService.Setup(p => p.VerifyDataSecp256k1(It.IsAny<byte[]>(), It.IsAny<byte[]>(), It.IsAny<byte[]>())).Returns(true);
         var previousOperationHash = PrismEncoding.Utf8StringToByteString("previousOperationHash");
 
         var parseTransactionRequest = new ParseTransactionRequest(
@@ -667,8 +667,8 @@ public class UpdateDidTransactionEdgeCases
     {
         // Arrange
         var publicKeyTestData = DeconstructExisitingDidForPublicKeys(TestDocuments.TransactionSampleData.PrismV2_LongForm_Did_with_Services_and_multipleKeys, KeyUsage.MasterKey);
-        var mockedEcService = new Mock<IEcService>();
-        mockedEcService.Setup(p => p.VerifyData(It.IsAny<byte[]>(), It.IsAny<byte[]>(), It.IsAny<byte[]>())).Returns(true);
+        var mockedEcService = new Mock<ICryptoService>();
+        mockedEcService.Setup(p => p.VerifyDataSecp256k1(It.IsAny<byte[]>(), It.IsAny<byte[]>(), It.IsAny<byte[]>())).Returns(true);
         var previousOperationHash = PrismEncoding.Utf8StringToByteString("previousOperationHash");
 
         var parseTransactionRequest = new ParseTransactionRequest(
@@ -736,8 +736,8 @@ public class UpdateDidTransactionEdgeCases
     {
         // Arrange
         var publicKeyTestData = DeconstructExisitingDidForPublicKeys(TestDocuments.TransactionSampleData.PrismV2_LongForm_Did_with_Services_and_multipleKeys, KeyUsage.MasterKey);
-        var mockedEcService = new Mock<IEcService>();
-        mockedEcService.Setup(p => p.VerifyData(It.IsAny<byte[]>(), It.IsAny<byte[]>(), It.IsAny<byte[]>())).Returns(true);
+        var mockedEcService = new Mock<ICryptoService>();
+        mockedEcService.Setup(p => p.VerifyDataSecp256k1(It.IsAny<byte[]>(), It.IsAny<byte[]>(), It.IsAny<byte[]>())).Returns(true);
         var previousOperationHash = PrismEncoding.Utf8StringToByteString("previousOperationHash");
 
         var parseTransactionRequest = new ParseTransactionRequest(
@@ -805,8 +805,8 @@ public class UpdateDidTransactionEdgeCases
     {
         // Arrange
         var publicKeyTestData = DeconstructExisitingDidForPublicKeys(TestDocuments.TransactionSampleData.PrismV2_LongForm_Did_with_Services_and_multipleKeys, KeyUsage.MasterKey);
-        var mockedEcService = new Mock<IEcService>();
-        mockedEcService.Setup(p => p.VerifyData(It.IsAny<byte[]>(), It.IsAny<byte[]>(), It.IsAny<byte[]>())).Returns(true);
+        var mockedEcService = new Mock<ICryptoService>();
+        mockedEcService.Setup(p => p.VerifyDataSecp256k1(It.IsAny<byte[]>(), It.IsAny<byte[]>(), It.IsAny<byte[]>())).Returns(true);
         var previousOperationHash = PrismEncoding.Utf8StringToByteString("previousOperationHash");
 
         var parseTransactionRequest = new ParseTransactionRequest(
@@ -881,8 +881,8 @@ public class UpdateDidTransactionEdgeCases
     {
         // Arrange
         var publicKeyTestData = DeconstructExisitingDidForPublicKeys(TestDocuments.TransactionSampleData.PrismV2_LongForm_Did_with_Services_and_multipleKeys, KeyUsage.MasterKey);
-        var mockedEcService = new Mock<IEcService>();
-        mockedEcService.Setup(p => p.VerifyData(It.IsAny<byte[]>(), It.IsAny<byte[]>(), It.IsAny<byte[]>())).Returns(true);
+        var mockedEcService = new Mock<ICryptoService>();
+        mockedEcService.Setup(p => p.VerifyDataSecp256k1(It.IsAny<byte[]>(), It.IsAny<byte[]>(), It.IsAny<byte[]>())).Returns(true);
         var previousOperationHash = PrismEncoding.Utf8StringToByteString("previousOperationHash");
 
         var parseTransactionRequest = new ParseTransactionRequest(
@@ -973,8 +973,8 @@ public class UpdateDidTransactionEdgeCases
     {
         // Arrange
         var publicKeyTestData = DeconstructExisitingDidForPublicKeys(TestDocuments.TransactionSampleData.PrismV2_LongForm_Did_with_Services_and_multipleKeys, KeyUsage.MasterKey);
-        var mockedEcService = new Mock<IEcService>();
-        mockedEcService.Setup(p => p.VerifyData(It.IsAny<byte[]>(), It.IsAny<byte[]>(), It.IsAny<byte[]>())).Returns(true);
+        var mockedEcService = new Mock<ICryptoService>();
+        mockedEcService.Setup(p => p.VerifyDataSecp256k1(It.IsAny<byte[]>(), It.IsAny<byte[]>(), It.IsAny<byte[]>())).Returns(true);
         var previousOperationHash = PrismEncoding.Utf8StringToByteString("previousOperationHash");
 
         var parseTransactionRequest = new ParseTransactionRequest(
@@ -1043,8 +1043,8 @@ public class UpdateDidTransactionEdgeCases
     {
         // Arrange
         var publicKeyTestData = DeconstructExisitingDidForPublicKeys(TestDocuments.TransactionSampleData.PrismV2_LongForm_Did_with_Services_and_multipleKeys, KeyUsage.MasterKey);
-        var mockedEcService = new Mock<IEcService>();
-        mockedEcService.Setup(p => p.VerifyData(It.IsAny<byte[]>(), It.IsAny<byte[]>(), It.IsAny<byte[]>())).Returns(true);
+        var mockedEcService = new Mock<ICryptoService>();
+        mockedEcService.Setup(p => p.VerifyDataSecp256k1(It.IsAny<byte[]>(), It.IsAny<byte[]>(), It.IsAny<byte[]>())).Returns(true);
         var previousOperationHash = PrismEncoding.Utf8StringToByteString("previousOperationHash");
 
         var parseTransactionRequest = new ParseTransactionRequest(
@@ -1108,8 +1108,8 @@ public class UpdateDidTransactionEdgeCases
     {
         // Arrange
         var publicKeyTestData = DeconstructExisitingDidForPublicKeys(TestDocuments.TransactionSampleData.PrismV2_LongForm_Did_with_Services_and_multipleKeys, KeyUsage.MasterKey);
-        var mockedEcService = new Mock<IEcService>();
-        mockedEcService.Setup(p => p.VerifyData(It.IsAny<byte[]>(), It.IsAny<byte[]>(), It.IsAny<byte[]>())).Returns(true);
+        var mockedEcService = new Mock<ICryptoService>();
+        mockedEcService.Setup(p => p.VerifyDataSecp256k1(It.IsAny<byte[]>(), It.IsAny<byte[]>(), It.IsAny<byte[]>())).Returns(true);
         var previousOperationHash = PrismEncoding.Utf8StringToByteString("previousOperationHash");
 
         var parseTransactionRequest = new ParseTransactionRequest(
@@ -1176,8 +1176,8 @@ public class UpdateDidTransactionEdgeCases
     {
         // Arrange
         var publicKeyTestData = DeconstructExisitingDidForPublicKeys(TestDocuments.TransactionSampleData.PrismV2_LongForm_Did_with_Services_and_multipleKeys, KeyUsage.MasterKey);
-        var mockedEcService = new Mock<IEcService>();
-        mockedEcService.Setup(p => p.VerifyData(It.IsAny<byte[]>(), It.IsAny<byte[]>(), It.IsAny<byte[]>())).Returns(true);
+        var mockedEcService = new Mock<ICryptoService>();
+        mockedEcService.Setup(p => p.VerifyDataSecp256k1(It.IsAny<byte[]>(), It.IsAny<byte[]>(), It.IsAny<byte[]>())).Returns(true);
         var previousOperationHash = PrismEncoding.Utf8StringToByteString("previousOperationHash");
 
         var parseTransactionRequest = new ParseTransactionRequest(
@@ -1245,8 +1245,8 @@ public class UpdateDidTransactionEdgeCases
     {
         // Arrange
         var publicKeyTestData = DeconstructExisitingDidForPublicKeys(TestDocuments.TransactionSampleData.PrismV2_LongForm_Did_with_Services_and_multipleKeys, KeyUsage.MasterKey);
-        var mockedEcService = new Mock<IEcService>();
-        mockedEcService.Setup(p => p.VerifyData(It.IsAny<byte[]>(), It.IsAny<byte[]>(), It.IsAny<byte[]>())).Returns(true);
+        var mockedEcService = new Mock<ICryptoService>();
+        mockedEcService.Setup(p => p.VerifyDataSecp256k1(It.IsAny<byte[]>(), It.IsAny<byte[]>(), It.IsAny<byte[]>())).Returns(true);
         var previousOperationHash = PrismEncoding.Utf8StringToByteString("previousOperationHash");
 
         var parseTransactionRequest = new ParseTransactionRequest(
@@ -1313,8 +1313,8 @@ public class UpdateDidTransactionEdgeCases
     {
         // Arrange
         var publicKeyTestData = DeconstructExisitingDidForPublicKeys(TestDocuments.TransactionSampleData.PrismV2_LongForm_Did_with_Services_and_multipleKeys, KeyUsage.MasterKey);
-        var mockedEcService = new Mock<IEcService>();
-        mockedEcService.Setup(p => p.VerifyData(It.IsAny<byte[]>(), It.IsAny<byte[]>(), It.IsAny<byte[]>())).Returns(true);
+        var mockedEcService = new Mock<ICryptoService>();
+        mockedEcService.Setup(p => p.VerifyDataSecp256k1(It.IsAny<byte[]>(), It.IsAny<byte[]>(), It.IsAny<byte[]>())).Returns(true);
         var previousOperationHash = PrismEncoding.Utf8StringToByteString("previousOperationHash");
 
         var parseTransactionRequest = new ParseTransactionRequest(

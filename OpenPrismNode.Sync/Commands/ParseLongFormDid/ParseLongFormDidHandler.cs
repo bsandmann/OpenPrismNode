@@ -11,12 +11,12 @@ using ParseTransaction;
 public class ParseLongFormDidHandler : IRequestHandler<ParseLongFormDidRequest, Result<InternalDidDocument>>
 {
     private readonly ISha256Service _sha256Service;
-    private readonly IEcService _ecService;
+    private readonly ICryptoService _cryptoService;
 
-    public ParseLongFormDidHandler(ISha256Service sha256Service, IEcService ecService)
+    public ParseLongFormDidHandler(ISha256Service sha256Service, ICryptoService cryptoService)
     {
         _sha256Service = sha256Service;
-        _ecService = ecService;
+        _cryptoService = cryptoService;
     }
 
     public async Task<Result<InternalDidDocument>> Handle(ParseLongFormDidRequest request, CancellationToken cancellationToken)
@@ -47,7 +47,7 @@ public class ParseLongFormDidHandler : IRequestHandler<ParseLongFormDidRequest, 
             return Result.Fail("The provided longform-DID does not match the did-identifier");
         }
 
-        var parseTransactionHandler = new ParseTransactionHandler(null!, _sha256Service, _ecService, null!);
+        var parseTransactionHandler = new ParseTransactionHandler(null!, _sha256Service, _cryptoService, null!);
         var stubSignedAtalaOperation = new SignedAtalaOperation()
         {
             Operation = atalaOperation, Signature = ByteString.Empty, SignedWith = string.Empty

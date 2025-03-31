@@ -301,8 +301,8 @@ public class ResolveDidHandler : IRequestHandler<ResolveDidRequest, Result<Resol
                                 keyUsage: addKeyAction.PrismKeyUsage,
                                 keyId: addKeyAction.KeyId,
                                 curve: addKeyAction.Curve,
-                                keyX: keyX,
-                                keyY: keyY.Length == 0 ? null : keyY
+                                x: keyX,
+                                y: keyY.Length == 0 ? null : keyY
                             ));
                         }
                     }
@@ -448,8 +448,8 @@ public class ResolveDidHandler : IRequestHandler<ResolveDidRequest, Result<Resol
                 keyUsage: keyUsage,
                 keyId: keyId!,
                 curve: prismPublicKeyEntity.Curve,
-                keyX: keyX,
-                keyY: keyY.Length == 0 ? null : keyY
+                x: keyX,
+                y: keyY.Length == 0 ? null : keyY
             ));
         }
 

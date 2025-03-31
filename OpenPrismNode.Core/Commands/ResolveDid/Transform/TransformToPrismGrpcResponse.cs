@@ -46,14 +46,14 @@ public class TransformToPrismGrpcResponse
 
             if (prismPublicKey.Curve == PrismParameters.Secp256k1CurveName)
             {
-                if (prismPublicKey.KeyY != null && prismPublicKey.KeyY.Length == 32)
+                if (prismPublicKey.Y != null && prismPublicKey.X.Length == 32)
                 {
                     // Uncompressed key
                     publicKey.EcKeyData = new ECKeyData()
                     {
                         Curve = prismPublicKey.Curve,
-                        X = ByteString.CopyFrom(prismPublicKey.KeyX),
-                        Y = ByteString.CopyFrom(prismPublicKey.KeyY)
+                        X = ByteString.CopyFrom(prismPublicKey.X),
+                        Y = ByteString.CopyFrom(prismPublicKey.Y)
                     };
                 }
                 else
@@ -62,7 +62,7 @@ public class TransformToPrismGrpcResponse
                     publicKey.CompressedEcKeyData = new CompressedECKeyData()
                     {
                         Curve = prismPublicKey.Curve,
-                        Data = ByteString.CopyFrom(prismPublicKey.KeyX)
+                        Data = ByteString.CopyFrom(prismPublicKey.X)
                     };
                 }
             }
@@ -72,7 +72,7 @@ public class TransformToPrismGrpcResponse
                 publicKey.EcKeyData = new ECKeyData
                 {
                     Curve = prismPublicKey.Curve,
-                    X = ByteString.CopyFrom(prismPublicKey.KeyX)
+                    X = ByteString.CopyFrom(prismPublicKey.X)
                     // Y is not used for these curves
                 };
             }

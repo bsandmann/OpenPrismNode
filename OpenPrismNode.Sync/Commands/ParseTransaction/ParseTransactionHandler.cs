@@ -5,6 +5,7 @@ using Core.Commands.ResolveDid;
 using Core.Common;
 using Core.Crypto;
 using Core.Models;
+using Core.Services.Did;
 using EnsureThat;
 using FluentResults;
 using Google.Protobuf;
@@ -25,14 +26,14 @@ using OpenPrismNode.Sync.Models;
 public class ParseTransactionHandler : IRequestHandler<ParseTransactionRequest, Result<OperationResultWrapper>>
 {
     private readonly IMediator _mediator;
-    private readonly IEcService _ecService;
+    private readonly ICryptoService _cryptoService;
     private readonly ISha256Service _sha256Service;
     private readonly ILogger<ParseTransactionHandler> _logger;
 
-    public ParseTransactionHandler(IMediator mediator, ISha256Service sha256Service, IEcService ecService, ILogger<ParseTransactionHandler> logger)
+    public ParseTransactionHandler(IMediator mediator, ISha256Service sha256Service, ICryptoService cryptoService, ILogger<ParseTransactionHandler> logger)
     {
         _mediator = mediator;
-        _ecService = ecService;
+        _cryptoService = cryptoService;
         _sha256Service = sha256Service;
         _logger = logger;
     }
@@ -103,7 +104,7 @@ public class ParseTransactionHandler : IRequestHandler<ParseTransactionRequest, 
                 return Result.Fail(ParserErrors.DataOfDidCreationCannotBeConfirmedDueToMissingKey);
             }
 
-            var verificationResult = _ecService.VerifyData(PrismEncoding.ByteStringToByteArray(signedAtalaOperation.Operation.ToByteString()), signature, publicKeyMaster.LongByteArray);
+            var verificationResult = _cryptoService.VerifyDataSecp256k1(PrismEncoding.ByteStringToByteArray(signedAtalaOperation.Operation.ToByteString()), signature, publicKeyMaster.LongByteArray);
             if (!verificationResult)
             {
                 return Result.Fail(ParserErrors.UnableToVerifySignature + $" for keyId: {publicKeyMaster.KeyId} on DID-Creation for did {didIdentifier}");
@@ -491,12 +492,22 @@ public class ParseTransactionHandler : IRequestHandler<ParseTransactionRequest, 
             return Result.Fail("The UnknownKey is not a valid key usage.");
         }
 
+        if (curve == PrismParameters.Secp256k1CurveName)
+        {
+            return Result.Ok(new PrismPublicKey(
+                keyUsage: Enum.Parse<PrismKeyUsage>(publicKey.Usage.ToString()),
+                keyId: publicKey.Id,
+                x: keyData,
+                y: null,
+                curve: curve
+            ));
+        }
+
         return Result.Ok(new PrismPublicKey(
             keyUsage: Enum.Parse<PrismKeyUsage>(publicKey.Usage.ToString()),
             keyId: publicKey.Id,
-            keyX: keyData,
-            keyY: null,
-            curve: curve
+            curve: curve,
+            rawBytes: keyData
         ));
     }
 
@@ -544,8 +555,8 @@ public class ParseTransactionHandler : IRequestHandler<ParseTransactionRequest, 
         return Result.Ok(new PrismPublicKey(
             keyUsage: Enum.Parse<PrismKeyUsage>(publicKey.Usage.ToString()),
             keyId: publicKey.Id,
-            keyX: x,
-            keyY: y,
+            x: x,
+            y: y,
             curve: curve
         ));
     }
@@ -688,7 +699,7 @@ public class ParseTransactionHandler : IRequestHandler<ParseTransactionRequest, 
             return Result.Fail(ParserErrors.UnableToResolveForPublicKeys + $" for {GetOperationResultType.GetFromSignedAtalaOperation(signedAtalaOperation)} operation for DID {didIdentifier}");
         }
 
-        var verificationResult = _ecService.VerifyData(PrismEncoding.ByteStringToByteArray(signedAtalaOperation.Operation.ToByteString()), signature, publicKey.LongByteArray);
+        var verificationResult = _cryptoService.VerifyDataSecp256k1(PrismEncoding.ByteStringToByteArray(signedAtalaOperation.Operation.ToByteString()), signature, publicKey.LongByteArray);
         if (!verificationResult)
         {
             return Result.Fail(ParserErrors.UnableToVerifySignature + $" for {GetOperationResultType.GetFromSignedAtalaOperation(signedAtalaOperation)} operation for DID {didIdentifier}");

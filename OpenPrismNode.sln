@@ -32,6 +32,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		compose.yaml = compose.yaml
 	EndProjectSection
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OpenPrismNode.Core.Tests", "OpenPrismNode.Core.Tests\OpenPrismNode.Core.Tests.csproj", "{17CE94AF-DE5A-4100-9740-973541281E12}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -66,6 +68,10 @@ Global
 		{41C1B41B-D3E7-475A-894A-815FE7D56154}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{41C1B41B-D3E7-475A-894A-815FE7D56154}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{41C1B41B-D3E7-475A-894A-815FE7D56154}.Release|Any CPU.Build.0 = Release|Any CPU
+		{17CE94AF-DE5A-4100-9740-973541281E12}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{17CE94AF-DE5A-4100-9740-973541281E12}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{17CE94AF-DE5A-4100-9740-973541281E12}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{17CE94AF-DE5A-4100-9740-973541281E12}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -74,5 +80,6 @@ Global
 		{09B6FFC6-090F-44D8-8F20-D6B1CC001CA4} = {BC63DBFB-9321-4851-8A28-7B8A4397CF46}
 		{C3C26DB5-F78C-4673-B4B8-0C8DBE5FE9D4} = {BC63DBFB-9321-4851-8A28-7B8A4397CF46}
 		{41C1B41B-D3E7-475A-894A-815FE7D56154} = {BC63DBFB-9321-4851-8A28-7B8A4397CF46}
+		{17CE94AF-DE5A-4100-9740-973541281E12} = {BC63DBFB-9321-4851-8A28-7B8A4397CF46}
 	EndGlobalSection
 EndGlobal

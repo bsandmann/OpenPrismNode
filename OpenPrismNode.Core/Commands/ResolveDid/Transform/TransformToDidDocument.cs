@@ -41,8 +41,8 @@ public static class TransformToDidDocument
                 {
                     Curve = prismPublicKey.Curve,
                     KeyType = GetKeyType(prismPublicKey.Curve),
-                    X = PrismEncoding.ByteArrayToBase64(prismPublicKey.KeyX),
-                    Y = prismPublicKey.KeyY is not null ? PrismEncoding.ByteArrayToBase64(prismPublicKey.KeyY) : null
+                    X = PrismEncoding.ByteArrayToBase64(prismPublicKey.X),
+                    Y = prismPublicKey.Y is not null ? PrismEncoding.ByteArrayToBase64(prismPublicKey.Y) : null
                 }
             });
         }

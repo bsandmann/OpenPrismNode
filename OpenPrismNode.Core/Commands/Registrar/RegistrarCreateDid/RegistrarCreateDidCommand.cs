@@ -16,7 +16,7 @@ namespace OpenPrismNode.Core.Commands.Registrar.RegistrarCreateDid
     {
         private IKeyGenerationService _keyGenerationService;
         private ISha256Service _sha256Service;
-        private IEcService _ecService;
+        private ICryptoService _cryptoService;
 
         /// <summary>
         /// Creates a new instance of the RegistrarCreateDidCommand.
@@ -24,11 +24,11 @@ namespace OpenPrismNode.Core.Commands.Registrar.RegistrarCreateDid
         public RegistrarCreateDidCommand(
             IKeyGenerationService keyGenerationService,
             ISha256Service sha256Service,
-            IEcService ecService)
+            ICryptoService cryptoService)
         {
             _keyGenerationService = keyGenerationService;
             _sha256Service = sha256Service;
-            _ecService = ecService;
+            _cryptoService = cryptoService;
         }
 
         public async Task<Result<RegistrarResponseDto>> Handle(RegistrarCreateDidRequest request, CancellationToken cancellationToken)
@@ -43,6 +43,11 @@ namespace OpenPrismNode.Core.Commands.Registrar.RegistrarCreateDid
 
             foreach (var verificationMethod in request.Secret.VerificationMethod)
             {
+                if (string.IsNullOrEmpty(verificationMethod.Curve))
+                {
+                    return Result.Fail("Curve is required");
+                }
+
                 var keyId = verificationMethod.Id!;
                 PrismKeyUsage keyType = PrismKeyUsage.UnknownKey;
                 // This is a simplification, but it is unclear how this should work with the current implemenation of the PRISM method otherwise.
@@ -67,7 +72,7 @@ namespace OpenPrismNode.Core.Commands.Registrar.RegistrarCreateDid
                         break;
                 }
 
-                var key = _keyGenerationService.DeriveKeyFromSeed(template.SeedAsHex, 0, keyType, 0, keyId);
+                var key = _keyGenerationService.DeriveKeyFromSeed(template.SeedAsHex, 0, keyType, 0, keyId, verificationMethod.Curve);
                 template.KeyPairs.Add(keyId, key);
             }
 
@@ -114,7 +119,7 @@ namespace OpenPrismNode.Core.Commands.Registrar.RegistrarCreateDid
                 {
                     Id = keyPair.Key,
                     Usage = keyUsage,
-                    CompressedEcKeyData = CompressPublicKey(keyPair.Value.PublicKey.KeyX, keyPair.Value.PublicKey.KeyY, keyPair.Value.PublicKey.Curve)
+                    CompressedEcKeyData = CompressPublicKey(keyPair.Value.PublicKey.X, keyPair.Value.PublicKey.Y, keyPair.Value.PublicKey.Curve)
                 });
             }
 
@@ -150,7 +155,7 @@ namespace OpenPrismNode.Core.Commands.Registrar.RegistrarCreateDid
             var hashedAtalaOperation = new Hash(_sha256Service).Of(encodedAtalaOperation);
             template.Identifier = "did:prism:" + PrismEncoding.ByteArrayToHex(hashedAtalaOperation.Value);
 
-            var signedAtalaOperation = SignAtalaOperation(template.MasterKeyPair.PrivateKey.PrivateKey, template.MasterKeyPair.PublicKey.KeyId, atalaOperation, _ecService);
+            var signedAtalaOperation = SignAtalaOperation(template.MasterKeyPair.PrivateKey.PrivateKey, template.MasterKeyPair.PublicKey.KeyId, atalaOperation, _cryptoService);
             return null;
         }
 
@@ -172,9 +177,9 @@ namespace OpenPrismNode.Core.Commands.Registrar.RegistrarCreateDid
             return pk;
         }
 
-        private static SignedAtalaOperation SignAtalaOperation(byte[] privateKey, string signedWith, AtalaOperation atalaOperation, IEcService ecService)
+        private static SignedAtalaOperation SignAtalaOperation(byte[] privateKey, string signedWith, AtalaOperation atalaOperation, ICryptoService cryptoService)
         {
-            var signature = SignBytes(atalaOperation.ToByteString(), privateKey, ecService);
+            var signature = SignBytes(atalaOperation.ToByteString(), privateKey, cryptoService);
             return new SignedAtalaOperation()
             {
                 SignedWith = signedWith,
@@ -183,9 +188,9 @@ namespace OpenPrismNode.Core.Commands.Registrar.RegistrarCreateDid
             };
         }
 
-        private static byte[] SignBytes(ByteString data, byte[] issuingPrivateKey, IEcService ecService)
+        private static byte[] SignBytes(ByteString data, byte[] issuingPrivateKey, ICryptoService cryptoService)
         {
-            return ecService.SignData(PrismEncoding.ByteStringToByteArray(data), issuingPrivateKey);
+            return cryptoService.SignDataSecp256k1(PrismEncoding.ByteStringToByteArray(data), issuingPrivateKey);
         }
     }
 }

@@ -2,12 +2,12 @@
 
 using System.Text.Json.Serialization;
 using OpenPrismNode.Core.Models;
-using PrismPublicKey = Did.PrismPublicKey;
+using PrismPublicKey = Models.PrismPublicKey;
 
 public sealed class PrismKeyPair
 {
     [JsonConstructor]
-    public PrismKeyPair(PrismKeyUsage keyUsage, PrismPrivateKey privateKey, Did.PrismPublicKey publicKey)
+    public PrismKeyPair(PrismKeyUsage keyUsage, PrismPrivateKey privateKey, Models.PrismPublicKey publicKey)
     {
         PrivateKey = privateKey;
         PublicKey = publicKey;
@@ -18,5 +18,5 @@ public sealed class PrismKeyPair
 
     public PrismPrivateKey PrivateKey { get; }
 
-    public Did.PrismPublicKey PublicKey { get; }
+    public PrismPublicKey PublicKey { get; }
 }
