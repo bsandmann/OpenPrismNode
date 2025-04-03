@@ -1,4 +1,4 @@
-namespace OpenPrismNode.Core.Commands.Registrar.RegistrarCreateDid
+namespace OpenPrismNode.Core.Commands.Registrar.CreateSignedAtalaOperationForCreateDid
 {
     using FluentResults;
     using MediatR;
@@ -6,13 +6,13 @@ namespace OpenPrismNode.Core.Commands.Registrar.RegistrarCreateDid
     /// <summary>
     /// MediatR request to create a DID using the Registrar.
     /// </summary>
-    public class RegistrarCreateDidRequest : IRequest<Result<RegistrarResponseDto>>
+    public class CreateSignedAtalaOperationForCreateDidRequest : IRequest<Result<CreateSignedAtalaOperationForCreateDidResponse>>
     {
         public RegistrarOptions Options { get; }
         public RegistrarSecret? Secret { get; }
         public RegistrarDidDocument DidDocument { get; }
 
-        public RegistrarCreateDidRequest(
+        public CreateSignedAtalaOperationForCreateDidRequest(
             RegistrarOptions options,
             RegistrarSecret? secret,
             RegistrarDidDocument didDocument

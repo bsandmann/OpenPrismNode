@@ -1,5 +1,7 @@
 ﻿namespace OpenPrismNode.Core.Common;
 
+using Org.BouncyCastle.Bcpg;
+
 #pragma warning disable CS8618
 /// <summary>
 /// AppSettings-Configuration for the app
@@ -107,6 +109,13 @@ public class AppSettings
     /// Useful if some redirection happens because of a firewall
     /// </summary>
     public int GrpcPortUi { get; set; } = 50053;
+
+    /// <summary>
+    /// In the current state X-API-KEY headers cannot be provided by Identus.
+    /// The system therefor chooses a default wallet by itself by taken the on with the
+    /// most balance. To avoid this behaiour, the default wallet can be set here.
+    /// </summary>
+    public string? DefaultWalletIdForGrpc { get; set; }
 
     /// <summary>
     /// The data source provider to use for blockchain data retrieval

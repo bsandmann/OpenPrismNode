@@ -1,6 +1,7 @@
 namespace OpenPrismNode.Core.Commands.Registrar
 {
     using System.Text.Json.Serialization;
+    using Models.DidDocument;
 
     /// <summary>
     /// Represents the state of the DID registration process. Part of the response.
@@ -9,7 +10,7 @@ namespace OpenPrismNode.Core.Commands.Registrar
     {
         public const string FinishedState = "finished";
         public const string FailedState = "failed";
-        public const string ActionState = "action";
+        public const string ActionState = "action"; // is not used in the OPN
         public const string WaitState = "wait";
 
         /// <summary>
@@ -35,7 +36,7 @@ namespace OpenPrismNode.Core.Commands.Registrar
         /// The resulting DID document after a successful operation. Optional.
         /// </summary>
         [JsonPropertyName("didDocument")]
-        public RegistrarDidDocument? DidDocument { get; set; } // Nullable
+        public DidDocument? DidDocument { get; set; } // Nullable
 
         // --- Fields for specific states ---
 

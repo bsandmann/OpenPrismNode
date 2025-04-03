@@ -17,7 +17,7 @@ namespace OpenPrismNode.Web.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "9.0.2")
+                .HasAnnotation("ProductVersion", "9.0.3")
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
@@ -483,6 +483,50 @@ namespace OpenPrismNode.Web.Migrations
                     b.ToTable("UtxoEntities");
                 });
 
+            modelBuilder.Entity("OpenPrismNode.Core.Entities.VerificationMethodSecretEntity", b =>
+                {
+                    b.Property<int>("VerificationMethodSecretEntityId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("VerificationMethodSecretEntityId"));
+
+                    b.Property<byte[]>("Bytes")
+                        .IsRequired()
+                        .HasColumnType("bytea");
+
+                    b.Property<string>("Curve")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<bool>("IsRemoveOperation")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("KeyId")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("character varying(255)");
+
+                    b.Property<string>("Mnemonic")
+                        .HasMaxLength(1000)
+                        .HasColumnType("character varying(1000)");
+
+                    b.Property<int>("OperationStatusEntityId")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("PrismKeyUsage")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.HasKey("VerificationMethodSecretEntityId");
+
+                    b.HasIndex("OperationStatusEntityId");
+
+                    b.ToTable("VerificationMethodSecrets");
+                });
+
             modelBuilder.Entity("OpenPrismNode.Core.Entities.WalletAddressEntity", b =>
                 {
                     b.Property<string>("WalletAddress")
@@ -752,6 +796,17 @@ namespace OpenPrismNode.Web.Migrations
                     b.Navigation("WalletAddressEntity");
                 });
 
+            modelBuilder.Entity("OpenPrismNode.Core.Entities.VerificationMethodSecretEntity", b =>
+                {
+                    b.HasOne("OpenPrismNode.Core.Entities.OperationStatusEntity", "OperationStatusEntity")
+                        .WithMany("VerificationMethodSecrets")
+                        .HasForeignKey("OperationStatusEntityId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("OperationStatusEntity");
+                });
+
             modelBuilder.Entity("OpenPrismNode.Core.Entities.WalletTransactionEntity", b =>
                 {
                     b.HasOne("OpenPrismNode.Core.Entities.OperationStatusEntity", "OperationStatusEntity")
@@ -801,6 +856,8 @@ namespace OpenPrismNode.Web.Migrations
 
             modelBuilder.Entity("OpenPrismNode.Core.Entities.OperationStatusEntity", b =>
                 {
+                    b.Navigation("VerificationMethodSecrets");
+
                     b.Navigation("WalletTransactionEntity");
                 });
 

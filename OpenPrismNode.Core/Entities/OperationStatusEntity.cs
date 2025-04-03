@@ -44,9 +44,6 @@ public class OperationStatusEntity
     /// Reference to the WalletTransaction used for this operation
     /// </summary>
     public WalletTransactionEntity? WalletTransactionEntity { get; set; }
-    
-    // FKs 
-    // public CreateDidEntity? CreateDidEntity { get; set; }
-    // public UpdateDidEntity? UpdateDidEntity { get; set; }
-    // public DeactivateDidEntity? DeactivateDidEntity { get; set; }
+
+    public virtual IList<VerificationMethodSecretEntity> VerificationMethodSecrets { get; set; } = new List<VerificationMethodSecretEntity>();
 }

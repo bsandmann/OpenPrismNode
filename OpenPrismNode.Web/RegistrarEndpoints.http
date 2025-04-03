@@ -11,8 +11,8 @@ Content-Type: application/json
   "options": {
     "storeSecretes": true,
     "returnSecrets": true,
-    "walletId": "abcdefg",
-    "network": "mainnet"
+    "walletId": "a4e8d89055c08493b297883392e730008153b6c1",
+    "network": "preprod"
   },
   "secret": {
     "verificationMethod": [
@@ -40,7 +40,6 @@ Content-Type: application/json
         ],
         "curve": "X25519"
       }
-
     ]
   },
   "didDocument": {
@@ -64,3 +63,375 @@ Content-Type: application/json
     ]
   }
 }
+
+###
+# Get Job-Status from create endpoint
+POST {{OpenPrismNode_HostAddress}}/api/v1/registrar/create
+Accept: application/json
+Content-Type: application/json
+
+{
+  "jobId": "539d28d52927f695b0c9b52e581ebd3cb12285da189a05bc849afa893740245f"
+}
+
+
+###
+# Registrar update endpoint (add keys)
+POST {{OpenPrismNode_HostAddress}}/api/v1/registrar/update/did:prism:e83a8d46319b3fc7cdf3ba605a47c68e4c63b55ee842f893a512ba25afa0cf42
+Accept: application/json
+Content-Type: application/json
+
+{
+  "options": {
+    "storeSecretes": true,
+    "returnSecrets": true,
+    "walletId": "a4e8d89055c08493b297883392e730008153b6c1",
+    "network": "preprod"
+  },
+  "secret": {
+    "verificationMethod": [
+      {
+        "id": "key-1a",
+        "type": "JsonWebKey2020",
+        "purpose": [
+          "authentication"
+        ],
+        "curve": "secp256k1"
+      },
+      {
+        "id": "key-2a",
+        "type": "JsonWebKey2020",
+        "purpose": [
+          "authentication"
+        ],
+        "curve": "Ed25519"
+      },
+      {
+        "id": "key-3a",
+        "type": "JsonWebKey2020",
+        "purpose": [
+          "keyAgreement"
+        ],
+        "curve": "X25519"
+      }
+    ]
+  },
+  "didDocumentOperation": [
+    "addToDidDocument",
+    "addToDidDocument"
+  ],
+  "didDocument": [
+    {
+      "verificationMethod": [
+        {
+          "id": "did:prism:4e8d89055c08493b297883392e730008153b6c1#key-1a"
+        },
+        {
+          "id": "did:prism:4e8d89055c08493b297883392e730008153b6c1#key-2a"
+        }
+      ]
+    },
+    {
+      "verificationMethod": [
+        {
+          "id": "did:prism:4e8d89055c08493b297883392e730008153b6c1#key-3a"
+        }
+      ]
+    }
+  ]
+}
+
+###
+# Registrar update endpoint (mixed keys)
+POST {{OpenPrismNode_HostAddress}}/api/v1/registrar/update/did:prism:e83a8d46319b3fc7cdf3ba605a47c68e4c63b55ee842f893a512ba25afa0cf42
+Accept: application/json
+Content-Type: application/json
+
+{
+  "options": {
+    "storeSecretes": true,
+    "returnSecrets": true,
+    "walletId": "a4e8d89055c08493b297883392e730008153b6c1",
+    "network": "preprod"
+  },
+  "secret": {
+    "verificationMethod": [
+      {
+        "id": "key-1b",
+        "type": "JsonWebKey2020",
+        "purpose": [
+          "authentication"
+        ],
+        "curve": "secp256k1"
+      }
+    ]
+  },
+  "didDocumentOperation": [
+    "addToDidDocument",
+    "removeFromDidDocument",
+    "removeFromDidDocument"
+  ],
+  "didDocument": [
+    {
+      "verificationMethod": [
+        {
+          "id": "did:prism:4e8d89055c08493b297883392e730008153b6c1#key-1b"
+        }
+      ]
+    },
+    {
+      "verificationMethod": [
+        {
+          "id": "did:prism:4e8d89055c08493b297883392e730008153b6c1#key-1a"
+        }
+      ]
+    },
+    {
+      "verificationMethod": [
+        {
+          "id": "did:prism:4e8d89055c08493b297883392e730008153b6c1#key-2a"
+        }
+      ]
+    }
+  ]
+}
+
+###
+# Registrar update endpoint (remove key)
+POST {{OpenPrismNode_HostAddress}}/api/v1/registrar/update/did:prism:f4e9d6f398f583b4bd8314199865702445a5842fc6c54f9e8a8f5a67b9e914f7
+Accept: application/json
+Content-Type: application/json
+
+{
+  "options": {
+    "storeSecretes": true,
+    "returnSecrets": true,
+    "walletId": "a4e8d89055c08493b297883392e730008153b6c1",
+    "network": "preprod"
+  },
+  "didDocumentOperation": [
+    "removeFromDidDocument",
+    "removeFromDidDocument"
+  ],
+  "didDocument": [
+    {
+      "verificationMethod": [
+        {
+          "id": "did:prism:f4e9d6f398f583b4bd8314199865702445a5842fc6c54f9e8a8f5a67b9e914f7#key-1"
+        }
+      ]
+    },
+    {
+      "verificationMethod": [
+        {
+          "id": "did:prism:f4e9d6f398f583b4bd8314199865702445a5842fc6c54f9e8a8f5a67b9e914f7#key-2"
+        }
+      ]
+    }
+  ]
+}
+
+###
+# Registrar update contexts
+POST {{OpenPrismNode_HostAddress}}/api/v1/registrar/update/did:prism:ebbf971371033c5ec8ccd1ce50cbb32f85768912bc75ae72f12beb93323c7ea4
+Accept: application/json
+Content-Type: application/json
+
+{
+  "options": {
+    "storeSecretes": true,
+    "returnSecrets": true,
+    "walletId": "a4e8d89055c08493b297883392e730008153b6c1",
+    "network": "preprod"
+  },
+  "didDocumentOperation": [
+    "setDidDocument"
+  ],
+  "didDocument": [
+    {
+      "@context": [
+        "https://www.w3.org/ns/did/v1",
+        "https://w3id.org/security/suites/jws-2020/v1",
+        "https://identity.foundation/.well-known/did-configuration/v1",
+        "https://didcomm.org/messaging/contexts/v3"
+      ]
+    }
+  ]
+}
+
+###
+# Registrar update (add services)
+POST {{OpenPrismNode_HostAddress}}/api/v1/registrar/update/did:prism:ebbf971371033c5ec8ccd1ce50cbb32f85768912bc75ae72f12beb93323c7ea4
+Accept: application/json
+Content-Type: application/json
+
+{
+  "options": {
+    "storeSecretes": true,
+    "returnSecrets": true,
+    "walletId": "a4e8d89055c08493b297883392e730008153b6c1",
+    "network": "preprod"
+  },
+  "didDocumentOperation": [
+    "setDidDocument"
+  ],
+  "didDocument": [
+    {
+      "service": [
+        {
+          "id": "service-3",
+          "type": "LinkedDomains",
+          "serviceEndpoint": "https://opn.preprod.blocktrust.dev/"
+        },
+        {
+          "id": "service-4",
+          "type": "LinkedDomains",
+          "serviceEndpoint": "https://opn.mainnet.blocktrust.dev/"
+        }
+      ]
+    }
+  ]
+}
+
+###
+# Registrar update (update services)
+POST {{OpenPrismNode_HostAddress}}/api/v1/registrar/update/did:prism:ebbf971371033c5ec8ccd1ce50cbb32f85768912bc75ae72f12beb93323c7ea4
+Accept: application/json
+Content-Type: application/json
+
+{
+  "options": {
+    "storeSecretes": true,
+    "returnSecrets": true,
+    "walletId": "a4e8d89055c08493b297883392e730008153b6c1",
+    "network": "preprod"
+  },
+  "didDocumentOperation": [
+    "setDidDocument"
+  ],
+  "didDocument": [
+    {
+      "service": [
+        {
+          "id": "service-3",
+          "type": "LinkedDomains",
+          "serviceEndpoint": "https://opn.blocktrust.dev/"
+        }
+      ]
+    }
+  ]
+}
+
+###
+# Registrar update (all)
+POST {{OpenPrismNode_HostAddress}}/api/v1/registrar/update/did:prism:a0e3f1ac977123350eaaf0b703a0262c480eab4ef18398142c8e01a26eaa7fb9
+Accept: application/json
+Content-Type: application/json
+
+{
+  "options": {
+    "storeSecretes": true,
+    "returnSecrets": true,
+    "walletId": "a4e8d89055c08493b297883392e730008153b6c1",
+    "network": "preprod"
+  },
+  "secret": {
+    "verificationMethod": [
+      {
+        "id": "key-u1",
+        "type": "JsonWebKey2020",
+        "purpose": [
+          "authentication"
+        ],
+        "curve": "secp256k1"
+      },
+      {
+        "id": "key-u2",
+        "type": "JsonWebKey2020",
+        "purpose": [
+          "authentication"
+        ],
+        "curve": "Ed25519"
+      }
+    ]
+  },
+  "didDocumentOperation": [
+    "setDidDocument",
+    "addToDidDocument",
+    "removeFromDidDocument"
+  ],
+  "didDocument": [
+    {
+      "@context": [
+        "https://www.w3.org/ns/did/v1",
+        "https://w3id.org/security/suites/jws-2020/v1",
+        "https://identity.foundation/.well-known/did-configuration/v1",
+        "https://didcomm.org/messaging/contexts/v3"
+      ],
+      "service": [
+        {
+          "id": "service-3",
+          "type": "LinkedDomains",
+          "serviceEndpoint": "https://opn.blocktrust.dev/"
+        }
+      ]
+    },
+    {
+      "verificationMethod": [
+        {
+          "id": "did:prism:a0e3f1ac977123350eaaf0b703a0262c480eab4ef18398142c8e01a26eaa7fb9#key-u1"
+        },
+        {
+          "id": "did:prism:a0e3f1ac977123350eaaf0b703a0262c480eab4ef18398142c8e01a26eaa7fb9#key-u2"
+        }
+      ]
+    },
+    {
+      "verificationMethod": [
+        {
+          "id": "did:prism:a0e3f1ac977123350eaaf0b703a0262c480eab4ef18398142c8e01a26eaa7fb9#key-1"
+        }
+      ]
+    }
+  ]
+}
+
+###
+# Get Job-Status from update endpoint
+POST {{OpenPrismNode_HostAddress}}/api/v1/registrar/update/did:prism:a0e3f1ac977123350eaaf0b703a0262c480eab4ef18398142c8e01a26eaa7fb9
+Accept: application/json
+Content-Type: application/json
+
+{
+  "jobId": "f435a4158b3bd4273fba5f350f63fc05f2752ac432b01caac16d27204b8c7d29"
+}
+
+###
+# Registrar deactivation
+POST {{OpenPrismNode_HostAddress}}/api/v1/registrar/deactivate/did:prism:a0e3f1ac977123350eaaf0b703a0262c480eab4ef18398142c8e01a26eaa7fb9
+Accept: application/json
+Content-Type: application/json
+
+{
+  "options": {
+    "walletId": "a4e8d89055c08493b297883392e730008153b6c1",
+    "network": "preprod"
+  }
+}
+###
+# Get Job-Status from deactivate endpoint
+POST {{OpenPrismNode_HostAddress}}/api/v1/registrar/deactivate/did:prism:a0e3f1ac977123350eaaf0b703a0262c480eab4ef18398142c8e01a26eaa7fb9
+Accept: application/json
+Content-Type: application/json
+
+{
+  "jobId": "bdf099423b70e9ad179e8364caba5113b2695deda1f440815b6541371a44fc72"
+}
+
+
+
+
+
+
+
+

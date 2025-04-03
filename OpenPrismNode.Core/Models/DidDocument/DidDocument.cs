@@ -13,5 +13,7 @@ public class DidDocument
     [JsonPropertyName("authentication")] public List<string>? Authentication { get; set; }
     [JsonPropertyName("assertionMethod")] public List<string>? AssertionMethod { get; set; }
     [JsonPropertyName("keyAgreement")] public List<string>? KeyAgreement { get; set; }
+    [JsonPropertyName("capabilityInvocation")] public List<string>? CapabilityInvocation { get; set; }
+    [JsonPropertyName("capabilityDelegation")] public List<string>? CapabilityDelegation { get; set; }
     [JsonPropertyName("service")] public List<DidDocumentService>? Service { get; set; }
 }

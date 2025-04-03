@@ -30,14 +30,6 @@
     </ItemGroup>
 
     <ItemGroup>
-        <_PackageFiles Include="NBitcoin.dll">
-            <BuildAction>None</BuildAction>
-            <PackagePath>lib\net7.0</PackagePath>
-            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-        </_PackageFiles>
-    </ItemGroup>
-
-    <ItemGroup>
       <_PackageFiles Include="NBitcoin.dll">
         <BuildAction>None</BuildAction>
         <PackagePath>lib\net7.0</PackagePath>

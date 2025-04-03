@@ -106,6 +106,30 @@ namespace OpenPrismNode.Web.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "VerificationMethodSecrets",
+                columns: table => new
+                {
+                    VerificationMethodSecretEntityId = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    PrismKeyUsage = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
+                    KeyId = table.Column<string>(type: "character varying(255)", maxLength: 255, nullable: false),
+                    Curve = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
+                    Bytes = table.Column<byte[]>(type: "bytea", nullable: false),
+                    IsRemoveOperation = table.Column<bool>(type: "boolean", nullable: false),
+                    OperationStatusEntityId = table.Column<int>(type: "integer", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_VerificationMethodSecrets", x => x.VerificationMethodSecretEntityId);
+                    table.ForeignKey(
+                        name: "FK_VerificationMethodSecrets_OperationStatusEntities_Operation~",
+                        column: x => x.OperationStatusEntityId,
+                        principalTable: "OperationStatusEntities",
+                        principalColumn: "OperationStatusEntityId",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "WalletTransactionEntities",
                 columns: table => new
                 {
@@ -539,6 +563,11 @@ namespace OpenPrismNode.Web.Migrations
                 column: "WalletAddress");
 
             migrationBuilder.CreateIndex(
+                name: "IX_VerificationMethodSecrets_OperationStatusEntityId",
+                table: "VerificationMethodSecrets",
+                column: "OperationStatusEntityId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_WalletTransactionEntities_OperationStatusEntityId",
                 table: "WalletTransactionEntities",
                 column: "OperationStatusEntityId",
@@ -570,6 +599,9 @@ namespace OpenPrismNode.Web.Migrations
 
             migrationBuilder.DropTable(
                 name: "UtxoEntities");
+
+            migrationBuilder.DropTable(
+                name: "VerificationMethodSecrets");
 
             migrationBuilder.DropTable(
                 name: "WalletTransactionEntities");

@@ -35,4 +35,10 @@ public class RegistrarUpdateRequestModel
     /// </summary>
     [JsonPropertyName("didDocument")]
     public List<RegistrarDidDocument>? DidDocument { get; set; } // Array for update per spec
+
+    /// <summary>
+    /// The jobId for tracking the operation
+    /// </summary>
+    [JsonPropertyName("jobId")]
+    public string? JobId { get; set; } = null!;
 }

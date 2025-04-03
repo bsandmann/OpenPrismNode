@@ -1,6 +1,7 @@
 namespace OpenPrismNode.Core.Commands.Registrar
 {
     using System.Text.Json.Serialization;
+    using Models.DidDocument;
 
     /// <summary>
     /// Common response structure for DID Registrar operations.
@@ -29,6 +30,6 @@ namespace OpenPrismNode.Core.Commands.Registrar
         /// Metadata about the DID document (e.g., version, transaction IDs). Optional.
         /// </summary>
         [JsonPropertyName("didDocumentMetadata")]
-        public RegistrarDidDocumentMetadata? DidDocumentMetadata { get; set; }
+        public DidDocumentMetadata? DidDocumentMetadata { get; set; }
     }
 }

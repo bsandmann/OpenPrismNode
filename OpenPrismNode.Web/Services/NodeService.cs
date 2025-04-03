@@ -225,7 +225,8 @@ namespace OpenPrismNode.Web.Services
             }
             else
             {
-                // TODO: since we cannot distinguish between different wallets, we are using the first available wallet
+                // TODO: since we cannot distinguish between different wallets, we are using the first available wallet with the most balance
+                // Alternativley, we can specifify the walletId in the application settings
                 // What we need here is to read the X-API-KEY header and get the walletId from the header
                 // The problem is that the current identus-implementations does not allow header information
 
@@ -242,8 +243,16 @@ namespace OpenPrismNode.Web.Services
 
                 var selectedWallet = getWalletsResult.Value.MaxBy(p => p.Balance);
 
-                var transactionResult = await _mediator.Send(new WriteTransactionRequest(request.SignedOperations[0], selectedWallet!.WalletId));
+                if (!string.IsNullOrEmpty(_appSettings.Value.DefaultWalletIdForGrpc))
+                {
+                   var defaultWallet = getWalletsResult.Value.FirstOrDefault(p => p.WalletId == _appSettings.Value.DefaultWalletIdForGrpc);
+                   if (defaultWallet is not null)
+                   {
+                       selectedWallet = defaultWallet;
+                   }
+                }
 
+                var transactionResult = await _mediator.Send(new WriteTransactionRequest(request.SignedOperations[0], selectedWallet!.WalletId));
                 if (transactionResult.IsFailed)
                 {
                     return GenerateScheduleOperationsErrorResponse(transactionResult.Value.OperationStatusId, transactionResult.Errors);

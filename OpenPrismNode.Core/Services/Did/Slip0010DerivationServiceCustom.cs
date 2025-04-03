@@ -1,10 +1,10 @@
-namespace OpenPrismNode.Core.Crypto;
+namespace OpenPrismNode.Core.Services.Did;
 
 using System;
-using System.Linq;
 using System.Security.Cryptography;
 using System.Text.RegularExpressions;
-using Services.Did; // For path parsing
+
+// For path parsing
 
 public class Slip0010DerivationServiceCustom : ISlip0010DerivationService
 {

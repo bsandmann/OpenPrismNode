@@ -23,6 +23,9 @@ public class PrismParameters
     public const string JsonLdJsonWebKey2020 = "https://w3id.org/security/suites/jws-2020/v1";
     public const string JsonLdDidCommMessaging = "https://didcomm.org/messaging/contexts/v2";
     public const string JsonLdLinkedDomains = "https://identity.foundation/.well-known/did-configuration/v1";
-    
+    public const string SetDidDocument = "setDidDocument";
+    public const string AddToDidDocument = "addToDidDocument";
+    public const string RemoveFromDidDocument = "removeFromDidDocument";
+
  
 }

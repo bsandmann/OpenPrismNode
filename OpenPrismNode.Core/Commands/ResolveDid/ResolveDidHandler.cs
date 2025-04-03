@@ -297,13 +297,26 @@ public class ResolveDidHandler : IRequestHandler<ResolveDidRequest, Result<Resol
                             }
 
                             var (keyX, keyY) = keysXy.Value;
-                            prismPublicKeys.Add(new PrismPublicKey(
-                                keyUsage: addKeyAction.PrismKeyUsage,
-                                keyId: addKeyAction.KeyId,
-                                curve: addKeyAction.Curve,
-                                x: keyX,
-                                y: keyY.Length == 0 ? null : keyY
-                            ));
+
+                            if (addKeyAction.Curve.Equals(PrismParameters.Secp256k1CurveName))
+                            {
+                                prismPublicKeys.Add(new PrismPublicKey(
+                                    keyUsage: addKeyAction.PrismKeyUsage,
+                                    keyId: addKeyAction.KeyId,
+                                    curve: addKeyAction.Curve,
+                                    x: keyX,
+                                    y: keyY.Length == 0 ? null : keyY
+                                ));
+                            }
+                            else
+                            {
+                                prismPublicKeys.Add(new PrismPublicKey(
+                                    keyUsage: addKeyAction.PrismKeyUsage,
+                                    keyId: addKeyAction.KeyId,
+                                    curve: addKeyAction.Curve,
+                                    rawBytes: keyX
+                                ));
+                            }
                         }
                     }
                     else if (removeKeyAction is not null)
@@ -444,13 +457,25 @@ public class ResolveDidHandler : IRequestHandler<ResolveDidRequest, Result<Resol
             var keysXy = PrismEncoding.HexToPublicKeyPairByteArrays(PrismEncoding.ByteArrayToHex(publicKeyLongFormBytes));
             var (keyX, keyY) = keysXy.Value;
             var keyUsage = prismPublicKeyEntity.PrismKeyUsage;
-            prismPublicKeys.Add(new PrismPublicKey(
-                keyUsage: keyUsage,
-                keyId: keyId!,
-                curve: prismPublicKeyEntity.Curve,
-                x: keyX,
-                y: keyY.Length == 0 ? null : keyY
-            ));
+            if (prismPublicKeyEntity.Curve.Equals(PrismParameters.Secp256k1CurveName))
+            {
+                prismPublicKeys.Add(new PrismPublicKey(
+                    keyUsage: keyUsage,
+                    keyId: keyId!,
+                    curve: prismPublicKeyEntity.Curve,
+                    x: keyX,
+                    y: keyY.Length == 0 ? null : keyY
+                ));
+            }
+            else
+            {
+                prismPublicKeys.Add(new PrismPublicKey(
+                    keyUsage: keyUsage,
+                    keyId: keyId!,
+                    curve: prismPublicKeyEntity.Curve,
+                    rawBytes: keyX
+                ));
+            }
         }
 
         if (prismPublicKeys.Any(p => p.KeyUsage != PrismKeyUsage.MasterKey))
@@ -483,6 +508,7 @@ public class ResolveDidHandler : IRequestHandler<ResolveDidRequest, Result<Resol
         }
 
         returnDocument.Contexts.AddRange(createDidResult.PatchedContexts ?? new List<string>());
+        returnDocument.Contexts = returnDocument.Contexts.Distinct().ToList();
         returnDocument.PublicKeys.AddRange(prismPublicKeys.OrderBy(p => p.KeyId));
         returnDocument.PrismServices.AddRange(prismServices);
 

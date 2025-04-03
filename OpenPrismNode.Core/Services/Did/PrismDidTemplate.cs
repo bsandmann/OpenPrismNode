@@ -11,4 +11,5 @@ public class PrismDidTemplate
     public PrismKeyPair? MasterKeyPair { get; set; } = null;
 
     public Dictionary<string, PrismKeyPair> KeyPairs { get; } = new Dictionary<string, PrismKeyPair>();
+
 }

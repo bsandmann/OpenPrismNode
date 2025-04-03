@@ -32,19 +32,38 @@ public static class TransformToDidDocument
 
         foreach (var prismPublicKey in publicKeys)
         {
-            verificationMethods.Add(new VerificationMethod()
+            if (prismPublicKey.Curve.Equals(PrismParameters.Secp256k1CurveName))
             {
-                Id = $"{did}#{prismPublicKey.KeyId}",
-                Type = "JsonWebKey2020",
-                Controller = did,
-                PublicKeyJwk = new PublicKeyJwk()
+                verificationMethods.Add(new VerificationMethod()
                 {
-                    Curve = prismPublicKey.Curve,
-                    KeyType = GetKeyType(prismPublicKey.Curve),
-                    X = PrismEncoding.ByteArrayToBase64(prismPublicKey.X),
-                    Y = prismPublicKey.Y is not null ? PrismEncoding.ByteArrayToBase64(prismPublicKey.Y) : null
-                }
-            });
+                    Id = $"{did}#{prismPublicKey.KeyId}",
+                    Type = "JsonWebKey2020",
+                    Controller = did,
+                    PublicKeyJwk = new PublicKeyJwk()
+                    {
+                        Curve = prismPublicKey.Curve,
+                        KeyType = GetKeyType(prismPublicKey.Curve),
+                        X = PrismEncoding.ByteArrayToBase64(prismPublicKey.X),
+                        Y = prismPublicKey.Y is not null ? PrismEncoding.ByteArrayToBase64(prismPublicKey.Y) : null
+                    }
+                });
+            }
+            else
+            {
+                verificationMethods.Add(new VerificationMethod()
+                {
+                    Id = $"{did}#{prismPublicKey.KeyId}",
+                    Type = "JsonWebKey2020",
+                    Controller = did,
+                    PublicKeyJwk = new PublicKeyJwk()
+                    {
+                        Curve = prismPublicKey.Curve,
+                        KeyType = GetKeyType(prismPublicKey.Curve),
+                        X = PrismEncoding.ByteArrayToBase64(prismPublicKey.RawBytes),
+                        Y = null
+                    }
+                });
+            }
         }
 
         var authentication = new List<string>();
@@ -65,17 +84,17 @@ public static class TransformToDidDocument
             keyAgreement.Add($"{did}#{prismPublicKey.KeyId}");
         }
 
-        // var capabilityInvocation = new List<string>();
-        // foreach (var prismPublicKey in internalDidDocument.PublicKeys.Where(p => p.KeyUsage == PrismKeyUsage.CapabilityInvocationKey))
-        // {
-        //     capabilityInvocation.Add($"{did}#{prismPublicKey.KeyId}");
-        // }
-        //
-        // var capabilityDelegation = new List<string>();
-        // foreach (var prismPublicKey in internalDidDocument.PublicKeys.Where(p => p.KeyUsage == PrismKeyUsage.CapabilityDelegationKey))
-        // {
-        //     capabilityDelegation.Add($"{did}#{prismPublicKey.KeyId}");
-        // }
+        var capabilityInvocation = new List<string>();
+        foreach (var prismPublicKey in internalDidDocument.PublicKeys.Where(p => p.KeyUsage == PrismKeyUsage.CapabilityInvocationKey))
+        {
+            capabilityInvocation.Add($"{did}#{prismPublicKey.KeyId}");
+        }
+
+        var capabilityDelegation = new List<string>();
+        foreach (var prismPublicKey in internalDidDocument.PublicKeys.Where(p => p.KeyUsage == PrismKeyUsage.CapabilityDelegationKey))
+        {
+            capabilityDelegation.Add($"{did}#{prismPublicKey.KeyId}");
+        }
 
         var services = new List<DidDocumentService>();
         foreach (var prismService in internalDidDocument.PrismServices)
@@ -91,6 +110,8 @@ public static class TransformToDidDocument
             Authentication = authentication.Any() ? authentication : null,
             AssertionMethod = assertionMethods.Any() ? assertionMethods : null,
             KeyAgreement = keyAgreement.Any() ? keyAgreement : null,
+            CapabilityInvocation = capabilityInvocation.Any() ? capabilityInvocation : null,
+            CapabilityDelegation = capabilityDelegation.Any() ? capabilityDelegation : null,
             Service = internalDidDocument.PrismServices.Any() ? services : null
         };
 

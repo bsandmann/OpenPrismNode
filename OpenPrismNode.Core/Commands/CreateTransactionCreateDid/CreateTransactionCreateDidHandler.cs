@@ -121,7 +121,7 @@ public class CreateTransactionCreateDidHandler : IRequestHandler<CreateTransacti
                         PrismPublicKeys = request.PrismPublicKeys.Select(p => new PrismPublicKeyEntity()
                         {
                             KeyId = p.KeyId,
-                            PublicKey = p.LongByteArray,
+                            PublicKey = p.LongByteArray ?? p.RawBytes,
                             PrismKeyUsage = p.KeyUsage,
                             Curve = p.Curve
                         }).ToList(),

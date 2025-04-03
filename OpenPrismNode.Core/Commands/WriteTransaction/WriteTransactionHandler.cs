@@ -16,6 +16,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using Models;
 using Models.CardanoWallet;
+using Registrar.CreateVerificationMethodSecret;
 using Services;
 using Payment = Models.CardanoWallet.Payment;
 
@@ -30,7 +31,7 @@ public class WriteTransactionHandler : IRequestHandler<WriteTransactionRequest, 
     public WriteTransactionHandler(ICardanoWalletService walletService, DataContext context, IMediator mediator, ISha256Service sha256Service, IOptions<AppSettings> appSettings, IServiceScopeFactory serviceScopeFactory)
     {
         _walletService = walletService;
-         _serviceScopeFactory = serviceScopeFactory;
+        _serviceScopeFactory = serviceScopeFactory;
         _mediator = mediator;
         _sha256Service = sha256Service;
         _appSettings = appSettings.Value;
@@ -124,10 +125,22 @@ public class WriteTransactionHandler : IRequestHandler<WriteTransactionRequest, 
                 transactionResult.Value,
                 operationResult.Value.OperationStatusEntityId
             ), cancellationToken);
-        
+
         if (createWalletTransactionResult.IsFailed)
         {
             return Result.Fail(createWalletTransactionResult.Errors.FirstOrDefault()?.Message);
+        }
+
+        if (request.VerificationMethodSecrets is not null && request.VerificationMethodSecrets.Any())
+        {
+            foreach (var VerificationMethodSecret in request.VerificationMethodSecrets)
+            {
+                var createSecretResult = await _mediator.Send(new CreateVerificationMethodSecretRequest(VerificationMethodSecret, operationResult.Value.OperationStatusEntityId), cancellationToken);
+                if (createSecretResult.IsFailed)
+                {
+                    return Result.Fail("Failed to create verification method secret: " + createSecretResult.Errors.FirstOrDefault()?.Message);
+                }
+            }
         }
 
         return Result.Ok(new WriteTransactionResponse()

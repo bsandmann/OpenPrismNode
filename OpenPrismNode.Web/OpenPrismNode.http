@@ -1,9 +1,10 @@
-@OpenPrismNode_HostAddress = https://localhost:5001
+@OpenPrismNode_HostAddress = http://localhost:5001
 # Optional variables for demonstration:
 @ledger = preprod
 @blockHeight = 1000
 @epochNumber = 10
 @day = 2024-10-01
+@operationId = 7c818138c5f66185eb80f16178ed7d8c5de1b52bd8443cff0aa1ffedd7b618cb
 
 ###
 # HealthCheck endpoint
@@ -85,3 +86,14 @@ Accept: application/json
 Content-Type: application/json
 Authorization: secretPhrase
 
+###
+# Get Operation Status
+GET {{OpenPrismNode_HostAddress}}/api/v1/operations/{{operationId}}
+Accept: application/json
+Content-Type: application/json
+Authorization: secretPhraseUser
+
+###
+# Resolve DID
+@did = did:prism:cefe914570f1ab5e3c633cf2f3efc05a790d9f1793ef73eac88696b3a2fd3cee
+GET {{OpenPrismNode_HostAddress}}/api/v1/identifiers/{{did}}

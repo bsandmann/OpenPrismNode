@@ -20,4 +20,10 @@ public class RegistrarDeactivateRequestModel
     /// </summary>
     [JsonPropertyName("secret")]
     public RegistrarSecret? Secret { get; set; }
+
+    /// <summary>
+    /// The jobId for tracking the operation
+    /// </summary>
+    [JsonPropertyName("jobId")]
+    public string? JobId { get; set; } = null!;
 }

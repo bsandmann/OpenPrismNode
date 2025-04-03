@@ -32,6 +32,9 @@ public class DataContext : DbContext
     public DbSet<WalletEntity> WalletEntities { get; set; }
     public DbSet<WalletTransactionEntity> WalletTransactionEntities { get; set; }
 
+    public DbSet<VerificationMethodSecretEntity> VerificationMethodSecrets { get; set; }
+
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.Entity<LedgerEntity>().HasKey(p => p.Ledger);
@@ -267,22 +270,16 @@ public class DataContext : DbContext
             .HasForeignKey<WalletTransactionEntity>(e => e.OperationStatusEntityId)
             .IsRequired(false);
 
-        // modelBuilder.Entity<OperationStatusEntity>()
-        //     .HasOne(os => os.CreateDidEntity)
-        //     .WithOne(cd => cd.OperationStatus)
-        //     .HasForeignKey<OperationStatusEntity>(os => os.OperationHash)
-        //     .IsRequired(false);
-        //
-        // modelBuilder.Entity<OperationStatusEntity>()
-        //     .HasOne(os => os.UpdateDidEntity)
-        //     .WithOne(ud => ud.OperationStatus)
-        //     .HasForeignKey<OperationStatusEntity>(os => os.OperationHash)
-        //     .IsRequired(false);
-        //
-        // modelBuilder.Entity<OperationStatusEntity>()
-        //     .HasOne(os => os.DeactivateDidEntity)
-        //     .WithOne(dd => dd.OperationStatus)
-        //     .HasForeignKey<OperationStatusEntity>(os => os.OperationHash)
-        //     .IsRequired(false);
+        modelBuilder.Entity<VerificationMethodSecretEntity>()
+            .HasKey(e => e.VerificationMethodSecretEntityId);
+
+        modelBuilder.Entity<OperationStatusEntity>()
+            .HasMany(os => os.VerificationMethodSecrets)
+            .WithOne(p => p.OperationStatusEntity)
+            .HasForeignKey(vms => vms.OperationStatusEntityId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<VerificationMethodSecretEntity>()
+            .HasIndex(vms => vms.OperationStatusEntityId);
     }
 }

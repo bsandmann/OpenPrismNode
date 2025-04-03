@@ -40,10 +40,13 @@ public class OperationsController : ControllerBase
     [Produces("application/json")]
     public async Task<ActionResult> GetTransaction(string operationStatusIdHex)
     {
-        //TODO try catch 
-        var operationStatusId = PrismEncoding.HexToByteArray(operationStatusIdHex);
+        var byteArrayResult = PrismEncoding.TryHexToByteArray(operationStatusIdHex);
+        if (byteArrayResult.IsFailed)
+        {
+            return BadRequest(byteArrayResult.Errors.FirstOrDefault()?.Message);
+        }
 
-        var operationStatusResult = await _mediator.Send(new GetOperationStatusRequest(operationStatusId));
+        var operationStatusResult = await _mediator.Send(new GetOperationStatusRequest(byteArrayResult.Value));
         if (operationStatusResult.IsFailed)
         {
             return BadRequest(operationStatusResult.Errors?.FirstOrDefault()?.Message);

@@ -52,9 +52,6 @@ namespace OpenPrismNode.Core.Commands.GetOperationStatus
                         LastUpdatedUtc = p.LastUpdatedUtc,
                         WalletTransactionEntity = p.WalletTransactionEntity,
                         WalletId = p.WalletTransactionEntity != null ? p.WalletTransactionEntity.Wallet.WalletId : null,
-                        // CreateDidEntity = p.CreateDidEntity != null ? new CreateDidEntity() { OperationHash = p.CreateDidEntity.OperationHash } : null,
-                        // UpdateDidEntity = p.UpdateDidEntity != null ? new UpdateDidEntity() { OperationHash = p.UpdateDidEntity.OperationHash } : null,
-                        // DeactivateDidEntity = p.DeactivateDidEntity != null ? new DeactivateDidEntity() { OperationHash = p.DeactivateDidEntity.OperationHash } : null,
                     })
                     .FirstOrDefaultAsync(os => os.OperationStatusId == request.OperationStatusId, cancellationToken);
 

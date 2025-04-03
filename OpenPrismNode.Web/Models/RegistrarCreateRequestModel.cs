@@ -10,7 +10,7 @@ public class RegistrarCreateRequestModel
     /// The DID method to use. Only "prism" is supported.
     /// </summary>
     [JsonPropertyName("method")]
-    public string Method { get; set; } = null!;
+    public string? Method { get; set; } = null!;
 
     /// <summary>
     /// The specific DID to create. Optional, but not used for did:prism
@@ -37,5 +37,11 @@ public class RegistrarCreateRequestModel
     /// Should be a single JSON object representing the DID Document.
     /// </summary>
     [JsonPropertyName("didDocument")]
-    public RegistrarDidDocument DidDocument { get; set; } = null!;
+    public RegistrarDidDocument? DidDocument { get; set; } = null!;
+
+    /// <summary>
+    /// The jobId for tracking the operation
+    /// </summary>
+    [JsonPropertyName("jobId")]
+    public string? JobId { get; set; } = null!;
 }

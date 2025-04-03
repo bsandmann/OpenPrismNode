@@ -51,6 +51,7 @@ public class PrismPublicKey
         KeyId = keyId ?? throw new ArgumentNullException(nameof(keyId));
         Curve = curve.Equals(PrismParameters.Ed25519CurveName, StringComparison.OrdinalIgnoreCase) ? PrismParameters.Ed25519CurveName : PrismParameters.X25519CurveName; // Normalize
         RawBytes = rawBytes;
+        LongByteArray = PrismEncoding.HexToByteArray(PrismEncoding.PublicKeyPairByteArraysToHex(rawBytes, null));
         X = null;
         Y = null;
     }
@@ -106,4 +107,22 @@ public class PrismPublicKey
     public string Hex { get; }
 
     public byte[] LongByteArray { get; }
+
+    public static CompressedECKeyData CompressPublicKey(byte[] x, byte[] y, string curve)
+    {
+        if (curve != "secp256k1")
+        {
+            throw new Exception("Only secp256k1 is supported");
+        }
+
+        byte[] newArray = new byte[x.Length + 1];
+        x.CopyTo(newArray, 1);
+        newArray[0] = (byte)(2 + (y[^1] & 1));
+        var pk = new CompressedECKeyData()
+        {
+            Curve = "secp256k1",
+            Data = PrismEncoding.ByteArrayToByteString(newArray),
+        };
+        return pk;
+    }
 }

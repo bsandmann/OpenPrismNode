@@ -1,27 +1,29 @@
-namespace OpenPrismNode.Core.Commands.Registrar.RegistrarCreateDid
+namespace OpenPrismNode.Core.Commands.Registrar.CreateSignedAtalaOperationForCreateDid
 {
-    using Common;
     using Crypto;
     using FluentResults;
     using Google.Protobuf;
     using Google.Protobuf.Collections;
     using MediatR;
-    using Models;
+    using OpenPrismNode.Core.Common;
+    using OpenPrismNode.Core.Models;
     using Services.Did;
 
     /// <summary>
     /// MediatR command to handle the creation of a DID via the registrar.
     /// </summary>
-    public class RegistrarCreateDidCommand : IRequestHandler<RegistrarCreateDidRequest, Result<RegistrarResponseDto>>
+    public class CreateSignedAtalaOperationForCreateDidHandler : IRequestHandler<CreateSignedAtalaOperationForCreateDidRequest, Result<CreateSignedAtalaOperationForCreateDidResponse>>
     {
         private IKeyGenerationService _keyGenerationService;
         private ISha256Service _sha256Service;
         private ICryptoService _cryptoService;
+        private IMediator _mediator;
 
         /// <summary>
         /// Creates a new instance of the RegistrarCreateDidCommand.
         /// </summary>
-        public RegistrarCreateDidCommand(
+        public CreateSignedAtalaOperationForCreateDidHandler(
+            IMediator mediator,
             IKeyGenerationService keyGenerationService,
             ISha256Service sha256Service,
             ICryptoService cryptoService)
@@ -31,7 +33,7 @@ namespace OpenPrismNode.Core.Commands.Registrar.RegistrarCreateDid
             _cryptoService = cryptoService;
         }
 
-        public async Task<Result<RegistrarResponseDto>> Handle(RegistrarCreateDidRequest request, CancellationToken cancellationToken)
+        public async Task<Result<CreateSignedAtalaOperationForCreateDidResponse>> Handle(CreateSignedAtalaOperationForCreateDidRequest request, CancellationToken cancellationToken)
         {
             var template = new PrismDidTemplate();
             template.Mnemonic = _keyGenerationService.GenerateRandomMnemonic();
@@ -41,6 +43,7 @@ namespace OpenPrismNode.Core.Commands.Registrar.RegistrarCreateDid
                 return Result.Fail("Verification method is required");
             }
 
+            var keyIndex = 0;
             foreach (var verificationMethod in request.Secret.VerificationMethod)
             {
                 if (string.IsNullOrEmpty(verificationMethod.Curve))
@@ -72,8 +75,9 @@ namespace OpenPrismNode.Core.Commands.Registrar.RegistrarCreateDid
                         break;
                 }
 
-                var key = _keyGenerationService.DeriveKeyFromSeed(template.SeedAsHex, 0, keyType, 0, keyId, verificationMethod.Curve);
+                var key = _keyGenerationService.DeriveKeyFromSeed(template.SeedAsHex, 0, keyType, keyIndex, keyId, verificationMethod.Curve);
                 template.KeyPairs.Add(keyId, key);
+                keyIndex++;
             }
 
             RepeatedField<string> context = new RepeatedField<string>();
@@ -100,8 +104,15 @@ namespace OpenPrismNode.Core.Commands.Registrar.RegistrarCreateDid
                 }
             }
 
-
             RepeatedField<PublicKey> publicKeys = new RepeatedField<PublicKey>();
+
+            publicKeys.Add(new PublicKey()
+            {
+                Id = template.MasterKeyPair.PublicKey.KeyId,
+                Usage = KeyUsage.MasterKey,
+                CompressedEcKeyData = PrismPublicKey.CompressPublicKey(template.MasterKeyPair.PublicKey.X, template.MasterKeyPair.PublicKey.Y, template.MasterKeyPair.PublicKey.Curve),
+            });
+
             foreach (var keyPair in template.KeyPairs)
             {
                 var keyUsage = keyPair.Value.KeyUsage switch
@@ -115,12 +126,35 @@ namespace OpenPrismNode.Core.Commands.Registrar.RegistrarCreateDid
                     _ => throw new Exception("Unknown key usage")
                 };
 
-                publicKeys.Add(new PublicKey()
+                if (keyPair.Value.PublicKey.Curve.Equals(PrismParameters.Secp256k1CurveName))
                 {
-                    Id = keyPair.Key,
-                    Usage = keyUsage,
-                    CompressedEcKeyData = CompressPublicKey(keyPair.Value.PublicKey.X, keyPair.Value.PublicKey.Y, keyPair.Value.PublicKey.Curve)
-                });
+                    if (keyPair.Value.PublicKey.X is null || keyPair.Value.PublicKey.Y is null)
+                    {
+                        return Result.Fail("X and Y coordinates are required for secp256k1 keys");
+                    }
+
+                    publicKeys.Add(new PublicKey()
+                    {
+                        Id = keyPair.Key,
+                        Usage = keyUsage,
+                        CompressedEcKeyData = PrismPublicKey.CompressPublicKey(keyPair.Value.PublicKey.X, keyPair.Value.PublicKey.Y, keyPair.Value.PublicKey.Curve),
+                    });
+                }
+                else if (keyPair.Value.PublicKey.Curve.Equals(PrismParameters.Ed25519CurveName) ||
+                         keyPair.Value.PublicKey.Curve.Equals(PrismParameters.X25519CurveName))
+                {
+                    if (keyPair.Value.PublicKey.RawBytes is null)
+                    {
+                        return Result.Fail("Raw bytes are required for Ed25519 and X25519 keys");
+                    }
+
+                    publicKeys.Add(new PublicKey()
+                    {
+                        Id = keyPair.Key,
+                        Usage = keyUsage,
+                        CompressedEcKeyData = new CompressedECKeyData() { Curve = keyPair.Value.PublicKey.Curve, Data = PrismEncoding.ByteArrayToByteString(keyPair.Value.PublicKey.RawBytes) },
+                    });
+                }
             }
 
             RepeatedField<Service> services = new RepeatedField<Service>();
@@ -148,7 +182,7 @@ namespace OpenPrismNode.Core.Commands.Registrar.RegistrarCreateDid
                             PublicKeys = { publicKeys },
                             Services = { services }
                         }
-                    }
+                    },
                 };
 
             var encodedAtalaOperation = PrismEncoding.ByteStringToByteArray(atalaOperation.ToByteString());
@@ -156,26 +190,10 @@ namespace OpenPrismNode.Core.Commands.Registrar.RegistrarCreateDid
             template.Identifier = "did:prism:" + PrismEncoding.ByteArrayToHex(hashedAtalaOperation.Value);
 
             var signedAtalaOperation = SignAtalaOperation(template.MasterKeyPair.PrivateKey.PrivateKey, template.MasterKeyPair.PublicKey.KeyId, atalaOperation, _cryptoService);
-            return null;
+
+            return new CreateSignedAtalaOperationForCreateDidResponse(signedAtalaOperation, template);
         }
 
-        private static CompressedECKeyData CompressPublicKey(byte[] x, byte[] y, string curve)
-        {
-            if (curve != "secp256k1")
-            {
-                throw new Exception("Only secp256k1 is supported");
-            }
-
-            byte[] newArray = new byte[x.Length + 1];
-            x.CopyTo(newArray, 1);
-            newArray[0] = (byte)(2 + (y[^1] & 1));
-            var pk = new CompressedECKeyData()
-            {
-                Curve = "secp256k1",
-                Data = PrismEncoding.ByteArrayToByteString(newArray),
-            };
-            return pk;
-        }
 
         private static SignedAtalaOperation SignAtalaOperation(byte[] privateKey, string signedWith, AtalaOperation atalaOperation, ICryptoService cryptoService)
         {

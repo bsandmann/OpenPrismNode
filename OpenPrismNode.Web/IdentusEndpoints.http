@@ -1,5 +1,5 @@
 @IdentusCloudAgent_HostAdress = http://localhost:8085
-@didRef = did:prism:203b30a4dd9a7283fa6542262cc931a96f8d2596d0451de5b9d09635fbbc9401
+@didRef = did:prism:e0bbac99154322f016898acfa154bef3e85b0835755b896805c4411150169577
 
 ###
 # Creates a new DID locally inside the Identus Cloud Agent
@@ -53,12 +53,12 @@ Content-Type: application/json
     {
       "actionType": "ADD_KEY",
       "addKey": {
-        "id": "key-1",
+        "id": "key-2",
         "purpose": "authentication",
         "curve": "Ed25519"
       },
       "removeKey": {
-        "id": "string"
+        "id": "key-1"
       },
       "addService": {
         "id": "service-2",

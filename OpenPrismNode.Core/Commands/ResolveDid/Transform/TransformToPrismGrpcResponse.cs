@@ -72,7 +72,7 @@ public class TransformToPrismGrpcResponse
                 publicKey.EcKeyData = new ECKeyData
                 {
                     Curve = prismPublicKey.Curve,
-                    X = ByteString.CopyFrom(prismPublicKey.X)
+                    X = ByteString.CopyFrom(prismPublicKey.X ?? prismPublicKey.RawBytes)
                     // Y is not used for these curves
                 };
             }
