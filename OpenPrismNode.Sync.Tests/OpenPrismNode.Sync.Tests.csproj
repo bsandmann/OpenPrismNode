@@ -33,4 +33,9 @@
       <Reference Include="Microsoft.AspNetCore.Mvc.Core" />
     </ItemGroup>
 
+    <ItemGroup>
+      <Folder Include="ApiSync\" />
+      <Folder Include="DbSync\" />
+    </ItemGroup>
+
 </Project>

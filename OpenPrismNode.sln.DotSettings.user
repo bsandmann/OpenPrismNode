@@ -43,15 +43,21 @@
 	
 	
 	<s:String x:Key="/Default/Environment/UnitTesting/UnitTestSessionStore/Sessions/=bfc32e88_002D2a15_002D4ed0_002D831c_002D8aabdb0b8ffe/@EntryIndexedValue">&lt;SessionState ContinuousTestingMode="0" IsActive="True" Name="All tests from &amp;lt;Tests&amp;gt;" xmlns="urn:schemas-jetbrains-com:jetbrains-ut-session"&gt;
-  &lt;Not&gt;
+  &lt;Or&gt;
+    &lt;Not&gt;
+      &lt;TestAncestor&gt;
+        &lt;TestId&gt;xUnit::09B6FFC6-090F-44D8-8F20-D6B1CC001CA4::net9.0::OpenPrismNode.Sync.Tests.ParseTransaction.OnChainData.CreateDidTransactions&lt;/TestId&gt;
+        &lt;TestId&gt;xUnit::A8E09C34-E8EC-4C05-9E19-5899634E0274::net9.0::OpenPrismNode.Web.Tests.RegistrarValidation.RegistrarCreateRequestValidatorTests.ValidateCreateRequest_ValidSecret_InvalidDocument_InvalidServiceId_ReturnsError&lt;/TestId&gt;
+        &lt;TestId&gt;xUnit::A8E09C34-E8EC-4C05-9E19-5899634E0274::net9.0::OpenPrismNode.Web.Tests.RegistrarValidation.RegistrarUpdateRequestValidatorTests.ValidateUpdateRequest_SecretMethodIdMissing_ReturnsError&lt;/TestId&gt;
+        &lt;TestId&gt;xUnit::A8E09C34-E8EC-4C05-9E19-5899634E0274::net9.0::OpenPrismNode.Web.Tests.RegistrarValidation.RegistrarUpdateRequestValidatorTests.ValidateUpdateRequest_AddToDidDocumentExceedsSecretMethods_ReturnsError&lt;/TestId&gt;
+        &lt;TestId&gt;xUnit::A8E09C34-E8EC-4C05-9E19-5899634E0274::net9.0::OpenPrismNode.Web.Tests.RegistrarValidation.RegistrarUpdateRequestValidatorTests.ValidateUpdateRequest_DocumentMethodHasExtraFieldsWhenIdMatchesSecret_ReturnsError&lt;/TestId&gt;
+        &lt;TestId&gt;xUnit::A8E09C34-E8EC-4C05-9E19-5899634E0274::net9.0::OpenPrismNode.Web.Tests.WalletsControllerTests.ExecuteTransaction_ValidBase64_ReturnsOperationStatusId&lt;/TestId&gt;
+      &lt;/TestAncestor&gt;
+    &lt;/Not&gt;
     &lt;TestAncestor&gt;
-      &lt;TestId&gt;xUnit::09B6FFC6-090F-44D8-8F20-D6B1CC001CA4::net9.0::OpenPrismNode.Sync.Tests.ParseTransaction.OnChainData.CreateDidTransactions&lt;/TestId&gt;
-      &lt;TestId&gt;xUnit::A8E09C34-E8EC-4C05-9E19-5899634E0274::net9.0::OpenPrismNode.Web.Tests.RegistrarValidation.RegistrarCreateRequestValidatorTests.ValidateCreateRequest_ValidSecret_InvalidDocument_InvalidServiceId_ReturnsError&lt;/TestId&gt;
-      &lt;TestId&gt;xUnit::A8E09C34-E8EC-4C05-9E19-5899634E0274::net9.0::OpenPrismNode.Web.Tests.RegistrarValidation.RegistrarUpdateRequestValidatorTests.ValidateUpdateRequest_SecretMethodIdMissing_ReturnsError&lt;/TestId&gt;
-      &lt;TestId&gt;xUnit::A8E09C34-E8EC-4C05-9E19-5899634E0274::net9.0::OpenPrismNode.Web.Tests.RegistrarValidation.RegistrarUpdateRequestValidatorTests.ValidateUpdateRequest_AddToDidDocumentExceedsSecretMethods_ReturnsError&lt;/TestId&gt;
-      &lt;TestId&gt;xUnit::A8E09C34-E8EC-4C05-9E19-5899634E0274::net9.0::OpenPrismNode.Web.Tests.RegistrarValidation.RegistrarUpdateRequestValidatorTests.ValidateUpdateRequest_DocumentMethodHasExtraFieldsWhenIdMatchesSecret_ReturnsError&lt;/TestId&gt;
+      &lt;TestId&gt;xUnit::A8E09C34-E8EC-4C05-9E19-5899634E0274::net9.0::OpenPrismNode.Web.Tests.WalletsControllerTests&lt;/TestId&gt;
     &lt;/TestAncestor&gt;
-  &lt;/Not&gt;
+  &lt;/Or&gt;
 &lt;/SessionState&gt;</s:String>
 	
 	
