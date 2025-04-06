@@ -40,9 +40,10 @@ The OpenPrismNode will have the following features/characteristics as part of th
 - GRPC endpoints for PRISM agent communication (**DONE**)
 - API endpoints for a statistical information (**IN PROGRESS**)
 - Endpoints to support the [Universal DID Resolver spec](https://w3c-ccg.github.io/did-resolution/) (**DONE**)
-- Endpoints to support the [Universal DID Registrar spec](https://identity.foundation/did-registration/) (**NOT STARTED**)
-- Tenant-based system, with login and seperate wallet management (**MOSTLY DONE**)
+- Endpoints to support the [Universal DID Registrar spec](https://identity.foundation/did-registration/) (**DONE**)
+- Tenant-based system, with login and seperate wallet management (**DONE**)
 - Web-based UI with statistics and current sync-state (**MOSTLY DONE**)
+- Alternative sync method using blockfrost API (**DONE**)
 
 Updates on the progress of development will be given in this repo, as well the use F11 Milestone-Page.
   
