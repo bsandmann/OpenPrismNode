@@ -1,7 +1,7 @@
 # OPN - OpenPrismNode
 The OpenPrismNode (OPN) is an open source implementation of the PRISM node by IOG and follows the [DID-PRISM specification](https://github.com/input-output-hk/prism-did-method-spec/blob/main/w3c-spec/PRISM-method.md)
 
-The project is currently under development, but already in beta testing.
+The project is currently under development, but already in beta testing. You can get the current image [here](https://github.com/users/bsandmann/packages/container/package/openprismnode)
 ## User Interface
 - A hosted version of the OpenPrismNode is available here:
      - [https://opn.preprod.blocktrust.dev](https://opn.preprod.blocktrust.dev)
