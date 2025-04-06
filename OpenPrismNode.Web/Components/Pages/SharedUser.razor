@@ -1,6 +1,20 @@
 @page "/sharedUser"
 @using Microsoft.AspNetCore.Authorization
+@using Microsoft.Extensions.Options
+@using OpenPrismNode.Core.Common
 @using OpenPrismNode.Web.Components.Features.User
 @attribute [Authorize(Roles = "User,Admin")]
+@inject IOptions<AppSettings> AppSettingsOptions
 
-<CreateWallet />
+@if (string.IsNullOrWhiteSpace(@AppSettingsOptions.Value.CardanoWalletApiEndpoint))
+{
+    <div class="mt-4 mb-4">
+            <span class="inline-block bg-amber-200 text-gray-800 px-2 py-1 rounded-md ml-2">
+                THE CARDANO WALLET API IS NOT CONFIGURED. Writing of DIDs to chain is disabled
+            </span>
+    </div>
+}
+else
+{
+    <CreateWallet/>
+}

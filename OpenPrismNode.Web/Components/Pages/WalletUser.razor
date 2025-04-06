@@ -1,7 +1,10 @@
 @page "/walletUser"
 @using Microsoft.AspNetCore.Authorization
+@using Microsoft.Extensions.Options
+@using OpenPrismNode.Core.Common
 @using OpenPrismNode.Web.Components.Features.WalletUser
 @attribute [Authorize(Roles = "WalletUser")]
+@inject IOptions<AppSettings> AppSettingsOptions
 
 <h3 class="text-xl font-semibold mb-4">Wallet User Page</h3>
 
@@ -17,17 +20,28 @@
 }
 else
 {
-    <GetWalletDetails WalletId="@UserWalletId" />
-    <GetWalletTransactions WalletId="@UserWalletId" />
-    <ExecuteTransaction WalletId="@UserWalletId" />
+    @if (string.IsNullOrWhiteSpace(@AppSettingsOptions.Value.CardanoWalletApiEndpoint))
+    {
+        <div class="mt-4 mb-4">
+            <span class="inline-block bg-amber-200 text-gray-800 px-2 py-1 rounded-md ml-2">
+                THE CARDANO WALLET API IS NOT CONFIGURED. Writing of DIDs to chain is disabled
+            </span>
+        </div>
+    }
+    else
+    {
+        <GetWalletDetails WalletId="@UserWalletId"/>
+        <GetWalletTransactions WalletId="@UserWalletId"/>
+        <ExecuteTransaction WalletId="@UserWalletId"/>
+    }
 }
 
 @code {
+
     // The wallet ID from the user's claims
     private string? UserWalletId;
 
-    [CascadingParameter]
-    private Task<AuthenticationState> AuthenticationStateTask { get; set; }
+    [CascadingParameter] private Task<AuthenticationState> AuthenticationStateTask { get; set; }
 
     protected override async Task OnInitializedAsync()
     {
@@ -37,4 +51,5 @@ else
         // Attempt to retrieve the full wallet ID from the custom claim
         UserWalletId = user.FindFirst("FullWalletId")?.Value;
     }
+
 }

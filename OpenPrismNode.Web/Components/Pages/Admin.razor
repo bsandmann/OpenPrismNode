@@ -1,13 +1,30 @@
 @page "/admin"
 @using Microsoft.AspNetCore.Authorization
+@using Microsoft.Extensions.Options
+@using OpenPrismNode.Core.Common
 @using OpenPrismNode.Web.Components.Features.Admin
 @using OpenPrismNode.Web.Components.Features.User
+@inject IOptions<AppSettings> AppSettingsOptions
+
 @attribute [Authorize(Roles = "Admin")]
-<SyncProgressView />
-<StopAndStartSyncService />
-<LedgerManager />
-<GetWallets/>
+<SyncProgressView/>
+<StopAndStartSyncService/>
+<LedgerManager/>
+
+@if (string.IsNullOrWhiteSpace(@AppSettingsOptions.Value.CardanoWalletApiEndpoint))
+{
+    <div class="mt-4 mb-4">
+                            <span class="inline-block bg-amber-200 text-gray-800 px-2 py-1 rounded-md ml-2">
+                                THE CARDANO WALLET API IS NOT CONFIGURED. Writing of DIDs to chain is disabled
+                            </span>
+    </div>
+}
+else
+{
+    <GetWallets/>
+}
+
 
 @code {
-    
+
 }

@@ -24,6 +24,14 @@
                 @AppSettingsOptions.Value.PrismLedger.Name
             </span>
         </p>
+        @if (string.IsNullOrWhiteSpace(@AppSettingsOptions.Value.CardanoWalletApiEndpoint))
+        {
+            <div class="mt-4 mb-4">
+                            <span class="inline-block bg-amber-200 text-gray-800 px-2 py-1 rounded-md ml-2">
+                                THE CARDANO WALLET API IS NOT CONFIGURED. Writing of DIDs to chain is disabled
+                            </span>
+            </div>
+        }
 
         <!-- Intro / Call to Action -->
         <p class="text-gray-700 mb-6">
@@ -66,6 +74,7 @@
                     </div>
                 </li>
             </ul>
+
         </div>
 
         <!-- Project Info -->
@@ -162,4 +171,5 @@
             }
         }
     }
+
 }

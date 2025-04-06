@@ -117,6 +117,11 @@ namespace OpenPrismNode.Web.Services
 
         public override async Task<ScheduleOperationsResponse> ScheduleOperations(ScheduleOperationsRequest request, ServerCallContext context)
         {
+            if (!string.IsNullOrWhiteSpace(_appSettings.Value.CardanoWalletApiEndpoint))
+            {
+                return GenerateScheduleOperationsErrorResponse(null, new List<IError>() { new Error("CardanoWalletApiEndpoint is not conigured. Please check the settings before using this endpoint.") });
+            }
+
             if (request.SignedOperations.Count != 1)
             {
                 return GenerateScheduleOperationsErrorResponse(Hash.CreateRandom().Value, new List<IError>() { new Error("A single SignedAtalaOperation is expected") });
@@ -155,7 +160,7 @@ namespace OpenPrismNode.Web.Services
                     parsingResult: parsingResult.Value,
                     utxos: new List<UtxoWrapper>()
                 );
-                var transactionResult = await _mediator.Send(transactionRequest, new CancellationToken());
+                var transactionResult = await _mediator.Send(transactionRequest);
                 if (transactionResult.IsFailed)
                 {
                     return GenerateScheduleOperationsErrorResponse(operationStatusId, transactionResult.Errors);
@@ -245,11 +250,11 @@ namespace OpenPrismNode.Web.Services
 
                 if (!string.IsNullOrEmpty(_appSettings.Value.DefaultWalletIdForGrpc))
                 {
-                   var defaultWallet = getWalletsResult.Value.FirstOrDefault(p => p.WalletId == _appSettings.Value.DefaultWalletIdForGrpc);
-                   if (defaultWallet is not null)
-                   {
-                       selectedWallet = defaultWallet;
-                   }
+                    var defaultWallet = getWalletsResult.Value.FirstOrDefault(p => p.WalletId == _appSettings.Value.DefaultWalletIdForGrpc);
+                    if (defaultWallet is not null)
+                    {
+                        selectedWallet = defaultWallet;
+                    }
                 }
 
                 var transactionResult = await _mediator.Send(new WriteTransactionRequest(request.SignedOperations[0], selectedWallet!.WalletId));
@@ -287,7 +292,7 @@ namespace OpenPrismNode.Web.Services
             }
         }
 
-        private ScheduleOperationsResponse GenerateScheduleOperationsErrorResponse(byte[] operationStatusId, List<IError> errors)
+        private ScheduleOperationsResponse GenerateScheduleOperationsErrorResponse(byte[]? operationStatusId, List<IError> errors)
         {
             return new ScheduleOperationsResponse()
             {
@@ -295,7 +300,7 @@ namespace OpenPrismNode.Web.Services
                 {
                     new OperationOutput()
                     {
-                        OperationId = PrismEncoding.ByteArrayToByteString(operationStatusId),
+                        OperationId = operationStatusId is null ? null : PrismEncoding.ByteArrayToByteString(operationStatusId),
                         Error = string.IsNullOrEmpty(errors.FirstOrDefault()?.Message) ? "Operation failed" : errors.FirstOrDefault().Message
                     }
                 }

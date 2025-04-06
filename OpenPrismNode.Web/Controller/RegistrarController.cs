@@ -66,6 +66,10 @@ public class RegistrarController : ControllerBase
     {
         try
         {
+            if (!string.IsNullOrWhiteSpace(_appSettings.Value.CardanoWalletApiEndpoint))
+            {
+               return BadRequest("CardanoWalletApiEndpoint is not conigured. Please check the settings before using this endpoint.");
+            }
             var ledgertype = LedgerType.CardanoMainnet;
             if (_appSettings.Value.PrismLedger.Name.Equals("preprod", StringComparison.InvariantCultureIgnoreCase))
             {
@@ -214,6 +218,11 @@ public class RegistrarController : ControllerBase
     {
         try
         {
+            if (!string.IsNullOrWhiteSpace(_appSettings.Value.CardanoWalletApiEndpoint))
+            {
+                return BadRequest("CardanoWalletApiEndpoint is not conigured. Please check the settings before using this endpoint.");
+            }
+
             var ledgertype = LedgerType.CardanoMainnet;
             if (_appSettings.Value.PrismLedger.Name.Equals("preprod", StringComparison.InvariantCultureIgnoreCase))
             {
@@ -354,6 +363,11 @@ public class RegistrarController : ControllerBase
     {
         try
         {
+            if (!string.IsNullOrWhiteSpace(_appSettings.Value.CardanoWalletApiEndpoint))
+            {
+                return BadRequest("CardanoWalletApiEndpoint is not conigured. Please check the settings before using this endpoint.");
+            }
+
             var ledgertype = LedgerType.CardanoMainnet;
             if (_appSettings.Value.PrismLedger.Name.Equals("preprod", StringComparison.InvariantCultureIgnoreCase))
             {

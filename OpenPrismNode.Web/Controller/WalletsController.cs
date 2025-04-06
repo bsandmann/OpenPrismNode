@@ -45,6 +45,11 @@ public class WalletsController : ControllerBase
     [Produces("application/json")]
     public async Task<ActionResult> CreateWallet([FromBody] CreateWalletRequestModel requestModel)
     {
+        if (!string.IsNullOrWhiteSpace(_appSettings.CardanoWalletApiEndpoint))
+        {
+            return BadRequest("CardanoWalletApiEndpoint is not conigured. Please check the settings before using this endpoint.");
+        }
+
         var createWalletResult = await _mediator.Send(new CreateCardanoWalletRequest(requestModel.Name));
         if (createWalletResult.IsFailed)
         {
@@ -65,6 +70,11 @@ public class WalletsController : ControllerBase
     [Produces("application/json")]
     public async Task<ActionResult> RestoreWallet([FromBody] RestoreWalletRequestModel requestModel)
     {
+        if (!string.IsNullOrWhiteSpace(_appSettings.CardanoWalletApiEndpoint))
+        {
+            return BadRequest("CardanoWalletApiEndpoint is not conigured. Please check the settings before using this endpoint.");
+        }
+
         var restoreWalletResult = await _mediator.Send(new RestoreCardanoWalletRequest(requestModel.Mnemonic, requestModel.Name));
         if (restoreWalletResult.IsFailed)
         {
@@ -84,6 +94,11 @@ public class WalletsController : ControllerBase
     [Produces("application/json")]
     public async Task<ActionResult> GetWallet(string walletId)
     {
+        if (!string.IsNullOrWhiteSpace(_appSettings.CardanoWalletApiEndpoint))
+        {
+            return BadRequest("CardanoWalletApiEndpoint is not conigured. Please check the settings before using this endpoint.");
+        }
+
         var getWalletResult = await _mediator.Send(new GetWalletRequest(walletId));
         if (getWalletResult.IsFailed)
         {
@@ -107,6 +122,11 @@ public class WalletsController : ControllerBase
     [Produces("application/json")]
     public async Task<ActionResult> GetWallets()
     {
+        if (!string.IsNullOrWhiteSpace(_appSettings.CardanoWalletApiEndpoint))
+        {
+            return BadRequest("CardanoWalletApiEndpoint is not conigured. Please check the settings before using this endpoint.");
+        }
+
         var getWalletsResult = await _mediator.Send(new GetWalletsRequest()
         {
         });
@@ -132,6 +152,11 @@ public class WalletsController : ControllerBase
     [Produces("application/json")]
     public async Task<ActionResult> ExecuteTransaction(string walletId)
     {
+        if (!string.IsNullOrWhiteSpace(_appSettings.CardanoWalletApiEndpoint))
+        {
+            return BadRequest("CardanoWalletApiEndpoint is not conigured. Please check the settings before using this endpoint.");
+        }
+
         using var reader = new StreamReader(Request.Body);
         var inputString = await reader.ReadToEndAsync();
 
@@ -194,6 +219,11 @@ public class WalletsController : ControllerBase
     [Produces("application/json")]
     public async Task<ActionResult> GetTransactions(string walletId)
     {
+        if (!string.IsNullOrWhiteSpace(_appSettings.CardanoWalletApiEndpoint))
+        {
+            return BadRequest("CardanoWalletApiEndpoint is not conigured. Please check the settings before using this endpoint.");
+        }
+
         var transactionsResult = await _mediator.Send(new GetWalletTransactionsRequest(walletId));
         if (transactionsResult.IsFailed)
         {
@@ -218,6 +248,11 @@ public class WalletsController : ControllerBase
     [Produces("application/json")]
     public async Task<ActionResult> Withdrawal(string walletId, string withdrawalAddress)
     {
+        if (!string.IsNullOrWhiteSpace(_appSettings.CardanoWalletApiEndpoint))
+        {
+            return BadRequest("CardanoWalletApiEndpoint is not conigured. Please check the settings before using this endpoint.");
+        }
+
         var transactionResult = await _mediator.Send(new WithdrawalRequest(walletId, withdrawalAddress));
         if (transactionResult.IsFailed)
         {
