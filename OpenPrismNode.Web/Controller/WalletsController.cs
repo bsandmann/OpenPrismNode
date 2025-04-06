@@ -45,7 +45,7 @@ public class WalletsController : ControllerBase
     [Produces("application/json")]
     public async Task<ActionResult> CreateWallet([FromBody] CreateWalletRequestModel requestModel)
     {
-        if (!string.IsNullOrWhiteSpace(_appSettings.CardanoWalletApiEndpoint))
+        if (string.IsNullOrWhiteSpace(_appSettings.CardanoWalletApiEndpoint))
         {
             return BadRequest("CardanoWalletApiEndpoint is not conigured. Please check the settings before using this endpoint.");
         }
@@ -70,7 +70,7 @@ public class WalletsController : ControllerBase
     [Produces("application/json")]
     public async Task<ActionResult> RestoreWallet([FromBody] RestoreWalletRequestModel requestModel)
     {
-        if (!string.IsNullOrWhiteSpace(_appSettings.CardanoWalletApiEndpoint))
+        if (string.IsNullOrWhiteSpace(_appSettings.CardanoWalletApiEndpoint))
         {
             return BadRequest("CardanoWalletApiEndpoint is not conigured. Please check the settings before using this endpoint.");
         }
@@ -94,7 +94,7 @@ public class WalletsController : ControllerBase
     [Produces("application/json")]
     public async Task<ActionResult> GetWallet(string walletId)
     {
-        if (!string.IsNullOrWhiteSpace(_appSettings.CardanoWalletApiEndpoint))
+        if (string.IsNullOrWhiteSpace(_appSettings.CardanoWalletApiEndpoint))
         {
             return BadRequest("CardanoWalletApiEndpoint is not conigured. Please check the settings before using this endpoint.");
         }
@@ -122,7 +122,7 @@ public class WalletsController : ControllerBase
     [Produces("application/json")]
     public async Task<ActionResult> GetWallets()
     {
-        if (!string.IsNullOrWhiteSpace(_appSettings.CardanoWalletApiEndpoint))
+        if (string.IsNullOrWhiteSpace(_appSettings.CardanoWalletApiEndpoint))
         {
             return BadRequest("CardanoWalletApiEndpoint is not conigured. Please check the settings before using this endpoint.");
         }
@@ -152,7 +152,7 @@ public class WalletsController : ControllerBase
     [Produces("application/json")]
     public async Task<ActionResult> ExecuteTransaction(string walletId)
     {
-        if (!string.IsNullOrWhiteSpace(_appSettings.CardanoWalletApiEndpoint))
+        if (string.IsNullOrWhiteSpace(_appSettings.CardanoWalletApiEndpoint))
         {
             return BadRequest("CardanoWalletApiEndpoint is not conigured. Please check the settings before using this endpoint.");
         }
@@ -219,7 +219,7 @@ public class WalletsController : ControllerBase
     [Produces("application/json")]
     public async Task<ActionResult> GetTransactions(string walletId)
     {
-        if (!string.IsNullOrWhiteSpace(_appSettings.CardanoWalletApiEndpoint))
+        if (string.IsNullOrWhiteSpace(_appSettings.CardanoWalletApiEndpoint))
         {
             return BadRequest("CardanoWalletApiEndpoint is not conigured. Please check the settings before using this endpoint.");
         }
@@ -248,7 +248,7 @@ public class WalletsController : ControllerBase
     [Produces("application/json")]
     public async Task<ActionResult> Withdrawal(string walletId, string withdrawalAddress)
     {
-        if (!string.IsNullOrWhiteSpace(_appSettings.CardanoWalletApiEndpoint))
+        if (string.IsNullOrWhiteSpace(_appSettings.CardanoWalletApiEndpoint))
         {
             return BadRequest("CardanoWalletApiEndpoint is not conigured. Please check the settings before using this endpoint.");
         }

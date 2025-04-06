@@ -117,7 +117,7 @@ namespace OpenPrismNode.Web.Services
 
         public override async Task<ScheduleOperationsResponse> ScheduleOperations(ScheduleOperationsRequest request, ServerCallContext context)
         {
-            if (!string.IsNullOrWhiteSpace(_appSettings.Value.CardanoWalletApiEndpoint))
+            if (string.IsNullOrWhiteSpace(_appSettings.Value.CardanoWalletApiEndpoint))
             {
                 return GenerateScheduleOperationsErrorResponse(null, new List<IError>() { new Error("CardanoWalletApiEndpoint is not conigured. Please check the settings before using this endpoint.") });
             }

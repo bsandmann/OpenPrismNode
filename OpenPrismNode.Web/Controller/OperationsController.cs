@@ -40,7 +40,7 @@ public class OperationsController : ControllerBase
     [Produces("application/json")]
     public async Task<ActionResult> GetTransaction(string operationStatusIdHex)
     {
-        if (!string.IsNullOrWhiteSpace(_appSettings.CardanoWalletApiEndpoint))
+        if (string.IsNullOrWhiteSpace(_appSettings.CardanoWalletApiEndpoint))
         {
             return BadRequest("CardanoWalletApiEndpoint is not conigured. Please check the settings before using this endpoint.");
         }
