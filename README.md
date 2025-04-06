@@ -28,7 +28,9 @@ The project is currently under development, but already in beta testing. You can
 
 ## Get the image
 `docker pull ghcr.io/bsandmann/openprismnode:latest`
-     
+    
+## Documentation 
+- The documentation is currently under development. You can find the first pages [here](https://bsandmann.github.io/OpenPrismNode/Guide_blockfrost)
 
 ## Development
 The project was funded through Project Catalyst F11 under the title 'Open source PRISM Node' (1100214).

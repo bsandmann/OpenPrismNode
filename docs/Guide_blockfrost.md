@@ -1,6 +1,6 @@
 # Guide: Installing OPN Using the *Blockfrost* API for Syncing
 
-By default, OPN (Open Prism Node) synchronizes data using *dbsync* as its backend database. However, if *dbsync* is not available or not preferred, OPN can alternatively be synced using the *Blockfrost* API.
+By default, OPN (Open Prism Node) synchronizes data using *dbsync* as its backend database. However, if *dbsync* is not available or not preferred, OPN can alternatively be synced using the [*Blockfrost* API](https://docs.blockfrost.io/).
 
 > ⚠️ **Note:** This setup only applies to data synchronization. The creation and modification of DIDs still requires a Cardano Wallet. For instructions on how to set up the Cardano Wallet, refer to the [official documentation](https://github.com/cardano-foundation/cardano-wallet).
 
@@ -8,7 +8,7 @@ By default, OPN (Open Prism Node) synchronizes data using *dbsync* as its backen
 
 ## Prerequisites
 
-- SSH or terminal access to the server. The recommended environment is **Ubuntu 22.04 LTS**. Windows Subsystem for Linux (WSL) may also work but has not been tested.
+- SSH or terminal access to the server. The recommended environment is **Ubuntu 24.04 LTS**. Windows Subsystem for Linux (WSL) may also work but has not been tested.
 - A Blockfrost API key, available for free at [blockfrost.io](https://blockfrost.io/).
   > Note: The free tier allows up to **50,000 requests per day**. The initial sync may take approximately 36 hours (~3 days), but subsequent daily usage will remain well within this limit.
 
@@ -112,7 +112,7 @@ The synchronization process starts automatically. To monitor progress:
 
 To create a wallet:
 
-1. Log in using the **user password** (`pwUser!` or your configured value).  
+1. Log in using the **user password**
    This password can be shared publicly to allow users to create their own wallets on the OPN.
 
 2. After logging in, the user can immediately generate a new wallet. Syncing will begin automatically (note: this requires that the Cardano Wallet is running and the OPN is synced).
