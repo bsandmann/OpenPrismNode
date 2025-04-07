@@ -1,16 +1,21 @@
 # Guide: Installing OPN Using the *Blockfrost* API for Syncing
 
-By default, OPN (Open Prism Node) synchronizes data using *dbsync* as its backend database. However, if *dbsync* is not available or not preferred, OPN can alternatively be synced using the [*Blockfrost* API](https://docs.blockfrost.io/).
+By default, OPN (Open Prism Node) synchronizes data using *dbsync* as its backend database. However, if *dbsync* is not
+available or not preferred, OPN can alternatively be synced using the [*Blockfrost* API](https://docs.blockfrost.io/).
 
-> ⚠️ **Note:** This setup only applies to data synchronization. The creation and modification of DIDs still requires a Cardano Wallet. For instructions on how to set up the Cardano Wallet, refer to the [official documentation](https://github.com/cardano-foundation/cardano-wallet).
+> ⚠️ **Note:** This setup only applies to data synchronization. The creation and modification of DIDs still requires a
+> Cardano Wallet. For instructions on how to set up the Cardano Wallet, refer to
+> the [official documentation](https://github.com/cardano-foundation/cardano-wallet).
 
 ---
 
 ## Prerequisites
 
-- SSH or terminal access to the server. The recommended environment is **Ubuntu 24.04 LTS**. Windows Subsystem for Linux (WSL) may also work but has not been tested.
+- SSH or terminal access to the server. The recommended environment is **Ubuntu 24.04 LTS**. Windows Subsystem for
+  Linux (WSL) may also work but has not been tested.
 - A Blockfrost API key, available for free at [blockfrost.io](https://blockfrost.io/).
-  > Note: The free tier allows up to **50,000 requests per day**. The initial sync may take approximately 36 hours (~3 days), but subsequent daily usage will remain well within this limit.
+  > Note: The free tier allows up to **50,000 requests per day**. The initial sync may take approximately 36 hours (~3
+  days), but subsequent daily usage will remain well within this limit.
 
 ---
 
@@ -85,10 +90,12 @@ networks:
   prismnet:
     driver: bridge
 ```
+
 2. Replace the placeholder API key with your actual Blockfrost API key.
 
 3. Update the admin and user passwords as needed.
-   > 🔐 If the OPN instance is exposed to the internet, it is **strongly recommended** to change the admin password to prevent unauthorized access and potential data loss.
+   > 🔐 If the OPN instance is exposed to the internet, it is **strongly recommended** to change the admin password to
+   prevent unauthorized access and potential data loss.
 
 4. Navigate to the directory containing the `docker-compose.yml` file and start the services:
 
@@ -102,9 +109,13 @@ networks:
 
 The synchronization process starts automatically. To monitor progress:
 
-- Open your browser and navigate to `http://localhost:5001`
+- Open your browser and navigate to `http://localhost:5001` (or the appropriate IP address). This will open the OPN user
+  interface. ![image](/docs/images/scr6.png) You can see the connected network as well the different endpoints. Click on
+  *Swagger / OpenAPI Documentation* to get the API endpoints for reference.
 - Log in using the **admin password**
-- From the admin interface, you can monitor and control the sync process via UI or API
+- From the admin interface, you can monitor and control the sync process via UI or API. ![image](/docs/images/scr5.png)
+  You can see the current sync state and the number of blocks that are already synced. You can stop and start the sync
+  process and also rollback to a previous block or epoch.
 
 ---
 
@@ -115,15 +126,17 @@ To create a wallet:
 1. Log in using the **user password**
    This password can be shared publicly to allow users to create their own wallets on the OPN.
 
-2. After logging in, the user can immediately generate a new wallet. Syncing will begin automatically (note: this requires that the Cardano Wallet is running and the OPN is synced).
+2. After logging in, the user can immediately generate a new wallet. Syncing will begin automatically (note: this
+   requires that the Cardano Wallet is running and the OPN is synced). ![image](/docs/images/scr3.png)
 
 3. The user should:
-  - Record the **mnemonic** and **wallet ID**
-  - Use the **wallet ID** for future logins instead of the shared user password
+- Record the **mnemonic** and **wallet ID**
+- Use the **wallet ID** for future logins instead of the shared user password
+![image](/docs/images/scr2.png)
 
-4. Once syncing completes, the wallet interface will show the **funding address** and **current balance**.
+4. Once syncing completes, the wallet interface will show the **funding address** and **current balance**. State of a un-synced wallet: ![iamge](/docs/images/scr1.png) State of a synced wallet: ![image](/docs/images/scr7.png)
 
 5. The wallet ID can now be used to:
-  - Create new DIDs
-  - Modify existing DIDs
-
+- Create new DIDs
+- Modify existing DIDs (update/deactivate)
+  Simple use the walletId and use it as a request parameter in the API call against the Registrar API.
