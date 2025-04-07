@@ -110,10 +110,10 @@ networks:
 The synchronization process starts automatically. To monitor progress:
 
 - Open your browser and navigate to `http://localhost:5001` (or the appropriate IP address). This will open the OPN user
-  interface. ![image](/docs/images/scr6.png) You can see the connected network as well the different endpoints. Click on
+  interface. ![image](./images/scr6.png) You can see the connected network as well the different endpoints. Click on
   *Swagger / OpenAPI Documentation* to get the API endpoints for reference.
 - Log in using the **admin password**
-- From the admin interface, you can monitor and control the sync process via UI or API. ![image](/docs/images/scr5.png)
+- From the admin interface, you can monitor and control the sync process via UI or API. ![image](./images/scr5.png)
   You can see the current sync state and the number of blocks that are already synced. You can stop and start the sync
   process and also rollback to a previous block or epoch.
 
@@ -127,14 +127,14 @@ To create a wallet:
    This password can be shared publicly to allow users to create their own wallets on the OPN.
 
 2. After logging in, the user can immediately generate a new wallet. Syncing will begin automatically (note: this
-   requires that the Cardano Wallet is running and the OPN is synced). ![image](/docs/images/scr3.png)
+   requires that the Cardano Wallet is running and the OPN is synced). ![image](./images/scr3.png)
 
 3. The user should:
 - Record the **mnemonic** and **wallet ID**
 - Use the **wallet ID** for future logins instead of the shared user password
-![image](/docs/images/scr2.png)
+![image](./images/scr2.png)
 
-4. Once syncing completes, the wallet interface will show the **funding address** and **current balance**. State of a un-synced wallet: ![iamge](/docs/images/scr1.png) State of a synced wallet: ![image](/docs/images/scr7.png)
+4. Once syncing completes, the wallet interface will show the **funding address** and **current balance**. State of a un-synced wallet: ![iamge](./images/scr1.png) State of a synced wallet: ![image](./images/scr7.png)
 
 5. The wallet ID can now be used to:
 - Create new DIDs
