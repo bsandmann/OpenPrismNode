@@ -35,6 +35,13 @@ namespace OpenPrismNode.Core.Commands.Registrar
         public string WalletId { get; set; }
 
         /// <summary>
+        /// MasterKey in base64url format (as used in the OPN response).
+        /// This is required for Update and Deactivate operations.
+        /// </summary>
+        [JsonPropertyName("masterKeySecret")]
+        public string? MasterKeySecretString { get; set; }
+
+        /// <summary>
         /// The optional network identitifier (e.g. mainnet or preprod)
         /// If the network is specified but not matching the settings of the OPN this will return an error
         /// </summary>

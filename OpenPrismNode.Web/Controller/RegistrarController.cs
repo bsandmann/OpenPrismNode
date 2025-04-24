@@ -266,6 +266,11 @@ public class RegistrarController : ControllerBase
                 return BadRequest($"Invalid network. The specified network does not match the settings of OPN ({_appSettings.Value.PrismLedger.Name})");
             }
 
+            if (string.IsNullOrEmpty(request.Options?.MasterKeySecretString))
+            {
+                return BadRequest("MasterKeySecret must be provided for updates.");
+            }
+
             // Validate verification methods and DID document
             var validationResult = RegistrarRequestValidators.ValidateUpdateRequest(request);
             if (!string.IsNullOrEmpty(validationResult))
@@ -399,6 +404,11 @@ public class RegistrarController : ControllerBase
             if (options.ClientSecretMode == true)
             {
                 return BadRequest(new ProblemDetails { Title = "Unsupported Operation", Detail = "Client-managed secret mode is not supported." });
+            }
+
+            if (string.IsNullOrEmpty(request.Options?.MasterKeySecretString))
+            {
+                return BadRequest("MasterKeySecret must be provided for updates.");
             }
 
             var signedAtalaOperationForDeactivateDidRequest = new CreateSignedAtalaOperationForDeactivateDidRequest(

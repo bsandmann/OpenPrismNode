@@ -71,13 +71,13 @@ Accept: application/json
 Content-Type: application/json
 
 {
-  "jobId": "08f24904e001dfe56365b8b71905967a9bfcc3fd5b254a222bc789c549c1710a"
+  "jobId": "c4ec36c20684946993258d36a36558f4a6f8e8fdc2b0e48b79afba69df10cfbc"
 }
 
 
 ###
 # Registrar update endpoint (add keys)
-POST {{OpenPrismNode_HostAddress}}/api/v1/registrar/update/did:prism:c87006a0e00fcba923a48d5c9df0212a775e1ec24c9fd01a3fe6fda7e97f7ac5
+POST {{OpenPrismNode_HostAddress}}/api/v1/registrar/update/did:prism:8339291b486989829a1ac868926ae09db4df047bcedfbe4c3aaf1546723b94f9
 Accept: application/json
 Content-Type: application/json
 
@@ -86,6 +86,7 @@ Content-Type: application/json
     "storeSecretes": true,
     "returnSecrets": true,
     "walletId": "a4e8d89055c08493b297883392e730008153b6c1",
+    "masterKeySecret": "GXltwpT-R9Ld6fWuH9lwA4r0afmxiWpXfupwd-T5uxI",
     "network": "preprod"
   },
   "secret": {

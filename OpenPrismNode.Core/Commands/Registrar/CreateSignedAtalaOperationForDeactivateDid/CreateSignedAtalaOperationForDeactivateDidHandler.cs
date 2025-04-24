@@ -117,6 +117,12 @@ namespace OpenPrismNode.Core.Commands.Registrar.CreateSignedAtalaOperationForDea
                     }
                 };
 
+            var masterKeySecret = PrismEncoding.Base64ToByteArray(request.Options.MasterKeySecretString!);
+            if (!masterKeySecret.SequenceEqual(masterKeySecrets.Bytes))
+            {
+                return Result.Fail("The master key secret is not valid");
+            }
+
             var signedAtalaOperation = SignAtalaOperation(masterKeySecrets.Bytes, masterKeySecrets.KeyId, atalaOperation, _cryptoService);
 
             return new CreateSignedAtalaOperationForDeactivateDidResponse(signedAtalaOperation);
