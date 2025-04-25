@@ -178,7 +178,7 @@ namespace OpenPrismNode.Core.Commands.Registrar.CreateSignedAtalaOperationForCre
                     {
                         DidData = new CreateDIDOperation.Types.DIDCreationData()
                         {
-                            Context = { context },
+                            Context = { context.Distinct() },
                             PublicKeys = { publicKeys },
                             Services = { services }
                         }
