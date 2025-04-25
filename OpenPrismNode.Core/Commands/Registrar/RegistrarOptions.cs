@@ -46,8 +46,5 @@ namespace OpenPrismNode.Core.Commands.Registrar
         /// If the network is specified but not matching the settings of the OPN this will return an error
         /// </summary>
         public string? Network { get; set; }
-
-
-
     }
 }

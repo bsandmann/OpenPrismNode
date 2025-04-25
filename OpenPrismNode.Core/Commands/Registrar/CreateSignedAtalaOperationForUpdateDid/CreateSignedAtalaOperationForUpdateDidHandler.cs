@@ -374,7 +374,7 @@ namespace OpenPrismNode.Core.Commands.Registrar.CreateSignedAtalaOperationForUpd
 
                     if (document.Context is not null)
                     {
-                        contextsToPatch = document.Context;
+                        contextsToPatch = document.Context.Distinct().ToList();
                     }
                 }
 
