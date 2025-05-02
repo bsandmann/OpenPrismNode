@@ -9,6 +9,7 @@ using Polly.Retry;
 
 namespace OpenPrismNode.Core.Services;
 
+using Common;
 using Models.CardanoWallet;
 
 public class CardanoWalletService : ICardanoWalletService
@@ -33,81 +34,108 @@ public class CardanoWalletService : ICardanoWalletService
 
     public async Task<Result<CreateWalletResponse>> CreateWalletAsync(CreateWalletRequest request)
     {
-        try
-        {
-            var json = JsonSerializer.Serialize(request, _jsonOptions);
-            var content = new StringContent(json, Encoding.UTF8, "application/json");
+        // Create retry policy for wallet creation - retry on all failures
+        var retryPolicy = ResiliencePolicies.GetStandardRetryPolicy<Result<CreateWalletResponse>>(
+            _logger,
+            result => result.IsFailed
+        );
 
-            var response = await _httpClient.PostAsync("/v2/wallets", content);
-
-            if (response.IsSuccessStatusCode)
-            {
-                var responseContent = await response.Content.ReadAsStringAsync();
-                var walletResponse = JsonSerializer.Deserialize<CreateWalletResponse>(responseContent, _jsonOptions);
-                return Result.Ok(walletResponse);
-            }
-            else if (response.StatusCode == HttpStatusCode.Conflict)
-            {
-                return Result.Fail("Wallet already exists. Use the walletId for authorization.");
-            }
-            else
-            {
-                var errorResult = await HandleErrorResponse(response);
-                return Result.Fail(errorResult);
-            }
-        }
-        catch (Exception ex)
+        return await retryPolicy.ExecuteAsync(async () =>
         {
-            return Result.Fail($"An unexpected error occurred: {ex.Message}");
-        }
+            try
+            {
+                var json = JsonSerializer.Serialize(request, _jsonOptions);
+                var content = new StringContent(json, Encoding.UTF8, "application/json");
+
+                var response = await _httpClient.PostAsync("/v2/wallets", content);
+
+                if (response.IsSuccessStatusCode)
+                {
+                    var responseContent = await response.Content.ReadAsStringAsync();
+                    var walletResponse = JsonSerializer.Deserialize<CreateWalletResponse>(responseContent, _jsonOptions);
+                    return Result.Ok(walletResponse);
+                }
+                else if (response.StatusCode == HttpStatusCode.Conflict)
+                {
+                    return Result.Fail("Wallet already exists. Use the walletId for authorization.");
+                }
+                else
+                {
+                    var errorResult = await HandleErrorResponse(response);
+                    return Result.Fail(errorResult);
+                }
+            }
+            catch (Exception ex)
+            {
+                return Result.Fail($"An unexpected error occurred: {ex.Message}");
+            }
+        });
     }
 
     public async Task<Result<CreateWalletResponse>> GetWalletAsync(string walletId)
     {
-        try
-        {
-            var response = await _httpClient.GetAsync($"/v2/wallets/{walletId}");
+        // Create retry policy for getting wallet information - retry on any failure
+        var retryPolicy = ResiliencePolicies.GetStandardRetryPolicy<Result<CreateWalletResponse>>(
+            _logger,
+            result => result.IsFailed
+        );
 
-            if (response.IsSuccessStatusCode)
-            {
-                var responseContent = await response.Content.ReadAsStringAsync();
-                var walletResponse = JsonSerializer.Deserialize<CreateWalletResponse>(responseContent, _jsonOptions);
-                return Result.Ok(walletResponse);
-            }
-            else
-            {
-                var errorResult = await HandleErrorResponse(response);
-                return Result.Fail(errorResult);
-            }
-        }
-        catch (Exception ex)
+        return await retryPolicy.ExecuteAsync(async () =>
         {
-            return Result.Fail($"An unexpected error occurred: {ex.Message}");
-        }
+            try
+            {
+                var response = await _httpClient.GetAsync($"/v2/wallets/{walletId}");
+
+                if (response.IsSuccessStatusCode)
+                {
+                    var responseContent = await response.Content.ReadAsStringAsync();
+                    var walletResponse = JsonSerializer.Deserialize<CreateWalletResponse>(responseContent, _jsonOptions);
+                    return Result.Ok(walletResponse);
+                }
+                else
+                {
+                    var errorResult = await HandleErrorResponse(response);
+                    return Result.Fail(errorResult);
+                }
+            }
+            catch (Exception ex)
+            {
+                return Result.Fail($"An unexpected error occurred: {ex.Message}");
+            }
+        });
     }
 
     public async Task<Result<List<AddressResponse>>> ListAddressesAsync(string walletId)
     {
-        try
-        {
-            var response = await _httpClient.GetAsync($"/v2/wallets/{walletId}/addresses");
+        // Create retry policy for listing wallet addresses - retry on any failure
+        var retryPolicy = ResiliencePolicies.GetStandardRetryPolicy<Result<List<AddressResponse>>>(
+            _logger,
+            result => result.IsFailed
+        );
 
-            if (response.IsSuccessStatusCode)
-            {
-                var responseContent = await response.Content.ReadAsStringAsync();
-                var addresses = JsonSerializer.Deserialize<List<AddressResponse>>(responseContent, _jsonOptions);
-                return Result.Ok(addresses);
-            }
-            else
-            {
-                var errorResult = await HandleErrorResponse(response);
-                return Result.Fail(errorResult);
-            }
-        }
-        catch (Exception ex)
+        return await retryPolicy.ExecuteAsync(async () =>
         {
-            return Result.Fail($"An unexpected error occurred: {ex.Message}");
-        }
+            try
+            {
+                var response = await _httpClient.GetAsync($"/v2/wallets/{walletId}/addresses");
+
+                if (response.IsSuccessStatusCode)
+                {
+                    var responseContent = await response.Content.ReadAsStringAsync();
+                    var addresses = JsonSerializer.Deserialize<List<AddressResponse>>(responseContent, _jsonOptions);
+                    return Result.Ok(addresses);
+                }
+                else
+                {
+                    var errorResult = await HandleErrorResponse(response);
+                    return Result.Fail(errorResult);
+                }
+            }
+            catch (Exception ex)
+            {
+                return Result.Fail($"An unexpected error occurred: {ex.Message}");
+            }
+        });
     }
 
     private async Task<Result<TransactionConstructResponse>> ConstructTransactionAsync(string walletId, TransactionConstructRequest request)
@@ -164,56 +192,74 @@ public class CardanoWalletService : ICardanoWalletService
 
     private async Task<Result<string>> SignTransactionAsync(string walletId, TransactionSignRequest request)
     {
-        try
-        {
-            var json = JsonSerializer.Serialize(request, _jsonOptions);
-            var content = new StringContent(json, Encoding.UTF8, "application/json");
+        // Create retry policy for signing transactions - retry on any failure
+        var retryPolicy = ResiliencePolicies.GetStandardRetryPolicy<Result<string>>(
+            _logger,
+            result => result.IsFailed
+        );
 
-            var response = await _httpClient.PostAsync($"/v2/wallets/{walletId}/transactions-sign", content);
-
-            if (response.IsSuccessStatusCode)
-            {
-                var responseContent = await response.Content.ReadAsStringAsync();
-                var signResponse = JsonSerializer.Deserialize<TransactionSignResponse>(responseContent, _jsonOptions);
-                return Result.Ok(signResponse.Transaction);
-            }
-            else
-            {
-                var errorResult = await HandleErrorResponse(response);
-                return Result.Fail(errorResult);
-            }
-        }
-        catch (Exception ex)
+        return await retryPolicy.ExecuteAsync(async () =>
         {
-            return Result.Fail($"An unexpected error occurred: {ex.Message}");
-        }
+            try
+            {
+                var json = JsonSerializer.Serialize(request, _jsonOptions);
+                var content = new StringContent(json, Encoding.UTF8, "application/json");
+
+                var response = await _httpClient.PostAsync($"/v2/wallets/{walletId}/transactions-sign", content);
+
+                if (response.IsSuccessStatusCode)
+                {
+                    var responseContent = await response.Content.ReadAsStringAsync();
+                    var signResponse = JsonSerializer.Deserialize<TransactionSignResponse>(responseContent, _jsonOptions);
+                    return Result.Ok(signResponse.Transaction);
+                }
+                else
+                {
+                    var errorResult = await HandleErrorResponse(response);
+                    return Result.Fail(errorResult);
+                }
+            }
+            catch (Exception ex)
+            {
+                return Result.Fail($"An unexpected error occurred: {ex.Message}");
+            }
+        });
     }
 
     private async Task<Result<string>> SubmitTransactionAsync(string walletId, TransactionSubmitRequest request)
     {
-        try
-        {
-            var json = JsonSerializer.Serialize(request, _jsonOptions);
-            var content = new StringContent(json, Encoding.UTF8, "application/json");
+        // Create retry policy for submitting transactions - retry on any failure
+        var retryPolicy = ResiliencePolicies.GetStandardRetryPolicy<Result<string>>(
+            _logger,
+            result => result.IsFailed
+        );
 
-            var response = await _httpClient.PostAsync($"/v2/wallets/{walletId}/transactions-submit", content);
-
-            if (response.IsSuccessStatusCode)
-            {
-                var responseContent = await response.Content.ReadAsStringAsync();
-                var submitResponse = JsonSerializer.Deserialize<TransactionSubmitResponse>(responseContent, _jsonOptions);
-                return Result.Ok(submitResponse.Id);
-            }
-            else
-            {
-                var errorResult = await HandleErrorResponse(response);
-                return Result.Fail(errorResult);
-            }
-        }
-        catch (Exception ex)
+        return await retryPolicy.ExecuteAsync(async () =>
         {
-            return Result.Fail($"An unexpected error occurred: {ex.Message}");
-        }
+            try
+            {
+                var json = JsonSerializer.Serialize(request, _jsonOptions);
+                var content = new StringContent(json, Encoding.UTF8, "application/json");
+
+                var response = await _httpClient.PostAsync($"/v2/wallets/{walletId}/transactions-submit", content);
+
+                if (response.IsSuccessStatusCode)
+                {
+                    var responseContent = await response.Content.ReadAsStringAsync();
+                    var submitResponse = JsonSerializer.Deserialize<TransactionSubmitResponse>(responseContent, _jsonOptions);
+                    return Result.Ok(submitResponse.Id);
+                }
+                else
+                {
+                    var errorResult = await HandleErrorResponse(response);
+                    return Result.Fail(errorResult);
+                }
+            }
+            catch (Exception ex)
+            {
+                return Result.Fail($"An unexpected error occurred: {ex.Message}");
+            }
+        });
     }
 
     public async Task<Result<string>> CreateAndSubmitTransactionAsync(string walletId, string passphrase, Payment payment, object? metadata)
@@ -338,51 +384,69 @@ public class CardanoWalletService : ICardanoWalletService
 
     public async Task<Result<TransactionDetailsResponse>> GetTransactionDetailsAsync(string walletId, string transactionId)
     {
-        try
-        {
-            var endpoint = $"/v2/wallets/{walletId}/transactions/{transactionId}";
-            var response = await _httpClient.GetAsync(endpoint);
+        // Create retry policy for getting transaction details - retry on any failure
+        var retryPolicy = ResiliencePolicies.GetStandardRetryPolicy<Result<TransactionDetailsResponse>>(
+            _logger,
+            result => result.IsFailed
+        );
 
-            if (response.IsSuccessStatusCode)
-            {
-                var responseContent = await response.Content.ReadAsStringAsync();
-                var transactionDetails = JsonSerializer.Deserialize<TransactionDetailsResponse>(responseContent, _jsonOptions);
-                return Result.Ok(transactionDetails);
-            }
-            else
-            {
-                var errorResult = await HandleErrorResponse(response);
-                return Result.Fail(errorResult);
-            }
-        }
-        catch (Exception ex)
+        return await retryPolicy.ExecuteAsync(async () =>
         {
-            return Result.Fail($"An unexpected error occurred: {ex.Message}");
-        }
+            try
+            {
+                var endpoint = $"/v2/wallets/{walletId}/transactions/{transactionId}";
+                var response = await _httpClient.GetAsync(endpoint);
+
+                if (response.IsSuccessStatusCode)
+                {
+                    var responseContent = await response.Content.ReadAsStringAsync();
+                    var transactionDetails = JsonSerializer.Deserialize<TransactionDetailsResponse>(responseContent, _jsonOptions);
+                    return Result.Ok(transactionDetails);
+                }
+                else
+                {
+                    var errorResult = await HandleErrorResponse(response);
+                    return Result.Fail(errorResult);
+                }
+            }
+            catch (Exception ex)
+            {
+                return Result.Fail($"An unexpected error occurred: {ex.Message}");
+            }
+        });
     }
 
     public async Task<Result<NetworkInformationResponse>> GetNetworkInformationAsync()
     {
-        try
-        {
-            var response = await _httpClient.GetAsync("/v2/network/information");
+        // Create retry policy for getting network information - retry on all failures
+        var retryPolicy = ResiliencePolicies.GetStandardRetryPolicy<Result<NetworkInformationResponse>>(
+            _logger,
+            result => result.IsFailed // Retry on all failures as this is network status information
+        );
 
-            if (response.IsSuccessStatusCode)
-            {
-                var responseContent = await response.Content.ReadAsStringAsync();
-                var networkInfo = JsonSerializer.Deserialize<NetworkInformationResponse>(responseContent, _jsonOptions);
-                return Result.Ok(networkInfo);
-            }
-            else
-            {
-                var errorResult = await HandleErrorResponse(response);
-                return Result.Fail(errorResult);
-            }
-        }
-        catch (Exception ex)
+        return await retryPolicy.ExecuteAsync(async () =>
         {
-            return Result.Fail($"An unexpected error occurred: {ex.Message}");
-        }
+            try
+            {
+                var response = await _httpClient.GetAsync("/v2/network/information");
+
+                if (response.IsSuccessStatusCode)
+                {
+                    var responseContent = await response.Content.ReadAsStringAsync();
+                    var networkInfo = JsonSerializer.Deserialize<NetworkInformationResponse>(responseContent, _jsonOptions);
+                    return Result.Ok(networkInfo);
+                }
+                else
+                {
+                    var errorResult = await HandleErrorResponse(response);
+                    return Result.Fail(errorResult);
+                }
+            }
+            catch (Exception ex)
+            {
+                return Result.Fail($"An unexpected error occurred: {ex.Message}");
+            }
+        });
     }
 
     public string GeneratePassphrase(int length = 24)
