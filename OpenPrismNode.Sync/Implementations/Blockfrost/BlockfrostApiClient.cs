@@ -12,8 +12,11 @@ using System.Threading;
 using System.Threading.Tasks;
 using FluentResults;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 using OpenPrismNode.Core.Common;
+using OpenPrismNode.Sync;
+using ResiliencePolicies = Core.Common.ResiliencePolicies;
 
 /// <summary>
 /// Helper for making Blockfrost API requests using the recommended approach.
@@ -88,6 +91,7 @@ public static class BlockfrostHelper
 
     /// <summary>
     /// Sends a request to the Blockfrost API and deserializes the response
+    /// Uses the shared resilience policy for automatic retries on failures
     /// </summary>
     /// <typeparam name="T">The type to deserialize the response to</typeparam>
     /// <param name="client">The HttpClient to use</param>
@@ -105,8 +109,18 @@ public static class BlockfrostHelper
         {
             logger?.LogDebug("Sending request to Blockfrost API: {Url}", request.RequestUri);
 
-            // Send the request
-            var response = await client.SendAsync(request, cancellationToken);
+            // Use the Core project's resilience policy
+            var retryPolicy = ResiliencePolicies.GetStandardRetryPolicy<HttpResponseMessage>(
+                logger ?? CreateFallbackLogger(),
+                response => !response.IsSuccessStatusCode);
+
+            // Send the request with resilience policy
+            var response = await retryPolicy.ExecuteAsync(() => 
+            {
+                // Create a new request for each retry attempt to avoid "Cannot send the same request multiple times" error
+                var requestCopy = CopyHttpRequestMessage(request);
+                return client.SendAsync(requestCopy, cancellationToken);
+            });
 
             // Check specific Blockfrost error cases
             if (!response.IsSuccessStatusCode)
@@ -164,7 +178,6 @@ public static class BlockfrostHelper
                 }
             }
 
-
             // Deserialize the response
             var result = await response.Content.ReadFromJsonAsync<T>(
                 new JsonSerializerOptions { PropertyNameCaseInsensitive = true }, 
@@ -193,6 +206,45 @@ public static class BlockfrostHelper
             logger?.LogError(ex, "Unexpected error calling Blockfrost API: {ErrorMessage}", ex.Message);
             return Result.Fail<T>($"Unexpected error calling Blockfrost API: {ex.Message}");
         }
+    }
+    
+    /// <summary>
+    /// Creates a copy of an HttpRequestMessage since HttpRequestMessage can only be sent once
+    /// </summary>
+    /// <param name="request">The original request</param>
+    /// <returns>A copy of the request</returns>
+    private static HttpRequestMessage CopyHttpRequestMessage(HttpRequestMessage request)
+    {
+        var newRequest = new HttpRequestMessage
+        {
+            Method = request.Method,
+            RequestUri = request.RequestUri,
+            Content = request.Content,
+            Version = request.Version
+        };
+
+        // Copy headers
+        foreach (var header in request.Headers)
+        {
+            newRequest.Headers.TryAddWithoutValidation(header.Key, header.Value);
+        }
+
+        // Copy properties
+        foreach (var property in request.Properties)
+        {
+            newRequest.Properties.Add(property);
+        }
+
+        return newRequest;
+    }
+    
+    /// <summary>
+    /// Creates a fallback logger when none is provided
+    /// </summary>
+    /// <returns>A null logger that doesn't log anything</returns>
+    private static ILogger CreateFallbackLogger()
+    {
+        return Microsoft.Extensions.Logging.Abstractions.NullLogger.Instance;
     }
 
     /// <summary>
