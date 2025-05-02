@@ -40,7 +40,7 @@ public class DbSyncBlockProvider : IBlockProvider
     }
 
     /// <inheritdoc />
-    public async Task<Result<Block>> GetBlockById(int blockId, CancellationToken cancellationToken)
+    public async Task<Result<Block>> GetBlockById(int blockId, CancellationToken cancellationToken, int? blockNo = null)
     {
         return await _mediator.Send(new GetPostgresBlockByBlockIdRequest(blockId), cancellationToken);
     }

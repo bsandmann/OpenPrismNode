@@ -316,7 +316,7 @@ public static class SyncService
             blocksToCreate.Add(currentBlock);
 
             // Get the previous block
-            var priorBlock = await blockProvider.GetBlockById(currentBlock.previous_id, cancellationToken);
+            var priorBlock = await blockProvider.GetBlockById(currentBlock.previous_id, cancellationToken, currentBlock.block_no - 1);
             if (priorBlock.IsFailed)
             {
                 return Result.Fail($"Cannot find prior block for forked block {currentBlock.block_no} in {ledgerType}");

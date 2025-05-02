@@ -53,11 +53,14 @@ public class BlockfrostBlockProvider : IBlockProvider
     }
 
     /// <inheritdoc />
-    public async Task<Result<Block>> GetBlockById(int blockId, CancellationToken cancellationToken)
+    public async Task<Result<Block>> GetBlockById(int blockId, CancellationToken cancellationToken, int? blockNo = null)
     {
-        // TODO: Implement GetApiBlockByIdRequest/Handler
-        _logger.LogWarning("GetBlockById is not yet implemented for BlockfrostBlockProviderV2");
-        return Result.Fail<Block>("Not implemented yet");
+        if (blockNo is null)
+        {
+            _logger.LogWarning("GetBlockById is not yet implemented for BlockfrostBlockProviderV2");
+            return Result.Fail<Block>("Not implemented yet");
+        }
+        return await _mediator.Send(new GetApiBlockByNumberRequest(blockNo.Value), cancellationToken);
     }
 
     /// <inheritdoc />

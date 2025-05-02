@@ -27,7 +27,7 @@ public interface IBlockProvider
     /// <summary>
     /// Gets a block by its internal ID
     /// </summary>
-    Task<Result<Block>> GetBlockById(int blockId, CancellationToken cancellationToken);
+    Task<Result<Block>> GetBlockById(int blockId, CancellationToken cancellationToken, int? blockNo = null);
     
     /// <summary>
     /// Gets multiple blocks by their block numbers
