@@ -3,6 +3,9 @@ using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using FluentResults;
+using Microsoft.Extensions.Logging;
+using Polly;
+using Polly.Retry;
 
 namespace OpenPrismNode.Core.Services;
 
@@ -12,13 +15,15 @@ public class CardanoWalletService : ICardanoWalletService
 {
     private readonly HttpClient _httpClient;
     private readonly JsonSerializerOptions _jsonOptions;
+    private readonly ILogger<CardanoWalletService> _logger;
     private static readonly Random _random = new Random();
     private static readonly string _chars = "ABCDEFGHJKMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz123456789";
 
 
-    public CardanoWalletService(IHttpClientFactory httpClientFactory)
+    public CardanoWalletService(IHttpClientFactory httpClientFactory, ILogger<CardanoWalletService> logger)
     {
         _httpClient = httpClientFactory.CreateClient("CardanoWalletApi");
+        _logger = logger;
         _jsonOptions = new JsonSerializerOptions
         {
             PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
@@ -112,19 +117,44 @@ public class CardanoWalletService : ICardanoWalletService
             var json = JsonSerializer.Serialize(request, _jsonOptions);
             var content = new StringContent(json, Encoding.UTF8, "application/json");
 
-            var response = await _httpClient.PostAsync($"/v2/wallets/{walletId}/transactions-construct", content);
+            // Define a retry policy specifically for the "no UTxOs available" or "not enough ada" errors
+            var retryPolicy = Policy<Result<TransactionConstructResponse>>
+                .Handle<Exception>()
+                .OrResult(result => 
+                    result.IsFailed && 
+                    (result.Errors.Any(e => e.Message.Contains("Unable to create a transaction because the wallet has no unspent transaction outputs (UTxOs) available")) ||
+                     result.Errors.Any(e => e.Message.Contains("I am unable to finalize the transaction, as there is not enough ada available to pay for the fee and also pay for the minimum ada quantities"))))
+                .WaitAndRetryAsync(
+                    // Retry for 3 minutes with a 3 second interval = 60 retries
+                    60,
+                    _ => TimeSpan.FromSeconds(3),
+                    onRetry: (outcome, timespan, retryAttempt, context) =>
+                    {
+                        string errorType = "UTxO or Ada availability issue";
+                        _logger.LogWarning(
+                            "Retry {RetryAttempt}/60 after {Delay}s due to {ErrorType}",
+                            retryAttempt,
+                            timespan.TotalSeconds,
+                            errorType);
+                    });
 
-            if (response.IsSuccessStatusCode)
+            // Execute with retry policy
+            return await retryPolicy.ExecuteAsync(async () =>
             {
-                var responseContent = await response.Content.ReadAsStringAsync();
-                var txResponse = JsonSerializer.Deserialize<TransactionConstructResponse>(responseContent, _jsonOptions);
-                return Result.Ok(txResponse);
-            }
-            else
-            {
-                var errorResult = await HandleErrorResponse(response);
-                return Result.Fail(errorResult);
-            }
+                var response = await _httpClient.PostAsync($"/v2/wallets/{walletId}/transactions-construct", content);
+
+                if (response.IsSuccessStatusCode)
+                {
+                    var responseContent = await response.Content.ReadAsStringAsync();
+                    var txResponse = JsonSerializer.Deserialize<TransactionConstructResponse>(responseContent, _jsonOptions);
+                    return Result.Ok(txResponse);
+                }
+                else
+                {
+                    var errorResult = await HandleErrorResponse(response);
+                    return Result.Fail(errorResult);
+                }
+            });
         }
         catch (Exception ex)
         {
