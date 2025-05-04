@@ -233,10 +233,13 @@ app.MapRazorComponents<App>()
 app.UseSwagger();
 app.UseSwaggerUI();
 
-using (var scope = app.Services.CreateScope())
-{
-    var dbContext = scope.ServiceProvider.GetRequiredService<DataContext>();
-    dbContext.Database.Migrate(); // Will create and apply migrations if needed
+if(!appSettings.SkipMigration){
+
+    using (var scope = app.Services.CreateScope())
+    {
+        var dbContext = scope.ServiceProvider.GetRequiredService<DataContext>();
+        dbContext.Database.Migrate(); // Will create and apply migrations if needed
+    }
 }
 
 app.Run();

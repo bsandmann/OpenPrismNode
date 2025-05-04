@@ -126,6 +126,11 @@ public class AppSettings
     /// Configuration for the Blockfrost API
     /// </summary>
     public BlockfrostOptions Blockfrost { get; set; } = new();
+
+    /// <summary>
+    /// Skips the force migration of the database at startup
+    /// </summary>
+    public bool SkipMigration { get; set; }
 }
 
 /// <summary>
