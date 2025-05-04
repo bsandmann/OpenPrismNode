@@ -95,7 +95,7 @@ Authorization: secretPhraseUser
 
 ###
 # Resolve DID
-@did = did:prism:71844f35dc07a718585b37e646e7017b6e91f9a3f502aa753e027c36b591992f
+@did =did:prism:preprod:f9cc293d6ff7b1b25ca94e90d7c469597afafd232cf775439118614bb05a59d0
 GET {{OpenPrismNode_HostAddress}}/api/v1/identifiers/{{did}}
 
 ###
