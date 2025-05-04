@@ -3,6 +3,7 @@ namespace OpenPrismNode.Web.Controller;
 using Asp.Versioning;
 using Common;
 using Core.Commands.CreateCardanoWallet;
+using Core.Commands.GetDidList;
 using Core.Commands.GetOperationStatus;
 using Core.Commands.GetStakeAddressesForDay;
 using Core.Commands.GetWallet;
@@ -20,8 +21,8 @@ using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 using Models;
-using OpenPrismNode.Core.Common;
 using OpenPrismNode.Web;
+using OpenPrismNode.Core.Common;
 
 /// <inheritdoc />
 [ApiController]
@@ -63,5 +64,32 @@ public class StatisticsController : ControllerBase
         }
 
         return Ok(getStakeAddressesForDayResult.Value);
+    }
+    
+    // [ApiKeyOrUserRoleAuthorization]
+    [HttpGet("api/v{version:apiVersion=1.0}/statistics/{ledger}/dids")]
+    [ApiVersion("1.0")]
+    [Consumes("application/json")]
+    [Produces("application/json")]
+    public async Task<ActionResult> GetDidList(string ledger)
+    {
+        if (string.IsNullOrEmpty(ledger))
+        {
+            return BadRequest("The ledger must be provided, e.g 'preprod' or 'mainnet'");
+        }
+
+        var isParseable = Enum.TryParse<LedgerType>("cardano" + ledger, ignoreCase: true, out var ledgerType);
+        if (!isParseable)
+        {
+            return BadRequest("The valid network identifier must be provided: 'preprod','mainnet', or 'inmemory'");
+        }
+
+        var getDidListResult = await _mediator.Send(new GetDidListRequest { Ledger = ledgerType });
+        if (getDidListResult.IsFailed)
+        {
+            return BadRequest(getDidListResult.Errors?.FirstOrDefault()?.Message);
+        }
+
+        return Ok(getDidListResult.Value);
     }
 }

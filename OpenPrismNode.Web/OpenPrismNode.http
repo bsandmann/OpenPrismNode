@@ -95,5 +95,9 @@ Authorization: secretPhraseUser
 
 ###
 # Resolve DID
-@did = did:prism:cefe914570f1ab5e3c633cf2f3efc05a790d9f1793ef73eac88696b3a2fd3cee
+@did = did:prism:71844f35dc07a718585b37e646e7017b6e91f9a3f502aa753e027c36b591992f
 GET {{OpenPrismNode_HostAddress}}/api/v1/identifiers/{{did}}
+
+###
+# Get all DIDs
+GET {{OpenPrismNode_HostAddress}}/api/v1/statistics/{{ledger}}/dids
