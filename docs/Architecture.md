@@ -3,65 +3,58 @@
 The diagram below shows how **OpenPrismNode (OPN)** sits between the Cardano ledger and the applications that read or write DIDs.
 
 ```mermaid
-%%{ init: {"theme":"base","flowchart":{"useMaxWidth":false,"nodeSpacing":30,"rankSpacing":40}} }%%
-flowchart TD
-    %% === Style definitions ===
-    classDef docker fill:#fff5e6,stroke:#333,stroke-width:1px;
-    classDef internal fill:#e6f7ff,stroke:#3399ff,stroke-width:1px;
-    classDef ds fill:#e8f0ff;
-    classDef client fill:#f0f0f0;
+graph TD
+%% Read‑only clients (top)
+   subgraph "Read clients"
+      CurlRead[cURL / scripts]
+      UR[Universal Resolver]
+      IdentusRead[Identus Cloud Agent]
+   end
 
-    %% === Read-only clients ===
-    subgraph "Read clients"
-        CurlRead["cURL / scripts"]:::client
-        UR["Universal Resolver"]:::client
-        IdentusRead["Identus Cloud Agent"]:::client
-    end
+%% Write‑capable clients
+   subgraph "Write clients"
+      IdentusWrite[Identus Cloud Agent]
+      UniRegistrar[Universal Registrar]
+      CurlWrite[cURL / HTTP]
+   end
 
-    %% === Write-capable clients ===
-    subgraph "Write clients"
-        IdentusWrite["Identus Cloud Agent"]:::client
-        UniRegistrar["Universal Registrar"]:::client
-        CurlWrite["cURL / HTTP"]:::client
-    end
+%% Docker container with OPN & internal DB
+   subgraph "Docker container"
+      OPN[OpenPrismNode]
+      InternalDB[(Internal PostgreSQL)]
+      OPN --> InternalDB
+   end
 
-    %% === Core node + internal DB in Docker ===
-    subgraph "Docker container"
-        OPN["OpenPrismNode"]:::internal
-        InternalDB[("Internal PostgreSQL")]:::internal
-        OPN --> InternalDB
-    end
+%% Data sources (bottom)
+   subgraph "Data sources"
+      CardanoNode[Cardano Node]
+      DbSync[(DbSync PostgreSQL)]
+      CardanoNode --> DbSync
+      Blockfrost[Blockfrost API]
+   end
 
-    %% === Data sources ===
-    subgraph "Data sources"
-        CardanoNode["Cardano Node"]:::ds
-        DbSync[("DbSync PostgreSQL")]:::ds
-        Blockfrost["Blockfrost API"]:::ds
-        CardanoNode --> DbSync
-    end
+%% Wallet path (bottom)
+   subgraph "Write path"
+      Wallet[Cardano Wallet]
+   end
 
-    %% === Wallet ===
-    subgraph "Write path"
-        Wallet["Cardano Wallet"]
-    end
+%% Ingestion edges (polling)
+   OPN -->|poll blocks| DbSync
+   OPN -->|poll blocks| Blockfrost
 
-    %% === Ingestion ===
-    OPN -->|poll blocks| DbSync
-    OPN -->|poll blocks| Blockfrost
+%% Read edges (incoming)
+   CurlRead -->|HTTP| OPN
+   UR -->|HTTP| OPN
+   IdentusRead -->|gRPC| OPN
 
-    %% === Read traffic ===
-    CurlRead --> OPN
-    UR --> OPN
-    IdentusRead --> OPN
+%% Write edges (incoming)
+   IdentusWrite -->|gRPC| OPN
+   UniRegistrar -->|HTTP| OPN
+   CurlWrite -->|HTTP| OPN
 
-    %% === Write traffic ===
-    IdentusWrite --> OPN
-    UniRegistrar --> OPN
-    CurlWrite --> OPN
-
-    %% === Wallet feedback ===
-    OPN --> Wallet
-```
+%% Wallet feedback
+   OPN -->|tx status / balance| Wallet
+````
 
 ---
 
