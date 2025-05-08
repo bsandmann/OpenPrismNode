@@ -4,36 +4,56 @@ The diagram below shows how **OpenPrismNode (OPN)** sits between the Cardano led
 
 ```mermaid
 graph TD
-    %% Data sources
-    subgraph "Data sources"
-        CardanoNode[Cardano Node (local)]
-        DbSync[(DbSync PostgreSQL)]
-        CardanoNode --> DbSync
-        Blockfrost[(Blockfrost API)]
-    end
+%% Read‑only clients (top)
+   subgraph "Read clients"
+      CurlRead[cURL / scripts]
+      UR[Universal Resolver]
+      IdentusRead[Identus Cloud Agent]
+   end
 
-    %% Core node
-    OPN[OpenPrismNode]
+%% Write‑capable clients
+   subgraph "Write clients"
+      IdentusWrite[Identus Cloud Agent]
+      UniRegistrar[Universal Registrar]
+      CurlWrite[cURL / HTTP]
+   end
 
-    DbSync -->|new blocks| OPN
-    Blockfrost -->|new blocks| OPN
+%% Docker container with OPN & internal DB
+   subgraph "Docker container"
+      OPN[OpenPrismNode]
+      InternalDB[(Internal PostgreSQL)]
+      OPN --> InternalDB
+   end
 
-    %% Read clients
-    subgraph "Read clients"
-        Curl[cURL / scripts]
-        UR[Universal Resolver]
-        Identus[Identus Cloud Agent]
-    end
+%% Data sources (bottom)
+   subgraph "Data sources"
+      CardanoNode[Cardano Node]
+      DbSync[(DbSync PostgreSQL)]
+      CardanoNode --> DbSync
+      Blockfrost[Blockfrost API]
+   end
 
-    OPN -->|HTTP| Curl
-    OPN -->|HTTP| UR
-    OPN -->|gRPC| Identus
+%% Wallet path (bottom)
+   subgraph "Write path"
+      Wallet[Cardano Wallet]
+   end
 
-    %% Write path
-    subgraph "Write path"
-        Wallet[Cardano Wallet]
-    end
-    Wallet -->|sign & fund txs| OPN
+%% Ingestion edges (polling)
+   OPN -->|poll blocks| DbSync
+   OPN -->|poll blocks| Blockfrost
+
+%% Read edges (incoming)
+   CurlRead -->|HTTP| OPN
+   UR -->|HTTP| OPN
+   IdentusRead -->|gRPC| OPN
+
+%% Write edges (incoming)
+   IdentusWrite -->|gRPC| OPN
+   UniRegistrar -->|HTTP| OPN
+   CurlWrite -->|HTTP| OPN
+
+%% Wallet feedback
+   OPN -->|tx status / balance| Wallet
 ````
 
 ---
