@@ -1,7 +1,7 @@
 # OPN - OpenPrismNode
 The OpenPrismNode (OPN) is an open source implementation of the PRISM node by IOG and follows the [DID-PRISM specification](https://github.com/input-output-hk/prism-did-method-spec/blob/main/w3c-spec/PRISM-method.md)
 
-The project is currently under development, but already in beta testing. You can get the current image [here](https://github.com/users/bsandmann/packages/container/package/openprismnode)
+The project is completed by now. You can get the current image [here](https://github.com/users/bsandmann/packages/container/package/openprismnode)
 ## User Interface
 - A hosted version of the OpenPrismNode is available here:
      - [https://opn.preprod.blocktrust.dev](https://opn.preprod.blocktrust.dev)
@@ -40,11 +40,10 @@ The OpenPrismNode will have the following features/characteristics as part of th
 - Able to write PRISM v2 operation on the supported networks (**DONE**)
 - API endpoints for all read and write opertions (**DONE**)
 - GRPC endpoints for PRISM agent communication (**DONE**)
-- API endpoints for a statistical information (**IN PROGRESS**)
+- API endpoints for a statistical information (**DONE**)
 - Endpoints to support the [Universal DID Resolver spec](https://w3c-ccg.github.io/did-resolution/) (**DONE**)
 - Endpoints to support the [Universal DID Registrar spec](https://identity.foundation/did-registration/) (**DONE**)
 - Tenant-based system, with login and seperate wallet management (**DONE**)
-- Web-based UI with statistics and current sync-state (**MOSTLY DONE**)
 - Alternative sync method using blockfrost API (**DONE**)
 
 Updates on the progress of development will be given in this repo, as well the use F11 Milestone-Page.
