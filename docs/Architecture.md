@@ -3,40 +3,38 @@
 The diagram below shows how **OpenPrismNode (OPN)** sits between the Cardano ledger and the applications that read or write DIDs.
 
 ```mermaid
-%%{init: { 'theme': 'base', 'sequence': { 'mirrorActors': false } }}%%
 graph TD
-    subgraph Data_Sources
-        Cardano_Node[Cardano Node\n(local)]
-        DbSync[(DbSync\nPostgreSQL)]
-        Cardano_Node --> DbSync
-        Blockfrost_API[Blockfrost API\n(remote)]
+    %% Data sources
+    subgraph "Data sources"
+        CardanoNode[Cardano Node (local)]
+        DbSync[(DbSync PostgreSQL)]
+        CardanoNode --> DbSync
+        Blockfrost[(Blockfrost API)]
     end
 
-    OPN[OpenPrismNode]:::opn
+    %% Core node
+    OPN[OpenPrismNode]
 
-    DbSync -->|New blocks| OPN
-    Blockfrost_API -->|New blocks| OPN
+    DbSync -->|new blocks| OPN
+    Blockfrost -->|new blocks| OPN
 
-    subgraph Read_Clients
+    %% Read clients
+    subgraph "Read clients"
         Curl[cURL / scripts]
-        UniResolver[Universal\nResolver]
-        Identus[Identus\nCloud Agent]
+        UR[Universal Resolver]
+        Identus[Identus Cloud Agent]
     end
 
-    OPN -->|HTTP DID | Curl
-    OPN -->|Universal Resolver\nendpoint| UniResolver
+    OPN -->|HTTP| Curl
+    OPN -->|HTTP| UR
     OPN -->|gRPC| Identus
 
-    subgraph Write_Path
-        Cardano_Wallet[Cardano Wallet\n(local or remote)]
-        Cardano_Wallet -->|Sign & fund\ntransactions| OPN
+    %% Write path
+    subgraph "Write path"
+        Wallet[Cardano Wallet]
     end
-
-    %% Potential future enhancement
-    OPN -.->|Future (issue 123)| Blockfrost_API
-
-    classDef opn fill:#f4f4f4,stroke:#333,stroke-width:2;
-```
+    Wallet -->|sign & fund txs| OPN
+````
 
 ---
 
