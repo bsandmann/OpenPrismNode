@@ -3,57 +3,43 @@
 The diagram below shows how **OpenPrismNode (OPN)** sits between the Cardano ledger and the applications that read or write DIDs.
 
 ```mermaid
-graph TD
-%% Read‑only clients (top)
+flowchart TD
+%% Read clients
    subgraph "Read clients"
-      CurlRead[cURL / scripts]
-      UR[Universal Resolver]
-      IdentusRead[Identus Cloud Agent]
+      CurlRead["cURL / scripts"] --> OPN
+      UR["Universal Resolver"] --> OPN
+      IdentusRead["Identus Cloud Agent"] --> OPN
    end
 
-%% Write‑capable clients
+%% Write clients
    subgraph "Write clients"
-      IdentusWrite[Identus Cloud Agent]
-      UniRegistrar[Universal Registrar]
-      CurlWrite[cURL / HTTP]
+      IdentusWrite["Identus Cloud Agent"] --> OPN
+      UniRegistrar["Universal Registrar"] --> OPN
+      CurlWrite["cURL / HTTP"] --> OPN
    end
 
-%% Docker container with OPN & internal DB
+%% Core node in Docker container
    subgraph "Docker container"
-      OPN[OpenPrismNode]
-      InternalDB[(Internal PostgreSQL)]
+      OPN["OpenPrismNode"]
+      InternalDB["Internal PostgreSQL"]
       OPN --> InternalDB
    end
 
-%% Data sources (bottom)
+%% Data sources
    subgraph "Data sources"
-      CardanoNode[Cardano Node]
-      DbSync[(DbSync PostgreSQL)]
-      CardanoNode --> DbSync
-      Blockfrost[Blockfrost API]
+      CardanoNode["Cardano Node"] --> DbSync
+      DbSync["DbSync PostgreSQL"]
+      Blockfrost["Blockfrost API"]
    end
 
-%% Wallet path (bottom)
+   OPN --> DbSync
+   OPN --> Blockfrost
+
+%% Wallet path
    subgraph "Write path"
-      Wallet[Cardano Wallet]
+      Wallet["Cardano Wallet"]
    end
-
-%% Ingestion edges (polling)
-   OPN -->|poll blocks| DbSync
-   OPN -->|poll blocks| Blockfrost
-
-%% Read edges (incoming)
-   CurlRead -->|HTTP| OPN
-   UR -->|HTTP| OPN
-   IdentusRead -->|gRPC| OPN
-
-%% Write edges (incoming)
-   IdentusWrite -->|gRPC| OPN
-   UniRegistrar -->|HTTP| OPN
-   CurlWrite -->|HTTP| OPN
-
-%% Wallet feedback
-   OPN -->|tx status / balance| Wallet
+   OPN --> Wallet
 ````
 
 ---
