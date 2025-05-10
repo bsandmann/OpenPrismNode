@@ -1,0 +1,2 @@
+title: "OPN docs"            # text that appears in the site header & <title>
+theme: jekyll-theme-minimal  # one of GitHub’s built-in themes
