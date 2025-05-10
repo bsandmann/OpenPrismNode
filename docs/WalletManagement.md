@@ -4,7 +4,7 @@ layout: default
 nav_order: 7        # lower numbers appear higher in the sidebar
 ---
 
-## Wallet Creation
+# Wallet Creation
 
 To create a wallet:
 

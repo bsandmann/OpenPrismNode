@@ -1,51 +1,61 @@
-# OPN - OpenPrismNode
-The OpenPrismNode (OPN) is an open source implementation of the PRISM node by IOG and follows the [DID-PRISM specification](https://github.com/input-output-hk/prism-did-method-spec/blob/main/w3c-spec/PRISM-method.md)
+# OpenPrismNode (OPN)
 
-The project is completed by now. You can get the current image [here](https://github.com/users/bsandmann/packages/container/package/openprismnode)
-## User Interface
-- A hosted version of the OpenPrismNode is available here:
-     - [https://opn.preprod.blocktrust.dev](https://opn.preprod.blocktrust.dev)
-     - [https://opn.mainnet.blocktrust.dev](https://opn.mainnet.blocktrust.dev)
-- To login use these passwords/API-keys:
-     - Preprod: `kfUpMnvUf32KLi73KLifhahfQ!`
-     - Mainnet: `JopLmfjU34Jf!aslfuHJfpJuq28`
-- Login in gives you access to a "shared User" Account. This account allows you to create your own wallet. After the creation of the wallet, a wallet-Id is generated for you. You can now logout and use this wallet-Id to login again and see your wallet. You can now fund it (a funding address will get generated after the wallet is fully synced). 
-## API
-- You can see the API here `https://opn.preprod.blocktrust.dev/swagger/index.html` and here `https://opn.mainnet.blocktrust.dev/swagger/index.html`
-- For most actions, like re-synincing or detailed information you need an Admin key. For the public instances this is of course not provided here, but you can run your own OPN instance.
-- Nonetheless you can use the API for resolving DIDs:  e.g.
-     - [https://opn.preprod.blocktrust.dev/api/v1/identifiers/did:prism:76b...](https://opn.preprod.blocktrust.dev/api/v1/identifiers/did:prism:76b8001d5a87070834092793f5f9d4702ac24e25f6aea60f11382819551c492c)
-     - [https://opn.mainnet.blocktrust.dev/api/v1/identifiers/did:prism:66a...](https://opn.mainnet.blocktrust.dev/api/v1/identifiers/did:prism:66a78fb42c8936f8fa5b695dfce39c0d5cc64fd3a25c6cb7884268ed43d9707c)
-## gRPC
-- To connect Identus to the node use this configuration inside the identus-docker compose file:     
-     - Preprod
-      `PRISM_NODE_HOST: opn.preprod.blocktrust.dev`
-      `PRISM_NODE_PORT: 50054`
-     - Mainnet
-      `PRISM_NODE_HOST: opn.mainnet.blocktrust.dev`
-      `PRISM_NODE_PORT: 50053`
-- Note that the gRPC connection currently uses a preconfigured shared wallet (which is funded, at least for preprod), since Identus currently does not allow to provide an API-key (in our case the `wallet-Id`) via gRPC.
+An open-source implementation of the PRISM node that follows the [DID-PRISM specification](https://github.com/input-output-hk/prism-did-method-spec/blob/main/w3c-spec/PRISM-method.md).
 
-## Get the image
-`docker pull ghcr.io/bsandmann/openprismnode:latest`
-    
-## Documentation 
-- The documentation is currently under development. You can find the first pages [here](https://bsandmann.github.io/OpenPrismNode/Guide_blockfrost)
+**[📚 Documentation](https://bsandmann.github.io/OpenPrismNode/)**
+
+## About OpenPrismNode
+
+The OpenPrismNode enables anyone to resolve, create, update and deactivate decentralized identifiers (DIDs) on the Cardano Blockchain without depending on the Hyperledger Identus Cloud agent. It serves as an independent, community-driven alternative to IOG's reference implementation—prioritizing transparency, resilience, and ease of operation.
+
+## Core Features
+
+- **Full DID lifecycle** – Create, update, deactivate, and resolve DIDs
+- **Dual sync engines** – Choose between Cardano DbSync or lightweight Blockfrost API
+- **Compatible APIs** – REST and gRPC interfaces compatible with Identus Cloud agent
+- **Universal Resolver & Registrar** – Conforms to W3C standards for interoperability
+- **Multi-tenant model** – Host multiple organizations with separate wallet management
+- **Docker-ready** – Easy deployment with pre-built container images
+
+## Quick Links
+
+- **Docker Image**: `docker pull ghcr.io/bsandmann/openprismnode:latest`
+- **Hosted Instances**:
+  - Preprod: [https://opn.preprod.blocktrust.dev](https://opn.preprod.blocktrust.dev)
+  - Mainnet: [https://opn.mainnet.blocktrust.dev](https://opn.mainnet.blocktrust.dev)
+
+## Getting Started
+
+Set up OpenPrismNode using either:
+- **[DbSync setup guide](https://bsandmann.github.io/OpenPrismNode/Guide_DbSync)** - For robust integration with your own Cardano node
+- **[Blockfrost API setup guide](https://bsandmann.github.io/OpenPrismNode/Guide_blockfrost)** - For quick, lightweight deployment
+
+## API Access
+
+- **REST API**: Available at `/api/v1/` endpoints
+  - [Preprod Swagger Docs](https://opn.preprod.blocktrust.dev/swagger/index.html)
+  - [Mainnet Swagger Docs](https://opn.mainnet.blocktrust.dev/swagger/index.html)
+- **gRPC**: Available for Identus integration (ports: 50054 preprod, 50053 mainnet)
 
 ## Development
-The project was funded through Project Catalyst F11 under the title 'Open source PRISM Node' (1100214).
 
-The OpenPrismNode will have the following features/characteristics as part of the roadmap:
-- Able to parse PRISM v2 operations from the predprod/mainnet Cardano network (assumes the prior setup of Cardano node & dbSync) (**DONE**)
-- Able to write PRISM v2 operation on the supported networks (**DONE**)
-- API endpoints for all read and write opertions (**DONE**)
-- GRPC endpoints for PRISM agent communication (**DONE**)
-- API endpoints for a statistical information (**DONE**)
-- Endpoints to support the [Universal DID Resolver spec](https://w3c-ccg.github.io/did-resolution/) (**DONE**)
-- Endpoints to support the [Universal DID Registrar spec](https://identity.foundation/did-registration/) (**DONE**)
-- Tenant-based system, with login and seperate wallet management (**DONE**)
-- Alternative sync method using blockfrost API (**DONE**)
+The project was funded through Project Catalyst F11 under the title 'Open source PRISM Node' (1100214) and is maintained by the team at [blocktrust.dev](https://blocktrust.dev).
 
-Updates on the progress of development will be given in this repo, as well the use F11 Milestone-Page.
-  
+All planned features have been implemented:
+- ✅ Parsing PRISM v2 operations from Cardano network
+- ✅ Writing PRISM v2 operations
+- ✅ API endpoints for all operations
+- ✅ gRPC endpoints for agent communication
+- ✅ Statistical information API
+- ✅ Universal DID Resolver compatibility
+- ✅ Universal DID Registrar compatibility
+- ✅ Tenant-based system with wallet management
+- ✅ Alternative sync via Blockfrost API
 
+## Contributing
+
+We welcome contributions! Please see [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines on how to build the project and submit changes.
+
+## License
+
+Released under the Apache 2.0 license.
