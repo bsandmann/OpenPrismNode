@@ -37,9 +37,12 @@ OPN is built and maintained by the team behind **[blocktrust.dev](https://blockt
 
 This documentation set guides you through understanding, deploying and integrating OPN. The remaining chapters cover:
 
-1. **[Architecture.md](Architecture.md)** – modular components and data flow.
-2. **Prerequisites** – what you need before running the node.
-3. **Setup Guides** – choose *dbsync* or *Blockfrost* for initial sync.
-4. **Identus Integration** – configuring SSI agents over gRPC.
-5. **Resolver & Registrar** – invoking the universal endpoints.
-6. **Troubleshooting** – common pitfalls and diagnostic tips.
+1. **[Architecture](Architecture.md)** – modular components and data flow.
+2. **Setup Guides** – choose between [DbSync](Guide_DbSync.md) or [Blockfrost API](Guide_blockfrost.md) for initial sync.
+3. **[Connection to the Identus Agent](IdentusAgent.md)** – configuring SSI agents over gRPC.
+4. **[Sync Process](SyncProcess.md)** – understanding how data synchronization works.
+5. **[Wallet Management](WalletManagement.md)** – managing wallet integration.
+6. **[Universal Resolver](Resolver.md)** - resolving DIDs using the OPN.
+7. **[Universal Registrar](Registrar.md)** - registering DIDs using the OPN.
+7. **[API Reference](Api.md)** – detailed API documentation.
+8. **[Troubleshooting](Troubleshooting.md)** – common pitfalls and diagnostic tips.

@@ -10,5 +10,5 @@
 - [Wallet Management](WalletManagement.md)
 - [Resolver (Universal Resolver)](Resolver.md)
 - [Registrar (Universal Registrar)](Registrar.md)
-- [API Reference](API.md)
+- [API Reference](Api.md)
 - [Troubleshooting](Troubleshooting.md)

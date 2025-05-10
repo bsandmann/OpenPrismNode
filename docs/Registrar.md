@@ -434,7 +434,7 @@ Content-Type: application/json
 * **Internal vs Client key management:** OPN’s choice of Internal Secret Mode means ease-of-use at the cost of custody. If a user wanted full control of keys, they might want a *Client-managed Secret Mode* registrar (where the client supplies keys and signatures). Currently, OPN does not support that mode – it assumes it manages keys. This is fine for many server-side use cases or managed services. In the future, if needed, an external mode could be added, but it’s not a focus.
 
 * **Security of returned secrets:** Because OPN by default returns the private key (`privateKeyMultibase`) in responses, clients must handle these secrets carefully. The keys are sensitive; if you’re only using OPN as a transient DID registrar, you might store these keys in your own secure vault after creation. 
-* 
+
 
 ## Public Deployment Considerations
 

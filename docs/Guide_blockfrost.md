@@ -117,4 +117,3 @@ The synchronization process starts automatically. To monitor progress:
   You can see the current sync state and the number of blocks that are already synced. You can stop and start the sync
   process and also rollback to a previous block or epoch.
 - See troubleshooting section for potential issues.
----

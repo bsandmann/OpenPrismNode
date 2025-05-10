@@ -154,3 +154,5 @@ volumes:
 ```
 
 ## Limitations
+The Identus cloud agent can currently only use a single (default) wallet. Meaning a multitenant setup is not possible for writing DIDs, as there is currently no way of specifiying a ApiKey or a walletId in the request from the agent to the OPN. This is a limitation of the current implementation of the Identus cloud agent and hopefully will be fixed in the future. If multiple wallets are present in the OPN it automatically selects the wallet with the highest balance. In case a specific wallet is to be used it can be setup using the **DefaultWalletIdForGrpc** parameter.
+See the [Configuration.md](Configuration.md) for more details.
