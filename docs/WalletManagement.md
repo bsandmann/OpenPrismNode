@@ -1,4 +1,5 @@
 ---
+title: Wallet Management
 layout: default
 nav_order: 7        # lower numbers appear higher in the sidebar
 ---

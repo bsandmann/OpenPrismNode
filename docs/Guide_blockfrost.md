@@ -1,4 +1,5 @@
 ---
+title: Setup guide Blockfrost
 layout: default
 nav_order: 4        # lower numbers appear higher in the sidebar
 ---

@@ -1,4 +1,5 @@
 ---
+title: Universal Resolver API
 layout: default
 nav_order: 8        # lower numbers appear higher in the sidebar
 ---

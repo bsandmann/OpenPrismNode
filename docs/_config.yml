@@ -1,2 +1,16 @@
-title: "OPN docs"            # text that appears in the site header & <title>
-theme: jekyll-theme-minimal  # one of GitHub’s built-in themes
+# _config.yml ── goes in the publishing source (root or /docs)
+title: "OPN docs"
+
+remote_theme: just-the-docs/just-the-docs   # pulls theme straight from GitHub
+# source: docs                               # ← uncomment only if Pages “Source” is root but your .md live in /docs
+
+# enable site search (on by default, but you can turn it off)
+search_enabled: true
+
+# ---- Mermaid ---------------------------------------------------------------
+mermaid:
+  version: "10.9.0"   # any version listed on https://cdn.jsdelivr.net/npm/mermaid/
+
+# ---- optional visual tweaks -----------------------------------------------
+color_scheme: light     # or "dark"
+logo: "/assets/logo.svg" # if you have one

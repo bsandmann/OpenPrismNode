@@ -1,4 +1,5 @@
 ---
+title: Troubleshooting
 layout: default
 nav_order: 11        # lower numbers appear higher in the sidebar
 ---

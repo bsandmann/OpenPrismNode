@@ -1,4 +1,5 @@
 ---
+title: Setup guide DbSync
 layout: default
 nav_order: 3        # lower numbers appear higher in the sidebar
 ---

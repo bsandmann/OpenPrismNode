@@ -1,4 +1,5 @@
 ---
+title: Connecting Identus agent
 layout: default
 nav_order: 5        # lower numbers appear higher in the sidebar
 ---

@@ -51,4 +51,5 @@ This documentation set guides you through understanding, deploying and integrati
 6. **[Universal Resolver](Resolver.md)** - resolving DIDs using the OPN.
 7. **[Universal Registrar](Registrar.md)** - registering DIDs using the OPN.
 7. **[API Reference](Api.md)** – detailed API documentation.
+7. **[Configuration](Configuration.md)** – detailed configuration settings and variables.
 8. **[Troubleshooting](Troubleshooting.md)** – common pitfalls and diagnostic tips.

@@ -1,4 +1,5 @@
 ---
+title: Architecture
 layout: default
 nav_order: 2        # lower numbers appear higher in the sidebar
 ---
@@ -45,7 +46,7 @@ flowchart TD
         Wallet["Cardano Wallet"]
     end
     OPN --> Wallet
-````
+```
 
 ---
 

@@ -1,4 +1,5 @@
 ---
+title: Universal Registrar API
 layout: default
 nav_order: 9        # lower numbers appear higher in the sidebar
 ---

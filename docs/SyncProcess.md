@@ -1,4 +1,5 @@
 ---
+title: Sync process
 layout: default
 nav_order: 6        # lower numbers appear higher in the sidebar
 ---

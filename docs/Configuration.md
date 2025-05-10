@@ -1,4 +1,5 @@
 ---
+title: Configuration
 layout: default
 nav_order: 10        # lower numbers appear higher in the sidebar
 ---
