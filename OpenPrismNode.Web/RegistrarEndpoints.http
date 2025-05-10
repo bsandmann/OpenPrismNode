@@ -71,7 +71,7 @@ Accept: application/json
 Content-Type: application/json
 
 {
-  "jobId": "b533c1fdf470f971672efd7f27a881d752982932b74b24ad9bbbc5bbac834f42"
+  "jobId": "8786c99ac02928b05ee502ad4bedc0cf177fe07247938222a8df4a98762b3c33"
 }
 
 
@@ -325,7 +325,7 @@ Content-Type: application/json
 
 ###
 # Registrar update (all)
-POST {{OpenPrismNode_HostAddress}}/api/v1/registrar/update/did:prism:c87006a0e00fcba923a48d5c9df0212a775e1ec24c9fd01a3fe6fda7e97f7ac5
+POST {{OpenPrismNode_HostAddress}}/api/v1/registrar/update/did:prism:549eadae37ca14eb7ac73313cff2ce1ff6df8386cdf4058efd3c826cdbdcc5a4
 Accept: application/json
 Content-Type: application/json
 
@@ -334,7 +334,8 @@ Content-Type: application/json
     "storeSecretes": true,
     "returnSecrets": true,
     "walletId": "a4e8d89055c08493b297883392e730008153b6c1",
-    "network": "preprod"
+    "network": "preprod",
+    "masterKeySecret": "BD7nYhBadhJqQGi20LxKoMhDgJMLLoV7FjL7ySjktdI"
   },
   "secret": {
     "verificationMethod": [
@@ -416,7 +417,8 @@ Content-Type: application/json
 {
   "options": {
     "walletId": "a4e8d89055c08493b297883392e730008153b6c1",
-    "network": "preprod"
+    "network": "preprod",
+    "masterkeySecret": "BD7nYhBadhJqQGi20LxKoMhDgJMLLoV7FjL7ySjktdI"
   }
 }
 ###
