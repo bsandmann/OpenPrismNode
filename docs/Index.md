@@ -1,3 +1,8 @@
+---
+layout: default
+nav_order: 1        # lower numbers appear higher in the sidebar
+---
+
 # Introduction to OpenPrismNode (OPN)
 
 The *OpenPrismNode* (**OPN**) is an open‑source implementation of the PRISM node that follows the [DID‑PRISM specification](https://github.com/input-output-hk/prism-did-method-spec). 
@@ -38,7 +43,8 @@ OPN is built and maintained by the team behind **[blocktrust.dev](https://blockt
 This documentation set guides you through understanding, deploying and integrating OPN. The remaining chapters cover:
 
 1. **[Architecture](Architecture.md)** – modular components and data flow.
-2. **Setup Guides** – choose between [DbSync](Guide_DbSync.md) or [Blockfrost API](Guide_blockfrost.md) for initial sync.
+2. **Setup using [DbSync](Guide_DbSync.md)**
+3. **Setup using [Blockfrost API](Guide_blockfrost.md)**
 3. **[Connection to the Identus Agent](IdentusAgent.md)** – configuring SSI agents over gRPC.
 4. **[Sync Process](SyncProcess.md)** – understanding how data synchronization works.
 5. **[Wallet Management](WalletManagement.md)** – managing wallet integration.

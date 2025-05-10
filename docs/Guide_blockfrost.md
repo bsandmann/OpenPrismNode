@@ -1,3 +1,8 @@
+---
+layout: default
+nav_order: 4        # lower numbers appear higher in the sidebar
+---
+
 # Guide: Installing OPN Using the *Blockfrost* API for Syncing
 
 By default, OPN (Open Prism Node) synchronizes data using *dbsync* as its backend database. However, if *dbsync* is not

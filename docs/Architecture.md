@@ -1,3 +1,8 @@
+---
+layout: default
+nav_order: 2        # lower numbers appear higher in the sidebar
+---
+
 # Architecture
 
 The diagram below shows how **OpenPrismNode (OPN)** sits between the Cardano ledger and the applications that read or

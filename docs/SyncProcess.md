@@ -1,3 +1,8 @@
+---
+layout: default
+nav_order: 6        # lower numbers appear higher in the sidebar
+---
+
 # Sync Process
 
 If the datasource is setup correctly (either DbSync or Blockfrost API), the OPN will start syncing automatically and not monitoring or intervention is required.

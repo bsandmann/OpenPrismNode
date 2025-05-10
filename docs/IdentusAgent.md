@@ -1,3 +1,8 @@
+---
+layout: default
+nav_order: 5        # lower numbers appear higher in the sidebar
+---
+
 # Identus Agent
 ## Context
 The Identus Cloud Agent is a server-side self-sovereign-identity (SSI) service written in Scala that implements W3C DID standards, Aries workflows and DIDComm v2, exposing a REST API for creating/rotating Prism- or Peer-DIDs, issuing and verifying JWT, SD-JWT and AnonCreds credentials.

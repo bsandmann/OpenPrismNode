@@ -1,3 +1,8 @@
+---
+layout: default
+nav_order: 3        # lower numbers appear higher in the sidebar
+---
+
 # Guide: Installing OPN Using the *DbSync* for Syncing
 
 The assumed default operation of the OPN is using the *DbSync* as its backend database. This is less for technical reasons, but the implied security and trustworthiness of the data: DbSync is using its own PostgreSQL database with all transactions from the Cardano Node being send to this database. Then OPN then queries this databse to get the relevant metadata transactions, staking addresses and other information. This is a more secure way of getting the data, as the OPN does not have to trust a third party service like Blockfrost.

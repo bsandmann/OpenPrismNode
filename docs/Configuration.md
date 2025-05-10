@@ -1,3 +1,8 @@
+---
+layout: default
+nav_order: 10        # lower numbers appear higher in the sidebar
+---
+
 # OpenPrismNode Configuration Documentation
 
 This document provides a comprehensive overview of the configuration parameters used in OpenPrismNode. The configuration

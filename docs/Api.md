@@ -1,3 +1,8 @@
+---
+layout: default
+nav_order: 10        # lower numbers appear higher in the sidebar
+---
+
 # OpenPrismNode API Documentation
 
 This document provides a comprehensive reference for the OpenPrismNode REST API endpoints, organized by controller. Each section includes available endpoints, request/response formats, and example usages.

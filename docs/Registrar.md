@@ -1,3 +1,8 @@
+---
+layout: default
+nav_order: 9        # lower numbers appear higher in the sidebar
+---
+
 # Registrar Overview
 
 OpenPrismNode (OPN) implements a **Universal Registrar**-compatible API for the PRISM Decentralized Identifier (DID) method. This means OPN can create, update, and deactivate DIDs via a standardized interface, as described in the Decentralized Identity Foundation’s *DID Registration* draft specification. *Universal Registrar* is the lesser-known counterpart to the Universal Resolver: it handles **write operations** (DID creation and management) in a unified way across DID methods. The DID Registration spec is still a **working draft** with limited adoption, so support for it (especially for did\:prism) is cutting-edge and may evolve.

@@ -1,0 +1,11 @@
+title: OPN Docs          # what shows in the sidebar header
+theme: "just-the-docs"
+
+# Tell Pages to look in /docs because you already keep your .md there
+source: docs
+
+# Optional: only for *project* pages (github.io/<repo>)
+# baseurl: "/<repo>"
+
+just_the_docs:
+  mermaid: true                # turns on built-in Mermaid loader
