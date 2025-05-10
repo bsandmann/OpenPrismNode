@@ -13,6 +13,7 @@ The OPN was started before IOG’s reference node became publicly available, and
 * **Open API** – OPN is built to be fully available as an open API, allowing developers to build on top of it without needing to run the Hyperledger Identus Cloud agent, but still being fully compatible with it.
 * **Full transparency** – released under the Apache 2.0 licence so every line is auditable, forkable and extendable.
 * **Alternative design choices** – OPN is built with a focus on not only run based on DbSync, but also allowing for a lightweight Blockfrost API sync engine. 
+
 ---
 
 ## Core Capabilities
@@ -36,11 +37,9 @@ OPN is built and maintained by the team behind **[blocktrust.dev](https://blockt
 
 This documentation set guides you through understanding, deploying and integrating OPN. The remaining chapters cover:
 
-1. **Architecture** – modular components and data flow.
+1. **[Architecture.md](Architecture.md)** – modular components and data flow.
 2. **Prerequisites** – what you need before running the node.
 3. **Setup Guides** – choose *dbsync* or *Blockfrost* for initial sync.
 4. **Identus Integration** – configuring SSI agents over gRPC.
 5. **Resolver & Registrar** – invoking the universal endpoints.
 6. **Troubleshooting** – common pitfalls and diagnostic tips.
-
-> **Next step:** Dive into **Architecture** to see how OPN fits together under the hood.
