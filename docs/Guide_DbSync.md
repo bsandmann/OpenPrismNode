@@ -68,7 +68,7 @@ services:
   prismdb:
     image: postgres:15
     container_name: prismdb
-  restart: always
+    restart: always
     environment:
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=postgres
@@ -80,10 +80,10 @@ services:
     networks:
       - prismnet
 
-    seq:
-      image: datalust/seq:latest
-      container_name: seq
-  restart: always
+  seq:
+    image: datalust/seq:latest
+    container_name: seq
+    restart: always
     environment:
       - ACCEPT_EULA=Y
     ports:
