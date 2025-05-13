@@ -38,6 +38,14 @@ OPN is built and maintained by the team behind **[blocktrust.dev](https://blockt
 
 ---
 
+## Video Overview
+
+Watch this video for a comprehensive overview of how to set up the node, sync it, use the API, and connect it to the Identus cloud agent:
+
+<iframe width="560" height="315" src="https://www.youtube.com/embed/QxeLi0NL2tU" title="OpenPrismNode Overview" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+
+---
+
 ## About This Documentation
 
 This documentation set guides you through understanding, deploying and integrating OPN. The remaining chapters cover:
