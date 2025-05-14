@@ -102,6 +102,12 @@ public static class TransformToDidDocument
             services.Add(GetServiceEndpoint(prismService, did));
         }
 
+        if (verificationMethods.Any() && verificationMethods.Any(p=>p.Type.Equals("JsonWebKey2020")))
+        {
+            internalDidDocument.Contexts.Add(PrismParameters.JsonLdJsonWebKey2020);
+            internalDidDocument.Contexts = internalDidDocument.Contexts.Distinct().ToList();
+        }
+
         var didDocument = new DidDocument
         {
             Context = internalDidDocument.Contexts,
