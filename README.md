@@ -21,7 +21,7 @@ The OpenPrismNode enables anyone to resolve, create, update and deactivate decen
 
 - **Docker Image**: `docker pull ghcr.io/bsandmann/openprismnode:latest`
 - **Hosted Instances**:
-  - Preprod: [https://opn.preprod.blocktrust.dev](https://opn.preprod.blocktrust.dev)
+  - Preprod: [https://opn.preprod.blocktrust.dev](https://opn.preprod.blocktrust.dev) Free walletId for testing purposed ``beb041bbbc689c6762f7fb743735e9c39df25ad5``
   - Mainnet: [https://opn.mainnet.blocktrust.dev](https://opn.mainnet.blocktrust.dev)
 
 ## Getting Started
