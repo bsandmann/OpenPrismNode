@@ -58,9 +58,9 @@ public class PrismPublicKey
 
     public static Result<(byte[], byte[])> Decompress(byte[] compressedEcKeyData, string curve)
     {
-        if (curve != "secp256k1")
+        if (curve != PrismParameters.Secp256k1CurveName)
         {
-            Result.Fail("Only secp256k1 is supported");
+            return Result.Fail<(byte[], byte[])>("Only secp256k1 is supported");
         }
 
         try
